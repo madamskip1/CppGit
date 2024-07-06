@@ -30,5 +30,7 @@ int main()
     {
         std::cout << "Config entry: " << entry.first << " = " << entry.second << std::endl;
     }
+
+    std::cout << "top level path: " << repo.getTopLevelPath() << std::endl;
     return 0;
 }

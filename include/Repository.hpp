@@ -20,6 +20,8 @@ namespace CppGit
 
         std::string getPathAsString() const;
         std::filesystem::path getPath() const;
+        std::string getTopLevelPathAsString() const;
+        std::filesystem::path getTopLevelPath() const;
 
         bool isValidGitRepository() const;
 

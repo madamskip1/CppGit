@@ -17,6 +17,28 @@ namespace CppGit
         return path;
     }
 
+    std::string Repository::getTopLevelPathAsString() const
+    {
+        return getTopLevelPath().string();
+    }
+
+    std::filesystem::path Repository::getTopLevelPath() const
+    {
+        auto output = GitCommandExecutor::exec("rev-parse --show-toplevel", path.string());
+
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to get top level path");
+        }
+        
+        if (output.output.find("\n") != std::string::npos)
+        {
+            output.output.replace(output.output.find('\n'), 1, "");
+        }
+
+        return std::filesystem::path(output.output);
+    }
+
     bool Repository::isValidGitRepository() const
     {
         if (!std::filesystem::exists(path))
