@@ -18,6 +18,8 @@ namespace CppGit
     public:
         Repository(const std::filesystem::path& path);
 
+        GitCommandOutput executeGitCommand(std::string_view cmd) const;
+
         std::string getPathAsString() const;
         std::filesystem::path getPath() const;
         std::string getTopLevelPathAsString() const;

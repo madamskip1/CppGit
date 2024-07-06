@@ -6,7 +6,12 @@ namespace CppGit
 {
     Repository::Repository(const std::filesystem::path& path) : path(path)
     {}
-    
+
+    GitCommandOutput Repository::executeGitCommand(std::string_view cmd) const
+    {
+        return GitCommandExecutor::execute(cmd, path.string());
+    }
+
     std::string Repository::getPathAsString() const
     {
         return path.string();

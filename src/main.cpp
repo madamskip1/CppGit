@@ -34,5 +34,7 @@ int main()
     std::cout << "top level path: " << repo.getTopLevelPath() << std::endl;
 
     std::cout << "Description: " << repo.getDescription() << std::endl;
+
+    std::cout << "repo git status: " << repo.executeGitCommand("status").output << std::endl;
     return 0;
 }
