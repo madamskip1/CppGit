@@ -30,6 +30,7 @@ namespace CppGit
 
         std::unordered_set<std::string> getRemoteUrls() const;
         std::vector<GitConfigEntry> getConfig() const;
+        std::string getDescription() const;
 
     private:
         std::filesystem::path path;

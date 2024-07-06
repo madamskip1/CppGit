@@ -1,6 +1,6 @@
 #include "Repository.hpp"
 #include <sstream>
-
+#include <fstream>
 
 namespace CppGit
 {
@@ -30,7 +30,7 @@ namespace CppGit
         {
             throw std::runtime_error("Failed to get top level path");
         }
-        
+
         if (output.output.find("\n") != std::string::npos)
         {
             output.output.replace(output.output.find('\n'), 1, "");
@@ -157,5 +157,44 @@ namespace CppGit
         }
 
         return config;
+    }
+
+    std::string Repository::getDescription() const
+    {
+        auto topLevelRepoPathString = getTopLevelPathAsString();
+        std::filesystem::path descriptionPath;
+
+        if (auto descriptionPathInGit = std::filesystem::path{ std::string(topLevelRepoPathString + "/.git/description") };
+            std::filesystem::exists(descriptionPathInGit))
+        {
+            descriptionPath = std::filesystem::path { descriptionPathInGit };
+        }
+        else if (auto descriptionPathInBareGit = std::filesystem::path{ (topLevelRepoPathString + "/description") };
+            std::filesystem::exists(descriptionPathInBareGit))
+        {
+            descriptionPath = std::filesystem::path { descriptionPathInBareGit };
+        }
+        else
+        {
+            throw std::runtime_error("Failed to get description");
+        }
+        
+        std::ifstream descriptionFile(descriptionPath);
+        if (!descriptionFile.is_open())
+        {
+            throw std::runtime_error("Failed to open description file");
+        }
+
+        std::stringstream buffer;
+        buffer << descriptionFile.rdbuf();
+        auto description = buffer.str();
+
+        if (auto unnamedPos = description.find("Unnamed repository");
+            unnamedPos != std::string::npos && unnamedPos == 0)
+        {
+            return std::string();
+        }
+
+        return description;
     }
 } // namespace CppGit

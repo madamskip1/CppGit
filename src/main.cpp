@@ -32,5 +32,7 @@ int main()
     }
 
     std::cout << "top level path: " << repo.getTopLevelPath() << std::endl;
+
+    std::cout << "Description: " << repo.getDescription() << std::endl;
     return 0;
 }
