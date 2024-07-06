@@ -24,5 +24,11 @@ int main()
     {
         std::cout << "Remote url: " << url << std::endl;
     }
+
+    auto config = repo.getConfig();
+    for (const auto& entry : config)
+    {
+        std::cout << "Config entry: " << entry.first << " = " << entry.second << std::endl;
+    }
     return 0;
 }

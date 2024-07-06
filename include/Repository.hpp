@@ -2,6 +2,8 @@
 
 #include <string>
 #include <filesystem>
+#include <vector>
+#include <utility>
 #include <unordered_set>
 #include "GitCommandExecutor.hpp"
 #include "ErrorCodes.hpp"
@@ -10,6 +12,7 @@ namespace CppGit
 {
     constexpr const char* const CHECK_IF_GIT_REPOSTITORY_CMD = "rev-parse --is-inside-work-tree";
 
+    using GitConfigEntry = std::pair<std::string, std::string>;
     class Repository
     {
     public:
@@ -24,6 +27,7 @@ namespace CppGit
         ErrorCode clone(const std::string& url) const;
 
         std::unordered_set<std::string> getRemoteUrls() const;
+        std::vector<GitConfigEntry> getConfig() const;
 
     private:
         std::filesystem::path path;

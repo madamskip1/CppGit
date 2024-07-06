@@ -81,7 +81,7 @@ namespace CppGit
 
         return ErrorCode::NO_ERROR;
     }
-    
+
     std::unordered_set<std::string> Repository::getRemoteUrls() const
     {
         auto remote_output = GitCommandExecutor::exec("remote get-url --all origin", path.string());
@@ -104,5 +104,36 @@ namespace CppGit
         }
 
         return urls;
+    }
+    
+    std::vector<GitConfigEntry> Repository::getConfig() const
+    {
+        auto config_output = GitCommandExecutor::exec("config --list --local", path.string());
+
+        if (config_output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to get config");
+        }
+        if (config_output.output.empty())
+        {
+            return std::vector<GitConfigEntry>();
+        }
+
+        std::istringstream iss(config_output.output);
+        std::vector<GitConfigEntry> config;
+
+        std::string line;
+        while (std::getline(iss, line))
+        {
+            auto delimiterPos = line.find('=');
+            if (delimiterPos == std::string::npos)
+            {
+                config.emplace_back(line, "");
+                continue;
+            }
+            config.emplace_back(std::make_pair(line.substr(0, delimiterPos), line.substr(delimiterPos + 1)));
+        }
+
+        return config;
     }
 } // namespace CppGit
