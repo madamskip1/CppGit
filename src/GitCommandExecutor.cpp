@@ -3,9 +3,9 @@
 
 namespace CppGit
 {
-    GitCommandOutput GitCommandExecutor::exec(std::string_view path, std::string_view cmd)
+    GitCommandOutput GitCommandExecutor::exec(std::string_view cmd, std::string_view path)
     {
-        auto command = buildCommand(path, cmd);
+        auto command = buildCommand(cmd, path);
 
         std::unique_ptr<FILE, PipeDeleter> pipe(popen(command.c_str(), "r"));
 
@@ -29,17 +29,12 @@ namespace CppGit
         return GitCommandOutput{ return_code, result };
     }
 
-    GitCommandOutput GitCommandExecutor::exec(std::string_view cmd)
-    {
-        return exec("", cmd);
-    }
-
     bool GitCommandExecutor::checkIfHasGit()
     {
         return exec("--version").return_code == 0;
     }
-    
-    std::string GitCommandExecutor::buildCommand(std::string_view path, std::string_view cmd)
+
+    std::string GitCommandExecutor::buildCommand(std::string_view cmd, std::string_view path)
     {
         std::string command = GIT_EXECUTABLE;
         if (!path.empty())
