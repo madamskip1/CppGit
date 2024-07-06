@@ -34,6 +34,11 @@ namespace CppGit
         return exec("", cmd);
     }
 
+    bool GitCommandExecutor::checkIfHasGit()
+    {
+        return exec("--version").return_code == 0;
+    }
+    
     std::string GitCommandExecutor::buildCommand(std::string_view path, std::string_view cmd)
     {
         std::string command = GIT_EXECUTABLE;

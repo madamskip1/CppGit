@@ -17,6 +17,7 @@ namespace CppGit
         // Or even store Repository object in GitCommandExecutor
         static GitCommandOutput exec(std::string_view path, std::string_view cmd);
         static GitCommandOutput exec(std::string_view cmd);
+        static bool checkIfHasGit();
         
     private:
         static std::string buildCommand(std::string_view path, std::string_view cmd);
