@@ -1,6 +1,6 @@
 #include <iostream>
 #include "GitCommandExecutor.hpp"
-
+#include "Repository.hpp"
 
 int main()
 {
@@ -13,6 +13,9 @@ int main()
 
     auto hasGit = CppGit::GitCommandExecutor::checkIfHasGit();
     std::cout << "Has git: " << hasGit << std::endl;
+
+    auto repo = CppGit::Repository(".");
+    std::cout << "Is valid git repository: " << repo.isValidGitRepository() << std::endl;
 
     return 0;
 }
