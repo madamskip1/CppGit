@@ -3,7 +3,7 @@
 
 namespace CppGit
 {
-    GitCommandOutput GitCommandExecutor::exec(std::string_view path, std::string_view cmd) const
+    GitCommandOutput GitCommandExecutor::exec(std::string_view path, std::string_view cmd)
     {
         auto command = buildCommand(path, cmd);
 
@@ -29,12 +29,12 @@ namespace CppGit
         return GitCommandOutput{ return_code, result };
     }
 
-    GitCommandOutput GitCommandExecutor::exec(std::string_view cmd) const
+    GitCommandOutput GitCommandExecutor::exec(std::string_view cmd)
     {
         return exec("", cmd);
     }
 
-    std::string GitCommandExecutor::buildCommand(std::string_view path, std::string_view cmd) const
+    std::string GitCommandExecutor::buildCommand(std::string_view path, std::string_view cmd)
     {
         std::string command = GIT_EXECUTABLE;
         if (!path.empty())

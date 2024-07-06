@@ -15,11 +15,11 @@ namespace CppGit
     public:
         // TODO: change std::string_view path to CppGit::Repository or sth like that
         // Or even store Repository object in GitCommandExecutor
-        GitCommandOutput exec(std::string_view path, std::string_view cmd) const;
-        GitCommandOutput exec(std::string_view cmd) const;
+        static GitCommandOutput exec(std::string_view path, std::string_view cmd);
+        static GitCommandOutput exec(std::string_view cmd);
         
     private:
-        std::string buildCommand(std::string_view path, std::string_view cmd) const;
+        static std::string buildCommand(std::string_view path, std::string_view cmd);
 
         static constexpr const char* const GIT_EXECUTABLE = "git";
         
