@@ -24,7 +24,7 @@ namespace CppGit
 
     std::filesystem::path Repository::getTopLevelPath() const
     {
-        auto output = GitCommandExecutor::exec("rev-parse --show-toplevel", path.string());
+        auto output = GitCommandExecutor::execute("rev-parse --show-toplevel", path.string());
 
         if (output.return_code != 0)
         {
@@ -46,7 +46,7 @@ namespace CppGit
             return false;
         }
 
-        if (GitCommandExecutor::exec(path.string(), CHECK_IF_GIT_REPOSTITORY_CMD).return_code != 0)
+        if (GitCommandExecutor::execute(path.string(), CHECK_IF_GIT_REPOSTITORY_CMD).return_code != 0)
         {
             return false;
         }
@@ -94,7 +94,7 @@ namespace CppGit
             }
         }
 
-        auto clone_output = GitCommandExecutor::exec("clone " + url + " " + path.string());
+        auto clone_output = GitCommandExecutor::execute("clone " + url + " " + path.string());
         
         if (clone_output.return_code != 0)
         {
@@ -106,7 +106,7 @@ namespace CppGit
 
     std::unordered_set<std::string> Repository::getRemoteUrls() const
     {
-        auto remote_output = GitCommandExecutor::exec("remote get-url --all origin", path.string());
+        auto remote_output = GitCommandExecutor::execute("remote get-url --all origin", path.string());
 
         if (remote_output.return_code != 0)
         {
@@ -130,7 +130,7 @@ namespace CppGit
     
     std::vector<GitConfigEntry> Repository::getConfig() const
     {
-        auto config_output = GitCommandExecutor::exec("config --list --local", path.string());
+        auto config_output = GitCommandExecutor::execute("config --list --local", path.string());
 
         if (config_output.return_code != 0)
         {

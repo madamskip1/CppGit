@@ -3,7 +3,7 @@
 
 namespace CppGit
 {
-    GitCommandOutput GitCommandExecutor::exec(std::string_view cmd, std::string_view path)
+    GitCommandOutput GitCommandExecutor::execute(std::string_view cmd, std::string_view path)
     {
         auto command = buildCommand(cmd, path);
         
@@ -31,7 +31,7 @@ namespace CppGit
 
     bool GitCommandExecutor::checkIfHasGit()
     {
-        return exec("--version").return_code == 0;
+        return execute("--version").return_code == 0;
     }
 
     std::string GitCommandExecutor::buildCommand(std::string_view cmd, std::string_view path)

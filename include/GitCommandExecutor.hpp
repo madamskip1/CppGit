@@ -16,7 +16,7 @@ namespace CppGit
     class GitCommandExecutor
     {
     public:
-        static GitCommandOutput exec(std::string_view cmd, std::string_view path = "");
+        static GitCommandOutput execute(std::string_view cmd, std::string_view path = "");
         static bool checkIfHasGit();
 
     private:
