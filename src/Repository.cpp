@@ -29,4 +29,54 @@ namespace CppGit
 
         return true;
     }
+
+    Repository Repository::clone(const std::string &url, const std::filesystem::path &path)
+    {
+        auto repository = Repository(path);
+        if (repository.clone(url) != ErrorCode::NO_ERROR)
+        {
+            throw std::runtime_error("Failed to clone repository");
+        }
+        return repository;
+    }
+
+    ErrorCode Repository::clone(const std::string &url) const
+    {
+        if (path.empty())
+        {
+            return ErrorCode::GIT_CLONE_NO_PATH_GIVEN;
+        }
+        
+        if (!std::filesystem::exists(path))
+        {
+            try
+            {
+                std::filesystem::create_directories(path);
+            }
+            catch (const std::filesystem::filesystem_error& e)
+            {
+                return ErrorCode::GIT_CLONE_FAILED_TO_CREATE_DIRECTORIES;
+            }
+        }
+        else 
+        {
+            if (!std::filesystem::is_directory(path))
+            {
+                return ErrorCode::GIT_CLONE_PATH_IS_NOT_A_DIRECTORY;
+            }
+            if (!std::filesystem::is_empty(path))
+            {
+                return ErrorCode::GIT_CLONE_PATH_DIR_IS_NOT_EMPTY;
+            }
+        }
+
+        auto clone_output = GitCommandExecutor::exec("clone " + url + " " + path.string());
+        
+        if (clone_output.return_code != 0)
+        {
+            return ErrorCode::GIT_CLONE_FAILED;
+        }
+
+        return ErrorCode::NO_ERROR;
+    }
 } // namespace CppGit

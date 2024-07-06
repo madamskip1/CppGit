@@ -17,5 +17,6 @@ int main()
     auto repo = CppGit::Repository(".");
     std::cout << "Is valid git repository: " << repo.isValidGitRepository() << std::endl;
 
+    auto cloned_repo = CppGit::Repository::clone("git@github.com:madamskip1/hc-FSM.git", "/home/maciej/Repozytoria/test-clone/");
     return 0;
 }

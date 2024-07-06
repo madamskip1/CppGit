@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include "GitCommandExecutor.hpp"
+#include "ErrorCodes.hpp"
 
 namespace CppGit
 {
@@ -17,6 +18,10 @@ namespace CppGit
         std::filesystem::path getPath() const;
 
         bool isValidGitRepository() const;
+
+        static Repository clone(const std::string& url, const std::filesystem::path& path);
+        ErrorCode clone(const std::string& url) const;
+
 
     private:
         std::filesystem::path path;

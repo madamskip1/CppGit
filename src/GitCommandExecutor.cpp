@@ -6,7 +6,7 @@ namespace CppGit
     GitCommandOutput GitCommandExecutor::exec(std::string_view cmd, std::string_view path)
     {
         auto command = buildCommand(cmd, path);
-
+        
         std::unique_ptr<FILE, PipeDeleter> pipe(popen(command.c_str(), "r"));
 
         if (!pipe)
@@ -44,6 +44,7 @@ namespace CppGit
         }
         command += " ";
         command += cmd;
+        command += " 2>&1";
         return command;
     }
 
