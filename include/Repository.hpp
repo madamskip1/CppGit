@@ -2,6 +2,7 @@
 
 #include <string>
 #include <filesystem>
+#include <unordered_set>
 #include "GitCommandExecutor.hpp"
 #include "ErrorCodes.hpp"
 
@@ -22,6 +23,7 @@ namespace CppGit
         static Repository clone(const std::string& url, const std::filesystem::path& path);
         ErrorCode clone(const std::string& url) const;
 
+        std::unordered_set<std::string> getRemoteUrls() const;
 
     private:
         std::filesystem::path path;

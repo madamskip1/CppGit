@@ -1,4 +1,6 @@
 #include "Repository.hpp"
+#include <sstream>
+
 
 namespace CppGit
 {
@@ -78,5 +80,29 @@ namespace CppGit
         }
 
         return ErrorCode::NO_ERROR;
+    }
+    
+    std::unordered_set<std::string> Repository::getRemoteUrls() const
+    {
+        auto remote_output = GitCommandExecutor::exec("remote get-url --all origin", path.string());
+
+        if (remote_output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to get remote urls");
+        }
+        if (remote_output.output.empty())
+        {
+            return std::unordered_set<std::string>();
+        }
+
+        std::istringstream iss(remote_output.output);
+        std::unordered_set<std::string> urls;
+        std::string line;
+        while (std::getline(iss, line))
+        {
+            urls.insert(line);
+        }
+
+        return urls;
     }
 } // namespace CppGit
