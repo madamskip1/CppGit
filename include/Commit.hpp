@@ -3,12 +3,24 @@
 #include <vector>
 #include <string>
 #include "Repository.hpp"
+#include "Signature.hpp"
 
 namespace CppGit
 {
     class Commit
     {
     public:
+        Commit(const Repository& repo, 
+            const std::string& hash, 
+            const std::vector<std::string>& parents,
+            const Signature& author,
+            const std::string& authorDate,
+            const Signature& committer,
+            const std::string& committerDate,
+            const std::string& message,
+            const std::string& description,
+            const std::string& treeHash
+        );
         Commit(const Repository& repo, 
             const std::string& hash, 
             const std::vector<std::string>& parents,
@@ -20,32 +32,29 @@ namespace CppGit
             const std::string& committerDate,
             const std::string& message,
             const std::string& description,
-            const std::string& tree);
+            const std::string& treeHash
+        );
 
         const std::string& getHash() const;
         const std::vector<std::string>& getParents() const;
-        const std::string& getAuthorName() const;
-        const std::string& getAuthorEmail() const;
+        const Signature& getAuthor() const;
         const std::string& getAuthorDate() const;
-        const std::string& getCommitterName() const;
-        const std::string& getCommitterEmail() const;
+        const Signature& getCommitter() const;
         const std::string& getCommitterDate() const;
         const std::string& getMessage() const;
         const std::string& getDescription() const;
-        const std::string& getTree() const;
+        const std::string& getTreeHash() const;
         
     private:
         const Repository& repo;
         std::string hash;
         std::vector<std::string> parents;
-        std::string authorName;
-        std::string authorEmail;
+        Signature author;
         std::string authorDate;
-        std::string committerName;
-        std::string committerEmail;
+        Signature committer;
         std::string committerDate;
         std::string message;
         std::string description;
-        std::string tree;
+        std::string treeHash;
     };
 }

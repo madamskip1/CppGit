@@ -1,8 +1,13 @@
 #include "Commit.hpp"
 namespace CppGit
 {
+    Commit::Commit(const Repository &repo, const std::string &hash, const std::vector<std::string> &parents, const Signature &author, const std::string &authorDate, const Signature &committer, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
+        : repo(repo), hash(hash), parents(parents), author(author), authorDate(authorDate), committer(committer), committerDate(committerDate), message(message), description(description), treeHash(treeHash)
+    {
+    }
+
     Commit::Commit(const Repository &repo, const std::string &hash, const std::vector<std::string> &parents, const std::string &authorName, const std::string &authorEmail, const std::string &authorDate, const std::string &committerName, const std::string &committerEmail, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
-        : repo(repo), hash(hash), parents(parents), authorName(authorName), authorEmail(authorEmail), authorDate(authorDate), committerName(committerName), committerEmail(committerEmail), committerDate(committerDate), message(message), description(description), treeHash(treeHash)
+        : Commit(repo, hash, parents, Signature(authorName, authorEmail), authorDate, Signature(committerName, committerEmail), committerDate, message, description, treeHash)
     {
     }
 
@@ -16,14 +21,9 @@ namespace CppGit
         return parents;
     }
 
-    const std::string& Commit::getAuthorName() const
+    const Signature& Commit::getAuthor() const
     {
-        return authorName;
-    }
-
-    const std::string& Commit::getAuthorEmail() const
-    {
-        return authorEmail;
+        return author;
     }
 
     const std::string& Commit::getAuthorDate() const
@@ -31,14 +31,9 @@ namespace CppGit
         return authorDate;
     }
 
-    const std::string& Commit::getCommitterName() const
+    const Signature& Commit::getCommitter() const
     {
-        return committerName;
-    }
-
-    const std::string& Commit::getCommitterEmail() const
-    {
-        return committerEmail;
+        return committer;
     }
 
     const std::string& Commit::getCommitterDate() const
