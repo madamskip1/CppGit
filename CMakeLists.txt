@@ -9,6 +9,7 @@ target_sources(CppGit
     PRIVATE
         src/GitCommandExecutor.cpp
         src/Repository.cpp
+        src/Commit.cpp
 )
 
 target_include_directories(CppGit
