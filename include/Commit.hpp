@@ -10,8 +10,7 @@ namespace CppGit
     class Commit
     {
     public:
-        Commit(const Repository& repo, 
-            const std::string& hash, 
+        Commit(const std::string& hash, 
             const std::vector<std::string>& parents,
             const Signature& author,
             const std::string& authorDate,
@@ -21,8 +20,7 @@ namespace CppGit
             const std::string& description,
             const std::string& treeHash
         );
-        Commit(const Repository& repo, 
-            const std::string& hash, 
+        Commit(const std::string& hash, 
             const std::vector<std::string>& parents,
             const std::string& authorName,
             const std::string& authorEmail,
@@ -44,9 +42,8 @@ namespace CppGit
         const std::string& getMessage() const;
         const std::string& getDescription() const;
         const std::string& getTreeHash() const;
-        
+
     private:
-        const Repository& repo;
         std::string hash;
         std::vector<std::string> parents;
         Signature author;

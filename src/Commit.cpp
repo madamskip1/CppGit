@@ -1,13 +1,13 @@
 #include "Commit.hpp"
 namespace CppGit
 {
-    Commit::Commit(const Repository &repo, const std::string &hash, const std::vector<std::string> &parents, const Signature &author, const std::string &authorDate, const Signature &committer, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
-        : repo(repo), hash(hash), parents(parents), author(author), authorDate(authorDate), committer(committer), committerDate(committerDate), message(message), description(description), treeHash(treeHash)
+    Commit::Commit(const std::string &hash, const std::vector<std::string> &parents, const Signature &author, const std::string &authorDate, const Signature &committer, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
+        : hash(hash), parents(parents), author(author), authorDate(authorDate), committer(committer), committerDate(committerDate), message(message), description(description), treeHash(treeHash)
     {
     }
 
-    Commit::Commit(const Repository &repo, const std::string &hash, const std::vector<std::string> &parents, const std::string &authorName, const std::string &authorEmail, const std::string &authorDate, const std::string &committerName, const std::string &committerEmail, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
-        : Commit(repo, hash, parents, Signature(authorName, authorEmail), authorDate, Signature(committerName, committerEmail), committerDate, message, description, treeHash)
+    Commit::Commit(const std::string &hash, const std::vector<std::string> &parents, const std::string &authorName, const std::string &authorEmail, const std::string &authorDate, const std::string &committerName, const std::string &committerEmail, const std::string &committerDate, const std::string &message, const std::string &description, const std::string &treeHash)
+        : Commit(hash, parents, Signature(authorName, authorEmail), authorDate, Signature(committerName, committerEmail), committerDate, message, description, treeHash)
     {
     }
 
