@@ -1,6 +1,7 @@
 #include <iostream>
 #include "GitCommandExecutor.hpp"
 #include "Repository.hpp"
+#include "Commit.hpp"
 
 int main()
 {
@@ -36,5 +37,10 @@ int main()
     std::cout << "Description: " << repo.getDescription() << std::endl;
 
     std::cout << "repo git status: " << repo.executeGitCommand("status").output << std::endl;
+
+    auto commit = CppGit::Commit(repo, "HEAD");
+    std::cout << "Commit hash: " << commit.getHash() << std::endl;
+    std::cout << "Author name: " << commit.getAuthor().name << std::endl;
+    std::cout << "message: " << commit.getMessage() << std::endl;
     return 0;
 }

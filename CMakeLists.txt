@@ -4,11 +4,14 @@ project(CppGit)
 
 
 add_library(CppGit)
+add_library(CppGit::CppGit ALIAS CppGit)
 
 target_sources(CppGit
     PRIVATE
         src/GitCommandExecutor.cpp
         src/Repository.cpp
+        src/Commit.cpp
+        src/CommitParser.cpp
 )
 
 target_include_directories(CppGit
@@ -28,3 +31,5 @@ target_link_libraries(CppGit_temp_executable
         CppGit
 )
 
+
+add_subdirectory(tests)
