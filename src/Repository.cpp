@@ -1,6 +1,7 @@
 #include "Repository.hpp"
 #include <sstream>
 #include <fstream>
+#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 
 namespace CppGit
 {
@@ -9,7 +10,8 @@ namespace CppGit
 
     GitCommandOutput Repository::executeGitCommand(std::string_view cmd) const
     {
-        return GitCommandExecutor::execute(cmd, path.string());
+        auto commandExecutor = GitCommandExecutorUnix();
+        return commandExecutor.execute(cmd, path.string());
     }
 
     std::string Repository::getPathAsString() const
@@ -29,19 +31,21 @@ namespace CppGit
 
     std::filesystem::path Repository::getTopLevelPath() const
     {
-        auto output = GitCommandExecutor::execute("rev-parse --show-toplevel", path.string());
+        auto commandExecutor = GitCommandExecutorUnix();
+
+        auto output = commandExecutor.execute("rev-parse --show-toplevel", path.string());
 
         if (output.return_code != 0)
         {
             throw std::runtime_error("Failed to get top level path");
         }
 
-        if (output.output.find("\n") != std::string::npos)
+        if (output.stdout.find("\n") != std::string::npos)
         {
-            output.output.replace(output.output.find('\n'), 1, "");
+            output.stdout.replace(output.stdout.find('\n'), 1, "");
         }
 
-        return std::filesystem::path(output.output);
+        return std::filesystem::path(output.stdout);
     }
 
     bool Repository::isValidGitRepository() const
@@ -51,7 +55,7 @@ namespace CppGit
             return false;
         }
 
-        if (GitCommandExecutor::execute(path.string(), CHECK_IF_GIT_REPOSTITORY_CMD).return_code != 0)
+        if (auto commandExecutor = GitCommandExecutorUnix(); commandExecutor.execute(path.string(), CHECK_IF_GIT_REPOSTITORY_CMD).return_code != 0)
         {
             return false;
         }
@@ -99,9 +103,9 @@ namespace CppGit
             }
         }
 
-        auto clone_output = GitCommandExecutor::execute("clone " + url + " " + path.string());
-        
-        if (clone_output.return_code != 0)
+        auto commandExecutor = GitCommandExecutorUnix();
+
+        if (auto clone_output = commandExecutor.execute("clone " + url + " " + path.string()); clone_output.return_code != 0)
         {
             return ErrorCode::GIT_CLONE_FAILED;
         }
@@ -111,18 +115,19 @@ namespace CppGit
 
     std::unordered_set<std::string> Repository::getRemoteUrls() const
     {
-        auto remote_output = GitCommandExecutor::execute("remote get-url --all origin", path.string());
+        auto commandExecutor = GitCommandExecutorUnix();
+        auto remote_output = commandExecutor.execute("remote get-url --all origin", path.string());
 
         if (remote_output.return_code != 0)
         {
             throw std::runtime_error("Failed to get remote urls");
         }
-        if (remote_output.output.empty())
+        if (remote_output.stdout.empty())
         {
             return std::unordered_set<std::string>();
         }
 
-        std::istringstream iss(remote_output.output);
+        std::istringstream iss(remote_output.stdout);
         std::unordered_set<std::string> urls;
         std::string line;
         while (std::getline(iss, line))
@@ -135,18 +140,19 @@ namespace CppGit
     
     std::vector<GitConfigEntry> Repository::getConfig() const
     {
-        auto config_output = GitCommandExecutor::execute("config --list --local", path.string());
+        auto commandExecutor = GitCommandExecutorUnix();
+        auto config_output = commandExecutor.execute("config --list --local", path.string());
 
         if (config_output.return_code != 0)
         {
             throw std::runtime_error("Failed to get config");
         }
-        if (config_output.output.empty())
+        if (config_output.stdout.empty())
         {
             return std::vector<GitConfigEntry>();
         }
 
-        std::istringstream iss(config_output.output);
+        std::istringstream iss(config_output.stdout);
         std::vector<GitConfigEntry> config;
 
         std::string line;
