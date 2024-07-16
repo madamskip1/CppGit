@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 #include <unordered_set>
-#include "GitCommandExecutor.hpp"
+#include "GitCommandExecutor/GitCommandOutput.hpp"
 #include "ErrorCodes.hpp"
 
 namespace CppGit

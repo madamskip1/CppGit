@@ -8,7 +8,7 @@ add_library(CppGit::CppGit ALIAS CppGit)
 
 target_sources(CppGit
     PRIVATE
-        src/GitCommandExecutor.cpp
+        src/GitCommandExecutor/GitCommandExecutorUnix.cpp
         src/Repository.cpp
         src/Commit.cpp
         src/CommitParser.cpp

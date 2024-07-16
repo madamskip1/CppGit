@@ -1,5 +1,5 @@
 #include "Commit.hpp"
-#include "GitCommandExecutor.hpp"
+#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "CommitParser.hpp"
 
 namespace CppGit
@@ -20,14 +20,15 @@ namespace CppGit
         command += CommitParser::COMMIT_LOG_DEFAULT_FORMAT;
         command += "\" --no-patch ";
         command += hash;
-        auto output = GitCommandExecutor::execute(command, repo.getPathAsString());
+        auto commandExecutor = GitCommandExecutorUnix();
+        auto output = commandExecutor.execute(command, repo.getPathAsString());
 
         if (output.return_code != 0)
         {
             throw std::runtime_error("Failed to get commit information");
         }
         
-        auto commit = CommitParser::parseCommit(output.output);
+        auto commit = CommitParser::parseCommit(output.stdout);
         this->hash = commit.hash;
         parents = commit.parents;
         author = commit.author;
