@@ -1,4 +1,4 @@
-#include "CommitParser.hpp"
+#include "Parser/CommitParser.hpp"
 
 #include <iostream>
 
@@ -140,20 +140,5 @@ namespace CppGit
     bool CommitParser::isTreeHashToken(std::string_view token)
     {
         return token == "%T" || token == "%t";
-    }
-
-    std::vector<std::string_view> CommitParser::split(std::string_view str, char delimiter)
-    {
-        std::vector<std::string_view> result;
-        auto start = std::size_t{ 0 };
-        auto end = std::size_t{ 0 };
-
-        while ((end = str.find(delimiter, start)) != std::string_view::npos) {
-            result.emplace_back(str.substr(start, end - start));
-            start = end + 1;
-        }
-        result.emplace_back(str.substr(start));
-        
-        return result;
     }
 }

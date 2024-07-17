@@ -1,9 +1,13 @@
+#pragma once
+
 #include <string_view>
 #include <vector>
-#include "Commit.hpp"
+#include "Parser.hpp"
+#include "../Commit.hpp"
+
 namespace CppGit
 {
-    class CommitParser
+    class CommitParser : protected Parser
     {
     public:
         static constexpr const char*const COMMIT_LOG_DEFAULT_FORMAT = "%H;%P;%an;%ae;%at;%cn;%ce;%ct;%s;%b";
@@ -24,7 +28,5 @@ namespace CppGit
         static bool isMessageToken(std::string_view token);
         static bool isDescriptionToken(std::string_view token);
         static bool isTreeHashToken(std::string_view token);
-
-        static std::vector<std::string_view> split(std::string_view str, char delimiter);
     };
 }

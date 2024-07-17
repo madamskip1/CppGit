@@ -1,6 +1,6 @@
 #include "Commit.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
-#include "CommitParser.hpp"
+#include "Parser/CommitParser.hpp"
 
 namespace CppGit
 {

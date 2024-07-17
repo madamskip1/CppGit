@@ -11,8 +11,10 @@ target_sources(CppGit
         src/GitCommandExecutor/GitCommandExecutorUnix.cpp
         src/Repository.cpp
         src/Commit.cpp
-        src/CommitParser.cpp
         src/Branch.cpp
+
+        src/Parser/Parser.cpp
+        src/Parser/CommitParser.cpp
 )
 
 target_include_directories(CppGit
