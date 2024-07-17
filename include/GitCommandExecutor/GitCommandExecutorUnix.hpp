@@ -11,12 +11,13 @@ namespace CppGit
     public:
         GitCommandExecutorUnix() = default;
         ~GitCommandExecutorUnix() override = default;
-        GitCommandOutput execute(std::string_view command, std::string_view path = "") override;
 
     private:
+        GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) override;
+
         void createPipes();
         GitCommandOutput parentProcess();
-        void childProcess(std::string_view command, std::string_view path);
+        void childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args);
         
         pid_t pid;
         std::array<int, 2> stdoutPipe;

@@ -5,7 +5,7 @@
 
 namespace CppGit
 {
-    GitCommandOutput GitCommandExecutorUnix::execute(std::string_view command, std::string_view path)
+    GitCommandOutput GitCommandExecutorUnix::executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args)
     {
         createPipes();
         pid = fork();
@@ -16,7 +16,7 @@ namespace CppGit
 
         if (pid == 0)
         {
-            childProcess(command, path);
+            childProcess(path, command, args);
         }
         else
         {
@@ -85,7 +85,8 @@ namespace CppGit
 
         return GitCommandOutput{returnCode, stdout, stderr};
     }
-    void GitCommandExecutorUnix::childProcess(std::string_view command, std::string_view path)
+
+    void GitCommandExecutorUnix::childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args)
     {
         close(stdoutPipe[0]);
         close(stderrPipe[0]);
@@ -99,15 +100,22 @@ namespace CppGit
         close(stdoutPipe[1]);
         close(stderrPipe[1]);
 
-        if (!path.empty())
+        std::vector<char*> argv;
+
+        argv.reserve(args.size() + 4);
+        argv.emplace_back(const_cast<char*>("git"));
+        argv.emplace_back(const_cast<char*>("-C"));
+        argv.emplace_back(const_cast<char*>(path.data()));
+        argv.emplace_back(const_cast<char*>(command.data()));
+
+        for (const auto& arg : args)
         {
-            execlp("git", "git", "-C", path.data(), command.data(), nullptr);
+            argv.emplace_back(const_cast<char*>(arg.data()));
         }
-        else
-        {
-            execlp("git", "git", command.data(), nullptr);
-        }
-        
+        argv.emplace_back(nullptr);
+
+        execvp("git", argv.data());
+
         perror("execlp");
         exit(EXIT_FAILURE);
     }

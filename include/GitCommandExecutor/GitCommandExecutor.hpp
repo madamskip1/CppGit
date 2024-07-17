@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 #include "GitCommandOutput.hpp"
 
 namespace CppGit 
@@ -12,6 +13,15 @@ namespace CppGit
     {
     public:
         virtual ~GitCommandExecutor() = default;
-        virtual GitCommandOutput execute(std::string_view command, std::string_view path = "") = 0;
+
+        template<typename... Args>
+        GitCommandOutput execute(std::string_view path, std::string_view command, Args... args)
+        {
+            auto arguments = std::vector<std::string_view> {args...};
+            return executeImpl(path, command, arguments);
+        }
+
+    protected:
+        virtual GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) = 0;
     };
 } // namespace CppGit

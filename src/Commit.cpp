@@ -21,7 +21,7 @@ namespace CppGit
         command += "\" --no-patch ";
         command += hash;
         auto commandExecutor = GitCommandExecutorUnix();
-        auto output = commandExecutor.execute(command, repo.getPathAsString());
+        auto output = commandExecutor.execute(repo.getPathAsString(), command);
 
         if (output.return_code != 0)
         {
