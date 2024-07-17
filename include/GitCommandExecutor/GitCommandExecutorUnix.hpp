@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GitCommandExecutor.hpp"
 #include "GitCommandOutput.hpp"
 #include <array>
