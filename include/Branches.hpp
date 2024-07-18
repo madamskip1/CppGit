@@ -29,6 +29,9 @@ namespace CppGit
         void createBranch(std::string_view branchName, std::string_view hash = "HEAD") const;
         void createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const;
 
+        void changeBranchRef(std::string_view branchName, std::string_view newHash) const;
+        void changeBranchRef(const Branch& branch, std::string_view newHash) const;
+
     private:
         std::vector<Branch> getBranchesImpl(bool local, bool remote) const;
         std::string addPrefixIfNeeded(std::string_view branchName, bool remote) const;

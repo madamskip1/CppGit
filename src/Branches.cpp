@@ -91,6 +91,22 @@ namespace CppGit
         createBranch(newBranchName, getHashBranchRefersTo(branch));
     }
 
+    void Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const
+    {
+        auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+        auto output = repo.executeGitCommand("update-ref", branchNameWithPrefix, newHash);
+
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to change branch ref");
+        }
+    }
+
+    void Branches::changeBranchRef(const Branch &branch, std::string_view newHash) const
+    {
+        changeBranchRef(branch.getRefName(), newHash);
+    }
+
     std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
     {
         auto argLocal = local ? "refs/heads" : "";
