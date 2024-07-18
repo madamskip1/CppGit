@@ -74,6 +74,23 @@ namespace CppGit
         return getHashBranchRefersTo(branch.getRefName(), false);
     }
 
+    void Branches::createBranch(std::string_view branchName, std::string_view hash) const
+    {
+        // TODO: can we create remote branches this way?
+        auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+        auto output = repo.executeGitCommand("update-ref", branchNameWithPrefix, hash);
+
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to create branch");
+        }
+    }
+
+    void Branches::createBranchFromBranch(std::string_view newBranchName, const Branch &branch) const
+    {
+        createBranch(newBranchName, getHashBranchRefersTo(branch));
+    }
+
     std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
     {
         auto argLocal = local ? "refs/heads" : "";
@@ -108,7 +125,7 @@ namespace CppGit
 
         return branches;
     }
-    
+
     std::string Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const
     {
         if (remote)
