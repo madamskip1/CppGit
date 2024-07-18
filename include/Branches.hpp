@@ -20,6 +20,9 @@ namespace CppGit
         bool branchExists(std::string_view branchName, bool remote = false) const;
         bool branchExists(const Branch& branch) const;
 
+        void deleteBranch(std::string_view branchName) const;
+        void deleteBranch(const Branch& branch) const;
+
     private:
         std::vector<Branch> getBranchesImpl(bool local, bool remote) const;
         std::string addPrefixIfNeeded(std::string_view branchName, bool remote) const;

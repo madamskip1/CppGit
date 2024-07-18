@@ -36,6 +36,24 @@ namespace CppGit
         return branchExists(branch.getRefName(), false);
     }
 
+    void Branches::deleteBranch(std::string_view branchName) const
+    {
+        // TODO: delete remote
+
+        auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+        auto output = repo.executeGitCommand("update-ref", "-d", branchNameWithPrefix);
+
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to delete branch");
+        }
+    }
+
+    void Branches::deleteBranch(const Branch &branch) const
+    {
+        return deleteBranch(branch.getRefName());
+    }
+
     std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
     {
         auto argLocal = local ? "refs/heads" : "";
