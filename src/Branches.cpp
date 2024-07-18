@@ -54,6 +54,26 @@ namespace CppGit
         return deleteBranch(branch.getRefName());
     }
 
+    std::string Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const
+    {
+        auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
+        auto output = repo.executeGitCommand("rev-parse", branchNameWithPrefix);
+
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to get hash");
+        }
+
+        output.stdout.erase(output.stdout.find_last_not_of("\n") + 1);
+        return output.stdout;
+    }
+
+    std::string Branches::getHashBranchRefersTo(const Branch &branch) const
+    {
+        // remote = false/true doesn't matter here
+        return getHashBranchRefersTo(branch.getRefName(), false);
+    }
+
     std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
     {
         auto argLocal = local ? "refs/heads" : "";
@@ -88,6 +108,7 @@ namespace CppGit
 
         return branches;
     }
+    
     std::string Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const
     {
         if (remote)

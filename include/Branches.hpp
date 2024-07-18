@@ -23,6 +23,9 @@ namespace CppGit
         void deleteBranch(std::string_view branchName) const;
         void deleteBranch(const Branch& branch) const;
 
+        std::string getHashBranchRefersTo(std::string_view branchName, bool remote = false) const;
+        std::string getHashBranchRefersTo(const Branch& branch) const;
+
     private:
         std::vector<Branch> getBranchesImpl(bool local, bool remote) const;
         std::string addPrefixIfNeeded(std::string_view branchName, bool remote) const;
