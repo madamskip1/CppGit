@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "CommitParser.hpp"
+#include "Parser/CommitParser.hpp"
 #include "Signature.hpp"
 
 TEST(CommitParserTests, defaultFormat_fullCommit)

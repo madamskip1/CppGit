@@ -17,6 +17,7 @@ add_executable(CppGit_tests)
 target_sources(CppGit_tests
     PRIVATE
         CommitParser_tests.cpp
+        BranchesParser_tests.cpp
 )
 
 target_link_libraries(CppGit_tests

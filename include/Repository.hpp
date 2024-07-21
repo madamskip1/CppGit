@@ -6,19 +6,23 @@
 #include <utility>
 #include <unordered_set>
 #include "GitCommandExecutor/GitCommandOutput.hpp"
+#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "ErrorCodes.hpp"
 
 namespace CppGit
 {
-    constexpr const char* const CHECK_IF_GIT_REPOSTITORY_CMD = "rev-parse --is-inside-work-tree";
-
     using GitConfigEntry = std::pair<std::string, std::string>;
     class Repository
     {
     public:
         Repository(const std::filesystem::path& path);
 
-        GitCommandOutput executeGitCommand(std::string_view cmd) const;
+        template<typename... Args>
+        GitCommandOutput executeGitCommand(const std::string_view cmd, Args... args) const
+        {
+            auto commandExecutor = GitCommandExecutorUnix();
+            return commandExecutor.execute(path.string(), cmd, args...);
+        }
 
         std::string getPathAsString() const;
         std::filesystem::path getPath() const;
