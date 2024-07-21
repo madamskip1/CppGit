@@ -26,17 +26,4 @@ target_include_directories(CppGit
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )
 
-add_executable(CppGit_temp_executable)
-
-target_sources(CppGit_temp_executable
-    PRIVATE
-        src/main.cpp
-)
-
-target_link_libraries(CppGit_temp_executable
-    PRIVATE
-        CppGit
-)
-
-
 add_subdirectory(tests)
