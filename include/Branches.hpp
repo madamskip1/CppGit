@@ -16,6 +16,7 @@ namespace CppGit
         std::vector<Branch> getAllBranches() const;
         std::vector<Branch> getRemoteBranches() const;
         std::vector<Branch> getLocalBranches() const;
+        std::string getCurrentBranchRef() const;
 
         bool branchExists(std::string_view branchName, bool remote = false) const;
         bool branchExists(const Branch& branch) const;

@@ -23,6 +23,17 @@ namespace CppGit
         return getBranchesImpl(true, false);
     }
 
+    std::string Branches::getCurrentBranchRef() const
+    {
+        auto output = repo.executeGitCommand("symbolic-ref", "HEAD");
+        if (output.return_code != 0)
+        {
+            throw std::runtime_error("Failed to get current branch ref");
+        }
+    
+        return output.stdout;
+    }
+
     bool Branches::branchExists(std::string_view branchName, bool remote) const
     {
         auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
