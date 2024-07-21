@@ -1,21 +1,22 @@
 #pragma once
 
+#include "../Branch.hpp"
+#include "Parser.hpp"
+
 #include <string>
 #include <string_view>
 
-#include "Parser.hpp"
-#include "../Branch.hpp"
+namespace CppGit {
 
-namespace CppGit
+class BranchesParser : protected Parser
 {
+public:
+    static constexpr const char* const BRANCHES_FORMAT = "%(refname);%(upstream);%(push)";
 
-    class BranchesParser : protected Parser
-    {
-    public:
-        static constexpr const char *const BRANCHES_FORMAT = "%(refname);%(upstream);%(push)";
+    static Branch parseBranch(std::string_view line);
 
-        static Branch parseBranch(std::string_view line);
+    static bool isLocalBranch(std::string_view refName);
+};
 
-        static bool isLocalBranch(std::string_view refName);
-    };
-}
+
+} // namespace CppGit

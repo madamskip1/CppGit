@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "Parser/BranchesParser.hpp"
+
+#include <gtest/gtest.h>
 
 TEST(BranchesParser, isLocalBranch_heads)
 {

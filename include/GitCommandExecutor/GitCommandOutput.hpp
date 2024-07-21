@@ -1,11 +1,14 @@
 #pragma once
 
-namespace CppGit
+#include <string>
+
+namespace CppGit {
+
+struct GitCommandOutput
 {
-    struct GitCommandOutput
-    {
-        int return_code;
-        std::string stdout;
-        std::string stderr;
-    };
-}
+    int return_code;
+    std::string stdout;
+    std::string stderr;
+};
+
+} // namespace CppGit

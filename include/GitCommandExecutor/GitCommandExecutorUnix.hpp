@@ -2,25 +2,26 @@
 
 #include "GitCommandExecutor.hpp"
 #include "GitCommandOutput.hpp"
+
 #include <array>
 
-namespace CppGit
+namespace CppGit {
+class GitCommandExecutorUnix : public GitCommandExecutor
 {
-    class GitCommandExecutorUnix : public GitCommandExecutor
-    {
-    public:
-        GitCommandExecutorUnix() = default;
-        ~GitCommandExecutorUnix() override = default;
+public:
+    GitCommandExecutorUnix() = default;
+    ~GitCommandExecutorUnix() override = default;
 
-    private:
-        GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) override;
+private:
+    GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) override;
 
-        void createPipes();
-        GitCommandOutput parentProcess();
-        void childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args);
-        
-        pid_t pid;
-        std::array<int, 2> stdoutPipe;
-        std::array<int, 2> stderrPipe;
-    };
-}
+    void createPipes();
+    GitCommandOutput parentProcess();
+    void childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args);
+
+    pid_t pid;
+    std::array<int, 2> stdoutPipe;
+    std::array<int, 2> stderrPipe;
+};
+
+} // namespace CppGit

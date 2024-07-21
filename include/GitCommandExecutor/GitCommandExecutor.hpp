@@ -1,27 +1,29 @@
 #pragma once
 
+#include "GitCommandOutput.hpp"
+
 #include <string>
 #include <string_view>
 #include <vector>
-#include "GitCommandOutput.hpp"
 
-namespace CppGit 
+namespace CppGit {
+
+constexpr const char* const GIT_EXECUTABLE = "git";
+
+class GitCommandExecutor
 {
-    constexpr const char* const GIT_EXECUTABLE = "git";
+public:
+    virtual ~GitCommandExecutor() = default;
 
-    class GitCommandExecutor
+    template <typename... Args>
+    GitCommandOutput execute(std::string_view path, std::string_view command, Args... args)
     {
-    public:
-        virtual ~GitCommandExecutor() = default;
+        auto arguments = std::vector<std::string_view>{ args... };
+        return executeImpl(path, command, arguments);
+    }
 
-        template<typename... Args>
-        GitCommandOutput execute(std::string_view path, std::string_view command, Args... args)
-        {
-            auto arguments = std::vector<std::string_view> {args...};
-            return executeImpl(path, command, arguments);
-        }
+protected:
+    virtual GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) = 0;
+};
 
-    protected:
-        virtual GitCommandOutput executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) = 0;
-    };
 } // namespace CppGit
