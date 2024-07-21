@@ -9,6 +9,11 @@ namespace CppGit
     Repository::Repository(const std::filesystem::path& path) : path(path)
     {}
 
+    CppGit::Branches Repository::Branches() const
+    {
+        return CppGit::Branches( *this );
+    }
+
     std::string Repository::getPathAsString() const
     {
         return path.string();

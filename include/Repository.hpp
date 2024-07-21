@@ -8,6 +8,7 @@
 #include "GitCommandExecutor/GitCommandOutput.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "ErrorCodes.hpp"
+#include "Branches.hpp"
 
 namespace CppGit
 {
@@ -15,7 +16,8 @@ namespace CppGit
     class Repository
     {
     public:
-        Repository(const std::filesystem::path& path);
+        explicit Repository(const std::filesystem::path& path);
+        Repository() = delete;
 
         template<typename... Args>
         GitCommandOutput executeGitCommand(const std::string_view cmd, Args... args) const
@@ -23,6 +25,8 @@ namespace CppGit
             auto commandExecutor = GitCommandExecutorUnix();
             return commandExecutor.execute(path.string(), cmd, args...);
         }
+
+        CppGit::Branches Branches() const;
 
         std::string getPathAsString() const;
         std::filesystem::path getPath() const;

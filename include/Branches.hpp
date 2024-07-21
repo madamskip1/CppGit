@@ -1,17 +1,21 @@
 #pragma once
 
-#include "Repository.hpp"
+#include <vector> 
+
 #include "Branch.hpp"
 
 namespace CppGit
 {
+    class Repository; // forward-declaration
+
     class Branches
     {
     public:
         constexpr static const char* const LOCAL_BRANCH_PREFIX = "refs/heads/";
         constexpr static const char* const REMOTE_BRANCH_PREFIX = "refs/remotes/";
 
-        explicit Branches(Repository& repo);
+        explicit Branches(const Repository& repo);
+        Branches() = delete;
 
         std::vector<Branch> getAllBranches() const;
         std::vector<Branch> getRemoteBranches() const;
@@ -37,6 +41,6 @@ namespace CppGit
         std::vector<Branch> getBranchesImpl(bool local, bool remote) const;
         std::string addPrefixIfNeeded(std::string_view branchName, bool remote) const;
 
-        Repository& repo;
+        const Repository& repo;
     };
 }

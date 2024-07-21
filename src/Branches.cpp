@@ -1,9 +1,10 @@
 #include "Branches.hpp"
+#include "Repository.hpp"
 #include "Parser/BranchesParser.hpp"
 
 namespace CppGit
 {
-    Branches::Branches(Repository &repo)
+    Branches::Branches(const Repository &repo)
         : repo(repo)
     {
     }
