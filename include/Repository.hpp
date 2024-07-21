@@ -34,6 +34,8 @@ namespace CppGit
         static Repository clone(const std::string& url, const std::filesystem::path& path);
         ErrorCode clone(const std::string& url) const;
 
+        bool initRepository(bool bare = false, std::string_view mainBranchName = "main") const;
+
         std::unordered_set<std::string> getRemoteUrls() const;
         std::vector<GitConfigEntry> getConfig() const;
         std::string getDescription() const;

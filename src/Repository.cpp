@@ -108,6 +108,93 @@ namespace CppGit
         return ErrorCode::NO_ERROR;
     }
 
+    bool Repository::initRepository(bool bare, std::string_view mainBranchName) const
+    {
+        std::filesystem::path gitDir = path;
+        if (!bare)
+        {
+            gitDir /= ".git";
+        }
+        
+        if (std::filesystem::exists(path))
+        {
+            if (!std::filesystem::is_directory(path))
+            {
+                throw std::runtime_error("Path is not a directory");
+                return false;
+            }
+
+            if (bare)
+            {
+                if (!std::filesystem::is_empty(path))
+                {
+                    throw std::runtime_error("Directory is not empty");
+                    return false;
+                }
+            }
+            else
+            {
+                if (std::filesystem::exists(gitDir))
+                {
+                    throw std::runtime_error("Git directory already exists");
+                    return false;
+                }
+            }
+        }
+
+        if (!std::filesystem::create_directories(gitDir))
+        {
+            throw std::runtime_error("Failed to create git directory");
+            return false;
+        }
+
+        if (auto objectsDir = gitDir / "objects"; !std::filesystem::create_directories(objectsDir))
+        {
+            throw std::runtime_error("Failed to create objects directory");
+            return false;
+        }
+
+        auto refsDir = gitDir / "refs";
+        if (!std::filesystem::create_directories(refsDir))
+        {
+            throw std::runtime_error("Failed to create refs directory");
+            return false;
+        }
+
+        if (!std::filesystem::create_directory(refsDir / "heads")
+            || !std::filesystem::create_directory(refsDir / "tags"))
+        {
+            throw std::runtime_error("Failed to create heads or tags directory");
+            return false;
+        }
+
+        std::ofstream headFile(gitDir / "HEAD");
+        if (!headFile.is_open())
+        {
+            throw std::runtime_error("Failed to create HEAD file");
+            return false;
+        }
+        headFile << "ref: refs/heads/" << mainBranchName << std::endl;
+        headFile.close();
+
+        std::string configContent = std::string{ "[core]\n" }
+                                    +  "\trepositoryformatversion = 0\n"
+                                    + "\tfilemode = true\n"
+                                    + "\tbare = " + std::string { bare ? "true" :  "false" } + "\n"
+                                    + std::string{ bare ? "" : "\tlogallrefupdates = true\n" };
+
+        std::ofstream config(gitDir / "config");
+        if (!config.is_open())
+        {
+            throw std::runtime_error("Failed to create config file");
+            return false;
+        }
+        config << configContent;
+        config.close();
+
+        return false;
+    }
+
     std::unordered_set<std::string> Repository::getRemoteUrls() const
     {
         auto commandExecutor = GitCommandExecutorUnix();
