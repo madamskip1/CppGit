@@ -201,7 +201,7 @@ bool Repository::initRepository(bool bare, std::string_view mainBranchName) cons
     config << configContent;
     config.close();
 
-    return false;
+    return true;
 }
 
 std::unordered_set<std::string> Repository::getRemoteUrls() const
