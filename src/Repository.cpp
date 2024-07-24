@@ -183,14 +183,14 @@ bool Repository::initRepository(bool bare, std::string_view mainBranchName) cons
         throw std::runtime_error("Failed to create HEAD file");
         return false;
     }
-    headFile << "ref: refs/heads/" << mainBranchName << std::endl;
+    headFile << "ref: refs/heads/" << mainBranchName;
     headFile.close();
 
     std::string configContent = std::string{ "[core]\n" }
                               + "\trepositoryformatversion = 0\n"
                               + "\tfilemode = true\n"
-                              + "\tbare = " + std::string{ bare ? "true" : "false" } + "\n"
-                              + std::string{ bare ? "" : "\tlogallrefupdates = true\n" };
+                              + "\tbare = " + std::string{ bare ? "true" : "false" }
+                              + std::string{ bare ? "" : "\n\tlogallrefupdates = true\n" };
 
     std::ofstream config(gitDir / "config");
     if (!config.is_open())
