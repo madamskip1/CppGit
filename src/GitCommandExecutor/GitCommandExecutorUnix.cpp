@@ -66,6 +66,11 @@ GitCommandOutput GitCommandExecutorUnix::parentProcess()
         throw std::runtime_error("Failed to read stdout");
     }
 
+    if (stdoutStr.back() == '\n')
+    {
+        stdoutStr.pop_back();
+    }
+
     std::string stderrStr;
     ssize_t bytesReadStdErr;
     while ((bytesReadStdErr = read(stderrPipe[0], buffer, sizeof(buffer) - 1)) > 0)
@@ -76,6 +81,11 @@ GitCommandOutput GitCommandExecutorUnix::parentProcess()
     if (bytesReadStdErr == -1)
     {
         throw std::runtime_error("Failed to read stderr");
+    }
+
+    if (stderrStr.back() == '\n')
+    {
+        stderrStr.pop_back();
     }
 
     return GitCommandOutput{ returnCode, stdoutStr, stderrStr };
