@@ -18,36 +18,17 @@ void Index::add(const std::filesystem::path& path)
 
     if (std::filesystem::is_directory(path))
     {
-        // TODO: recursively add files in directory
-    }
-
-    auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", path.string());
-    if (hashOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to hash object");
-    }
-
-    const auto& objectHash = hashOutput.stdout;
-    auto fileMode = getFileMode(path);
-
-    auto dirPath = path.parent_path();
-    auto topLevelPath = repo.getTopLevelPath();
-    auto relativePathToDir = std::filesystem::relative(dirPath, repo.getTopLevelPath());
-    std::filesystem::path relativePath = "";
-    if (relativePathToDir != ".")
-    {
-        relativePath = relativePathToDir / path.filename();
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
+        {
+            if (!std::filesystem::is_directory(entry))
+            {
+                addFileToIndex(entry);
+            }
+        }
     }
     else
     {
-        relativePath = path.filename();
-    }
-
-    auto updateIndexOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--add", "--cacheinfo", fileMode, objectHash, relativePath.string());
-
-    if (updateIndexOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to update index");
+        addFileToIndex(path);
     }
 }
 
@@ -95,4 +76,38 @@ std::string Index::getFileMode(const std::filesystem::path& path)
 
     return "100644";
 }
+
+void Index::addFileToIndex(const std::filesystem::path& path)
+{
+    auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", path.string());
+    if (hashOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to hash object");
+    }
+
+    const auto& objectHash = hashOutput.stdout;
+    auto fileMode = getFileMode(path);
+
+    auto dirPath = path.parent_path();
+    auto topLevelPath = repo.getTopLevelPath();
+    auto relativePathToDir = std::filesystem::relative(dirPath, repo.getTopLevelPath());
+    std::filesystem::path relativePath = "";
+
+    if (relativePathToDir != ".")
+    {
+        relativePath = relativePathToDir / path.filename();
+    }
+    else
+    {
+        relativePath = path.filename();
+    }
+
+    auto updateIndexOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--add", "--cacheinfo", fileMode, objectHash, relativePath.string());
+
+    if (updateIndexOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to update index");
+    }
+}
+
 } // namespace CppGit

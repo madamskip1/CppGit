@@ -84,3 +84,35 @@ TEST_F(IndexTests, addRegularFileInDir_DirectPath)
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
 }
+
+TEST_F(IndexTests, addRegularFileInDir_DirectoryPath)
+{
+    CppGit::Index index(*repository);
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add(repositoryPath / "dir");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+}
+
+TEST_F(IndexTests, addRegularFileInDir_RecursivePath)
+{
+    CppGit::Index index(*repository);
+    std::filesystem::create_directories(repositoryPath / "dir1" / "dir2");
+    std::ofstream file1(repositoryPath / "dir1" / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+    std::ofstream file2(repositoryPath / "dir1" / "dir2" / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+    index.add(repositoryPath / "dir1");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 2);
+    ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/dir2/file2.txt") != stagedFiles.end());
+    ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/file1.txt") != stagedFiles.end());
+}

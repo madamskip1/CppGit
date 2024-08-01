@@ -30,6 +30,7 @@ private:
     const Repository& repo;
 
     static std::string getFileMode(const std::filesystem::path& path);
+    void addFileToIndex(const std::filesystem::path& path);
 };
 
 } // namespace CppGit
