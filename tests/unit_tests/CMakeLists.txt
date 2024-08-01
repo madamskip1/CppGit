@@ -2,6 +2,7 @@ add_executable(CppGit_unit_tests)
 
 target_sources(CppGit_unit_tests
     PRIVATE
+        Parser_tests.cpp
         CommitParser_tests.cpp
         BranchesParser_tests.cpp
 )

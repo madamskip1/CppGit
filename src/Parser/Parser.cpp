@@ -15,7 +15,7 @@ std::vector<std::string_view> Parser::split(const std::string_view line, const c
         end = line.find(delimiter, start);
     }
 
-    result.emplace_back(line.substr(start, end));
+    result.emplace_back(line.substr(start, end - start));
 
     return result;
 }
