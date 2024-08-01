@@ -12,6 +12,7 @@ class IndexParser : protected Parser
 public:
     static IndexEntry parseStageDetailedEntry(const std::string_view indexEntryLine);
     static std::vector<IndexEntry> parseStageDetailedList(const std::string_view indexContent);
+    static std::vector<std::string> parseStageSimpleCacheList(const std::string_view indexContent);
 };
 
 } // namespace CppGit

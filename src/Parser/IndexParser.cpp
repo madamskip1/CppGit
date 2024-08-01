@@ -31,4 +31,11 @@ std::vector<IndexEntry> IndexParser::parseStageDetailedList(const std::string_vi
     return indexEntries;
 }
 
+
+std::vector<std::string> IndexParser::parseStageSimpleCacheList(const std::string_view indexContent)
+{
+    auto listSV = split(indexContent, '\n');
+    return std::vector<std::string>{ listSV.begin(), listSV.end() };
+}
+
 } // namespace CppGit

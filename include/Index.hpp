@@ -15,4 +15,21 @@ struct IndexEntry
 };
 
 
+class Index
+{
+public:
+    explicit Index(const Repository& repo);
+    Index() = delete;
+
+    void add(const std::filesystem::path& path);
+
+    std::vector<std::string> getStagedFilesList() const;
+    std::vector<IndexEntry> getStagedFilesListWithDetails() const;
+
+private:
+    const Repository& repo;
+
+    static std::string getFileMode(const std::filesystem::path& path);
+};
+
 } // namespace CppGit
