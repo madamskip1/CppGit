@@ -80,6 +80,22 @@ std::filesystem::path Repository::getRelativeFromAbsolutePath(const std::filesys
     return std::filesystem::relative(absolutePath, getTopLevelPath());
 }
 
+bool Repository::isPathInGitDirectory(const std::filesystem::path& path) const
+{
+    const auto canonicalGitDir = std::filesystem::canonical(getGitDirectoryPath());
+    const auto canonicalArgPath = std::filesystem::canonical((path.is_absolute() ? path : getAbsoluteFromRelativePath(path)));
+
+    const auto canonicalGitDirStr = canonicalGitDir.string();
+    const auto canonicalArgPathStr = canonicalArgPath.string();
+
+    if (canonicalArgPathStr.size() < canonicalGitDirStr.size())
+    {
+        return false;
+    }
+
+    return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
+}
+
 bool Repository::isValidGitRepository() const
 {
     if (!std::filesystem::exists(path))

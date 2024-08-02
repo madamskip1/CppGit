@@ -18,7 +18,7 @@ void Index::add(const std::filesystem::path& path) const
         throw std::runtime_error("File does not exist");
     }
 
-    if (isPathInGitDirectory(absolutePath))
+    if (repo.isPathInGitDirectory(absolutePath))
     {
         throw std::runtime_error("Cannot add file from git directory");
     }
@@ -27,7 +27,7 @@ void Index::add(const std::filesystem::path& path) const
     {
         for (const auto& entryAboslutePath : std::filesystem::recursive_directory_iterator(absolutePath))
         {
-            if (!std::filesystem::is_directory(entryAboslutePath) && !isPathInGitDirectory(entryAboslutePath))
+            if (!std::filesystem::is_directory(entryAboslutePath) && !repo.isPathInGitDirectory(entryAboslutePath))
             {
                 const auto relativePathEntry = repo.getRelativeFromAbsolutePath(entryAboslutePath);
 
@@ -106,22 +106,6 @@ void Index::addFileToIndex(const std::filesystem::path& relativePath, const std:
     {
         throw std::runtime_error("Failed to update index");
     }
-}
-
-bool Index::isPathInGitDirectory(const std::filesystem::path& path) const
-{
-    const auto canonicalGitDir = std::filesystem::canonical(repo.getGitDirectoryPath());
-    const auto canonicalArgPath = std::filesystem::canonical(path);
-
-    const auto canonicalGitDirStr = canonicalGitDir.string();
-    const auto canonicalArgPathStr = canonicalArgPath.string();
-
-    if (canonicalArgPathStr.size() < canonicalGitDirStr.size())
-    {
-        return false;
-    }
-
-    return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
 }
 
 } // namespace CppGit

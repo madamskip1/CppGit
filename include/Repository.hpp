@@ -38,6 +38,8 @@ public:
     std::filesystem::path getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const;
     std::filesystem::path getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const;
 
+    bool isPathInGitDirectory(const std::filesystem::path& path) const;
+
     bool isValidGitRepository() const;
 
     static Repository clone(const std::string& url, const std::filesystem::path& path);
