@@ -9,8 +9,13 @@ Index::Index(const Repository& repo)
 {
 }
 
-void Index::add(const std::filesystem::path& path)
+void Index::add(std::filesystem::path path)
 {
+    if (path.is_relative())
+    {
+        path = repo.getTopLevelPath() / path;
+    }
+
     if (!std::filesystem::exists(path))
     {
         throw std::runtime_error("File does not exist");

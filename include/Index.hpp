@@ -21,7 +21,7 @@ public:
     explicit Index(const Repository& repo);
     Index() = delete;
 
-    void add(const std::filesystem::path& path);
+    void add(std::filesystem::path path);
 
     std::vector<std::string> getStagedFilesList() const;
     std::vector<IndexEntry> getStagedFilesListWithDetails() const;
