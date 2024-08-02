@@ -9,36 +9,37 @@ Index::Index(const Repository& repo)
 {
 }
 
-void Index::add(std::filesystem::path path)
+void Index::add(const std::filesystem::path& path) const
 {
-    if (path.is_relative())
-    {
-        path = repo.getTopLevelPath() / path;
-    }
+    const auto& absolutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
 
-    if (!std::filesystem::exists(path))
+    if (!std::filesystem::exists(absolutePath))
     {
         throw std::runtime_error("File does not exist");
     }
 
-    if (isPathInGitDirectory(path))
+    if (isPathInGitDirectory(absolutePath))
     {
         throw std::runtime_error("Cannot add file from git directory");
     }
 
-    if (std::filesystem::is_directory(path))
+    if (std::filesystem::is_directory(absolutePath))
     {
-        for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
+        for (const auto& entryAboslutePath : std::filesystem::recursive_directory_iterator(absolutePath))
         {
-            if (!std::filesystem::is_directory(entry) && !isPathInGitDirectory(entry))
+            if (!std::filesystem::is_directory(entryAboslutePath) && !isPathInGitDirectory(entryAboslutePath))
             {
-                addFileToIndex(entry);
+                const auto relativePathEntry = repo.getRelativeFromAbsolutePath(entryAboslutePath);
+
+                addFileToIndex(relativePathEntry, entryAboslutePath);
             }
         }
     }
     else
     {
-        addFileToIndex(path);
+        const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
+
+        addFileToIndex(relativePath, absolutePath);
     }
 }
 
@@ -66,19 +67,19 @@ std::vector<IndexEntry> Index::getStagedFilesListWithDetails() const
     return IndexParser::parseStageDetailedList(output.stdout);
 }
 
-std::string Index::getFileMode(const std::filesystem::path& path)
+std::string Index::getFileMode(const std::filesystem::path& absolutePath)
 {
-    if (std::filesystem::is_symlink(path))
+    if (std::filesystem::is_symlink(absolutePath))
     {
         return "120000";
     }
 
-    if (!std::filesystem::is_regular_file(path))
+    if (!std::filesystem::is_regular_file(absolutePath))
     {
         throw std::runtime_error("Unsupported file type");
     }
 
-    if (auto permissions = std::filesystem::status(path).permissions();
+    if (auto permissions = std::filesystem::status(absolutePath).permissions();
         (permissions & std::filesystem::perms::owner_exec) != std::filesystem::perms::none)
     {
         return "100755";
@@ -87,30 +88,17 @@ std::string Index::getFileMode(const std::filesystem::path& path)
     return "100644";
 }
 
-void Index::addFileToIndex(const std::filesystem::path& path)
+void Index::addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const
 {
-    auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", path.string());
+    auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", relativePath.string());
+
     if (hashOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to hash object");
     }
 
     const auto& objectHash = hashOutput.stdout;
-    auto fileMode = getFileMode(path);
-
-    auto dirPath = path.parent_path();
-    auto topLevelPath = repo.getTopLevelPath();
-    auto relativePathToDir = std::filesystem::relative(dirPath, repo.getTopLevelPath());
-    std::filesystem::path relativePath = "";
-
-    if (relativePathToDir != ".")
-    {
-        relativePath = relativePathToDir / path.filename();
-    }
-    else
-    {
-        relativePath = path.filename();
-    }
+    const auto fileMode = getFileMode(absolutePath);
 
     auto updateIndexOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--add", "--cacheinfo", fileMode, objectHash, relativePath.string());
 

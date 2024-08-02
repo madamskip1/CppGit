@@ -21,7 +21,7 @@ public:
     explicit Index(const Repository& repo);
     Index() = delete;
 
-    void add(std::filesystem::path path);
+    void add(const std::filesystem::path& path) const;
 
     std::vector<std::string> getStagedFilesList() const;
     std::vector<IndexEntry> getStagedFilesListWithDetails() const;
@@ -29,8 +29,8 @@ public:
 private:
     const Repository& repo;
 
-    static std::string getFileMode(const std::filesystem::path& path);
-    void addFileToIndex(const std::filesystem::path& path);
+    static std::string getFileMode(const std::filesystem::path& absolutePath);
+    void addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const;
     bool isPathInGitDirectory(const std::filesystem::path& path) const;
 };
 

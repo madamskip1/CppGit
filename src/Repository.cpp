@@ -58,6 +58,28 @@ std::filesystem::path Repository::getGitDirectoryPath() const
     return gitDir;
 }
 
+std::filesystem::path Repository::getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const
+{
+    return getTopLevelPath() / relativePath;
+}
+
+std::filesystem::path Repository::getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const
+{
+    if (std::filesystem::is_symlink(absolutePath))
+    {
+        const auto symlinkDir = absolutePath.parent_path();
+        const auto relativePathToSymlinkDir = std::filesystem::relative(symlinkDir, getTopLevelPath());
+        if (relativePathToSymlinkDir == ".")
+        {
+            return absolutePath.filename();
+        }
+
+        return relativePathToSymlinkDir / absolutePath.filename();
+    }
+
+    return std::filesystem::relative(absolutePath, getTopLevelPath());
+}
+
 bool Repository::isValidGitRepository() const
 {
     if (!std::filesystem::exists(path))
