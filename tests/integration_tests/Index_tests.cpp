@@ -254,3 +254,26 @@ TEST_F(IndexTests, tryAddFileFromGitDirectory_repoPath)
 
     ASSERT_THROW(index.add(".git/file.txt"), std::runtime_error);
 }
+
+TEST_F(IndexTests, resetIndex)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file1(repositoryPath / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+    index.add("file1.txt");
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file2(repositoryPath / "dir" / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+    index.add("dir");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 2);
+    ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir/file2.txt") != stagedFiles.end());
+    ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "file1.txt") != stagedFiles.end());
+
+    index.reset();
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+}

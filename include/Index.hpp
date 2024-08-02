@@ -23,6 +23,7 @@ public:
 
     void add(const std::filesystem::path& path) const;
     void remove(const std::filesystem::path& path) const;
+    void reset() const;
 
     std::vector<std::string> getStagedFilesList() const;
     std::vector<IndexEntry> getStagedFilesListWithDetails() const;

@@ -77,6 +77,15 @@ void Index::remove(const std::filesystem::path& path) const
     }
 }
 
+void Index::reset() const
+{
+    const auto filesInIndex = getStagedFilesList();
+    for (const auto& file : filesInIndex)
+    {
+        removeFileFromIndex(file);
+    }
+}
+
 std::vector<std::string> Index::getStagedFilesList() const
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");
