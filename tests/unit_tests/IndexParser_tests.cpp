@@ -41,3 +41,25 @@ TEST(IndexParserTests, parseStagedListCache)
     EXPECT_EQ(indexEntries[0], "file.txt");
     EXPECT_EQ(indexEntries[1], "file.exe");
 }
+
+TEST(IndexParserTests, parseStageDetailedEntry_Empty)
+{
+    auto indexEntryLine = "";
+    EXPECT_THROW(CppGit::IndexParser::parseStageDetailedEntry(indexEntryLine), std::runtime_error);
+}
+
+TEST(IndexParserTests, parseStageDetailedList_Empty)
+{
+    auto indexContent = "";
+    auto indexEntries = CppGit::IndexParser::parseStageDetailedList(indexContent);
+
+    EXPECT_EQ(indexEntries.size(), 0);
+}
+
+TEST(IndexParserTests, parseStagedListCache_Empty)
+{
+    auto indexContent = "";
+    auto indexEntries = CppGit::IndexParser::parseStageSimpleCacheList(indexContent);
+
+    EXPECT_EQ(indexEntries.size(), 0);
+}
