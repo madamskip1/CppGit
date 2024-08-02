@@ -8,7 +8,7 @@ class IndexTests : public BaseRepositoryFixture
 {
 };
 
-TEST_F(IndexTests, addFileRegularFile)
+TEST_F(IndexTests, addAndRemoveRegularFile)
 {
     CppGit::Index index(*repository);
     std::ofstream file(repositoryPath / "file.txt");
@@ -19,9 +19,13 @@ TEST_F(IndexTests, addFileRegularFile)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "file.txt");
+
+    index.remove(repositoryPath / "file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addFileRegularFile_StagedListWithDetail)
+TEST_F(IndexTests, addAndRemoveRegularFile_StagedListWithDetail)
 {
     CppGit::Index index(*repository);
     std::ofstream file(repositoryPath / "file.txt");
@@ -33,15 +37,19 @@ TEST_F(IndexTests, addFileRegularFile_StagedListWithDetail)
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0].fileMode, "100644");
     ASSERT_EQ(stagedFiles[0].path, "file.txt");
+
+    index.remove(repositoryPath / "file.txt");
+    stagedFiles = index.getStagedFilesListWithDetails();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addFileRegularFile_FileDoesNotExist)
+TEST_F(IndexTests, addRegularFile_FileDoesNotExist)
 {
     CppGit::Index index(*repository);
     ASSERT_THROW(index.add(repositoryPath / "file.txt"), std::runtime_error);
 }
 
-TEST_F(IndexTests, addFileExecutableFile)
+TEST_F(IndexTests, addAndRemoveExecutableFile)
 {
     CppGit::Index index(*repository);
     std::ofstream file(repositoryPath / "file.sh");
@@ -54,9 +62,13 @@ TEST_F(IndexTests, addFileExecutableFile)
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0].fileMode, "100755");
     ASSERT_EQ(stagedFiles[0].path, "file.sh");
+
+    index.remove(repositoryPath / "file.sh");
+    stagedFiles = index.getStagedFilesListWithDetails();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addFileSymlink)
+TEST_F(IndexTests, addAndRemoveSymlink)
 {
     CppGit::Index index(*repository);
     std::ofstream file(repositoryPath / "file.txt");
@@ -69,9 +81,13 @@ TEST_F(IndexTests, addFileSymlink)
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0].fileMode, "120000");
     ASSERT_EQ(stagedFiles[0].path, "file-symlink.txt");
+
+    index.remove(repositoryPath / "file-symlink.txt");
+    stagedFiles = index.getStagedFilesListWithDetails();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addRegularFileInDir_DirectPath)
+TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectPath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -83,9 +99,13 @@ TEST_F(IndexTests, addRegularFileInDir_DirectPath)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove(repositoryPath / "dir" / "file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addRegularFileInDir_DirectoryPath)
+TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectoryPath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -97,9 +117,13 @@ TEST_F(IndexTests, addRegularFileInDir_DirectoryPath)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove(repositoryPath / "dir");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addReuglarFileInDir_DirectoryRelativePath)
+TEST_F(IndexTests, addAndRemoveReuglarFileInDir_DirectoryRelativePath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -111,10 +135,14 @@ TEST_F(IndexTests, addReuglarFileInDir_DirectoryRelativePath)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove("dir");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
 
-TEST_F(IndexTests, addRegularFileInDir_RecursivePath)
+TEST_F(IndexTests, addAndRemoveRegularFileInDir_RecursivePath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directories(repositoryPath / "dir1" / "dir2");
@@ -130,9 +158,13 @@ TEST_F(IndexTests, addRegularFileInDir_RecursivePath)
     ASSERT_EQ(stagedFiles.size(), 2);
     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/dir2/file2.txt") != stagedFiles.end());
     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/file1.txt") != stagedFiles.end());
+
+    index.remove(repositoryPath / "dir1");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addRegularFile_RelativePath)
+TEST_F(IndexTests, addAndRemoveRegularFile_RelativePath)
 {
     CppGit::Index index(*repository);
     std::ofstream file(repositoryPath / "file.txt");
@@ -143,9 +175,13 @@ TEST_F(IndexTests, addRegularFile_RelativePath)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "file.txt");
+
+    index.remove("file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addRegularFile_RelativePathInDir)
+TEST_F(IndexTests, addAndRemoveRegularFile_RelativePathInDir)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -157,9 +193,13 @@ TEST_F(IndexTests, addRegularFile_RelativePathInDir)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove("dir/file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addAll)
+TEST_F(IndexTests, addAndRemoveAll_RepositoryPath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -171,9 +211,13 @@ TEST_F(IndexTests, addAll)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove(repositoryPath);
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
-TEST_F(IndexTests, addAllDotPath)
+TEST_F(IndexTests, addAndRemoveAllDotPath)
 {
     CppGit::Index index(*repository);
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -185,6 +229,10 @@ TEST_F(IndexTests, addAllDotPath)
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+
+    index.remove(".");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, tryAddFileFromGitDirectory_absolutePath)

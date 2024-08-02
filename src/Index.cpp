@@ -43,6 +43,40 @@ void Index::add(const std::filesystem::path& path) const
     }
 }
 
+void Index::remove(const std::filesystem::path& path) const
+{
+    const auto& aboslutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
+
+    if (!std::filesystem::exists(aboslutePath))
+    {
+        throw std::runtime_error("File does not exist");
+    }
+
+    if (repo.isPathInGitDirectory(aboslutePath))
+    {
+        throw std::runtime_error("Cannot remove file from git directory");
+    }
+
+    if (std::filesystem::is_directory(aboslutePath))
+    {
+        for (const auto& entryAboslutePath : std::filesystem::recursive_directory_iterator(aboslutePath))
+        {
+            if (!std::filesystem::is_directory(entryAboslutePath) && !repo.isPathInGitDirectory(entryAboslutePath))
+            {
+                const auto relativePathEntry = repo.getRelativeFromAbsolutePath(entryAboslutePath);
+
+                removeFileFromIndex(relativePathEntry);
+            }
+        }
+    }
+    else
+    {
+        const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
+
+        removeFileFromIndex(relativePath);
+    }
+}
+
 std::vector<std::string> Index::getStagedFilesList() const
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");
@@ -105,6 +139,16 @@ void Index::addFileToIndex(const std::filesystem::path& relativePath, const std:
     if (updateIndexOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to update index");
+    }
+}
+
+void Index::removeFileFromIndex(const std::filesystem::path& relativePath) const
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--force-remove", relativePath.string());
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to remove file from index");
     }
 }
 
