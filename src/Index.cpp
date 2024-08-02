@@ -16,11 +16,16 @@ void Index::add(const std::filesystem::path& path)
         throw std::runtime_error("File does not exist");
     }
 
+    if (isPathInGitDirectory(path))
+    {
+        throw std::runtime_error("Cannot add file from git directory");
+    }
+
     if (std::filesystem::is_directory(path))
     {
         for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
         {
-            if (!std::filesystem::is_directory(entry))
+            if (!std::filesystem::is_directory(entry) && !isPathInGitDirectory(entry))
             {
                 addFileToIndex(entry);
             }
@@ -108,6 +113,22 @@ void Index::addFileToIndex(const std::filesystem::path& path)
     {
         throw std::runtime_error("Failed to update index");
     }
+}
+
+bool Index::isPathInGitDirectory(const std::filesystem::path& path) const
+{
+    const auto canonicalGitDir = std::filesystem::canonical(repo.getGitDirectoryPath());
+    const auto canonicalArgPath = std::filesystem::canonical(path);
+
+    const auto canonicalGitDirStr = canonicalGitDir.string();
+    const auto canonicalArgPathStr = canonicalArgPath.string();
+
+    if (canonicalArgPathStr.size() < canonicalGitDirStr.size())
+    {
+        return false;
+    }
+
+    return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
 }
 
 } // namespace CppGit

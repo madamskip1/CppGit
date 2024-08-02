@@ -31,6 +31,7 @@ private:
 
     static std::string getFileMode(const std::filesystem::path& path);
     void addFileToIndex(const std::filesystem::path& path);
+    bool isPathInGitDirectory(const std::filesystem::path& path) const;
 };
 
 } // namespace CppGit

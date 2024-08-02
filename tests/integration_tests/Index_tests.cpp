@@ -116,3 +116,36 @@ TEST_F(IndexTests, addRegularFileInDir_RecursivePath)
     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/dir2/file2.txt") != stagedFiles.end());
     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/file1.txt") != stagedFiles.end());
 }
+
+TEST_F(IndexTests, addAll)
+{
+    CppGit::Index index(*repository);
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add(repositoryPath);
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+}
+
+TEST_F(IndexTests, tryAddFileFromGitDirectory_absolutePath)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file(repositoryPath / ".git" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    ASSERT_THROW(index.add(repositoryPath / ".git" / "file.txt"), std::runtime_error);
+}
+
+TEST_F(IndexTests, tryAddFileFromGitDirectory_repoPath)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file(repositoryPath / ".git" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    std::filesystem::current_path(repositoryPath);
+    ASSERT_THROW(index.add(".git/file.txt"), std::runtime_error);
+}

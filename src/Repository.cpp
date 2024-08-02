@@ -52,6 +52,12 @@ std::filesystem::path Repository::getTopLevelPath() const
     return std::filesystem::path(output.stdout);
 }
 
+std::filesystem::path Repository::getGitDirectoryPath() const
+{
+    auto gitDir = getTopLevelPath() / ".git";
+    return gitDir;
+}
+
 bool Repository::isValidGitRepository() const
 {
     if (!std::filesystem::exists(path))
