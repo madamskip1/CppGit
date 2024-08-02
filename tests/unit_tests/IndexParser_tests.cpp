@@ -30,3 +30,14 @@ TEST(IndexParserTests, parseStageDetailedList)
     EXPECT_EQ(indexEntries[1].stageNumber, 3);
     EXPECT_EQ(indexEntries[1].path, "file.exe");
 }
+
+TEST(IndexParserTests, parseStagedListCache)
+{
+    auto indexContent = "file.txt\n"
+                        "file.exe";
+    auto indexEntries = CppGit::IndexParser::parseStageSimpleCacheList(indexContent);
+
+    EXPECT_EQ(indexEntries.size(), 2);
+    EXPECT_EQ(indexEntries[0], "file.txt");
+    EXPECT_EQ(indexEntries[1], "file.exe");
+}
