@@ -86,6 +86,19 @@ void Index::reset() const
     }
 }
 
+bool Index::isFileStaged(const std::filesystem::path& path) const
+{
+    const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
+    const auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache", relativePath.string());
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to check if file is staged");
+    }
+
+    return output.stdout == relativePath.string();
+}
+
 std::vector<std::string> Index::getStagedFilesList() const
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");

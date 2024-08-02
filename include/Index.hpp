@@ -25,6 +25,8 @@ public:
     void remove(const std::filesystem::path& path) const;
     void reset() const;
 
+    bool isFileStaged(const std::filesystem::path& path) const;
+
     std::vector<std::string> getStagedFilesList() const;
     std::vector<IndexEntry> getStagedFilesListWithDetails() const;
 

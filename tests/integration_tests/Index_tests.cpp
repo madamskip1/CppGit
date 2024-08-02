@@ -277,3 +277,35 @@ TEST_F(IndexTests, resetIndex)
     stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
 }
+
+TEST_F(IndexTests, isFileStaged_EmptyIndex)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    EXPECT_FALSE(index.isFileStaged("file.txt"));
+}
+
+TEST_F(IndexTests, isFileStaged_FileStaged)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    EXPECT_TRUE(index.isFileStaged("file.txt"));
+}
+
+TEST_F(IndexTests, isFileStaged_FileNotStaged)
+{
+    CppGit::Index index(*repository);
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    EXPECT_FALSE(index.isFileStaged("file2.txt"));
+}
