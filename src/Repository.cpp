@@ -17,6 +17,11 @@ CppGit::Branches Repository::Branches() const
     return CppGit::Branches(*this);
 }
 
+CppGit::Index Repository::Index() const
+{
+    return CppGit::Index(*this);
+}
+
 std::string Repository::getPathAsString() const
 {
     return path.string();

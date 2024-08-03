@@ -4,6 +4,7 @@
 #include "ErrorCodes.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
+#include "Index.hpp"
 
 #include <filesystem>
 #include <string>
@@ -28,6 +29,7 @@ public:
     }
 
     CppGit::Branches Branches() const;
+    CppGit::Index Index() const;
 
     std::string getPathAsString() const;
     std::filesystem::path getPath() const;
