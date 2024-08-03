@@ -77,7 +77,6 @@ std::string Branches::getHashBranchRefersTo(std::string_view branchName, bool re
         throw std::runtime_error("Failed to get hash");
     }
 
-    output.stdout.erase(output.stdout.find_last_not_of("\n") + 1);
     return output.stdout;
 }
 

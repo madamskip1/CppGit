@@ -114,7 +114,10 @@ void GitCommandExecutorUnix::childProcess(const std::string_view path, const std
 
     for (const auto& arg : args)
     {
-        argv.emplace_back(const_cast<char*>(arg.data()));
+        if (!arg.empty())
+        {
+            argv.emplace_back(const_cast<char*>(arg.data()));
+        }
     }
     argv.emplace_back(nullptr);
 
