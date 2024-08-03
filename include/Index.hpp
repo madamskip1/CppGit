@@ -1,8 +1,7 @@
 #pragma once
-
-#include "Repository.hpp"
-
 #include <filesystem>
+#include <string>
+#include <vector>
 
 namespace CppGit {
 
@@ -14,6 +13,7 @@ struct IndexEntry
     std::filesystem::path path;
 };
 
+class Repository; // Forward declaration
 
 class Index
 {
