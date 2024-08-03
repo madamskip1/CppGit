@@ -52,6 +52,50 @@ std::filesystem::path Repository::getTopLevelPath() const
     return std::filesystem::path(output.stdout);
 }
 
+std::filesystem::path Repository::getGitDirectoryPath() const
+{
+    auto gitDir = getTopLevelPath() / ".git";
+    return gitDir;
+}
+
+std::filesystem::path Repository::getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const
+{
+    return getTopLevelPath() / relativePath;
+}
+
+std::filesystem::path Repository::getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const
+{
+    if (std::filesystem::is_symlink(absolutePath))
+    {
+        const auto symlinkDir = absolutePath.parent_path();
+        const auto relativePathToSymlinkDir = std::filesystem::relative(symlinkDir, getTopLevelPath());
+        if (relativePathToSymlinkDir == ".")
+        {
+            return absolutePath.filename();
+        }
+
+        return relativePathToSymlinkDir / absolutePath.filename();
+    }
+
+    return std::filesystem::relative(absolutePath, getTopLevelPath());
+}
+
+bool Repository::isPathInGitDirectory(const std::filesystem::path& path) const
+{
+    const auto canonicalGitDir = std::filesystem::canonical(getGitDirectoryPath());
+    const auto canonicalArgPath = std::filesystem::canonical((path.is_absolute() ? path : getAbsoluteFromRelativePath(path)));
+
+    const auto canonicalGitDirStr = canonicalGitDir.string();
+    const auto canonicalArgPathStr = canonicalArgPath.string();
+
+    if (canonicalArgPathStr.size() < canonicalGitDirStr.size())
+    {
+        return false;
+    }
+
+    return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
+}
+
 bool Repository::isValidGitRepository() const
 {
     if (!std::filesystem::exists(path))

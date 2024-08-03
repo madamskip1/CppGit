@@ -33,6 +33,12 @@ public:
     std::filesystem::path getPath() const;
     std::string getTopLevelPathAsString() const;
     std::filesystem::path getTopLevelPath() const;
+    std::filesystem::path getGitDirectoryPath() const;
+
+    std::filesystem::path getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const;
+    std::filesystem::path getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const;
+
+    bool isPathInGitDirectory(const std::filesystem::path& path) const;
 
     bool isValidGitRepository() const;
 

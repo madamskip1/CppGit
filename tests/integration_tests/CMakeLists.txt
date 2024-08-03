@@ -6,6 +6,7 @@ target_sources(CppGit_integration_tests
         BaseRepositoryFixture.cpp
         
         InitRepository_tests.cpp
+        Index_tests.cpp
 )
 
 target_link_libraries(CppGit_integration_tests

@@ -15,10 +15,12 @@ target_sources(CppGit
         src/Commit.cpp
         src/Branch.cpp
         src/Branches.cpp
+        src/Index.cpp
 
         src/Parser/Parser.cpp
         src/Parser/CommitParser.cpp
         src/Parser/BranchesParser.cpp
+        src/Parser/IndexParser.cpp
 )
 
 target_include_directories(CppGit
