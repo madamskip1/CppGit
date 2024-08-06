@@ -31,7 +31,6 @@ public:
            const std::string& message,
            const std::string& description,
            const std::string& treeHash);
-    Commit(const Repository& repo, const std::string_view& hash);
 
     const std::string& getHash() const;
     const std::vector<std::string>& getParents() const;

@@ -23,31 +23,6 @@ Commit::Commit(const std::string& hash, const std::vector<std::string>& parents,
 {
 }
 
-Commit::Commit(const Repository& repo, const std::string_view& hash)
-{
-    auto command = std::string{ "show --format=\"" };
-    command += CommitParser::COMMIT_LOG_DEFAULT_FORMAT;
-    command += "\" --no-patch ";
-    command += hash;
-    auto commandExecutor = GitCommandExecutorUnix();
-    auto output = commandExecutor.execute(repo.getPathAsString(), command);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get commit information");
-    }
-
-    auto commit = CommitParser::parseCommit(output.stdout);
-    this->hash = commit.hash;
-    parents = commit.parents;
-    author = commit.author;
-    authorDate = commit.authorDate;
-    committer = commit.committer;
-    committerDate = commit.committerDate;
-    message = commit.message;
-    description = commit.description;
-    treeHash = commit.treeHash;
-}
 
 const std::string& Commit::getHash() const
 {
