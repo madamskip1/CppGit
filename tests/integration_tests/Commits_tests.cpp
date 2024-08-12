@@ -15,7 +15,7 @@ TEST_F(CommitsTests, emptyRepo_checkIfThereAreAnyCommits)
     ASSERT_FALSE(commits.hasAnyCommits());
 }
 
-TEST_F(CommitsTests, createCommit_Empty)
+TEST_F(CommitsTests, createCommit_empty)
 {
     auto commits = repository->Commits();
 
@@ -28,7 +28,7 @@ TEST_F(CommitsTests, createCommit_Empty)
     EXPECT_EQ(commit.getMessage(), "Initial commit");
 }
 
-TEST_F(CommitsTests, createCommit_Empty_withParent)
+TEST_F(CommitsTests, createCommit_empty_withParent)
 {
     auto commits = repository->Commits();
 
@@ -47,4 +47,18 @@ TEST_F(CommitsTests, createCommit_Empty_withParent)
     EXPECT_EQ(commit.getMessage(), "Second commit");
     EXPECT_EQ(commit.getParents().size(), 1);
     EXPECT_EQ(commit.getParents()[0], firstCommitHash);
+}
+
+TEST_F(CommitsTests, createCommit_empty_withDescription)
+{
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit", "Initial commit description");
+
+    ASSERT_TRUE(commits.hasAnyCommits());
+
+    auto lastCommitHash = commits.getHeadCommitHash();
+    auto commit = commits.getCommitInfo(lastCommitHash);
+    EXPECT_EQ(commit.getMessage(), "Initial commit");
+    EXPECT_EQ(commit.getDescription(), "Initial commit description");
 }
