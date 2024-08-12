@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Branches.hpp"
+#include "Commits.hpp"
 #include "ErrorCodes.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
@@ -30,6 +31,7 @@ public:
 
     CppGit::Branches Branches() const;
     CppGit::Index Index() const;
+    CppGit::Commits Commits() const;
 
     std::string getPathAsString() const;
     std::filesystem::path getPath() const;

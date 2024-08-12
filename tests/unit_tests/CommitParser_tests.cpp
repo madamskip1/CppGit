@@ -3,144 +3,155 @@
 
 #include <gtest/gtest.h>
 
-
-TEST(CommitParserTests, defaultFormat_fullCommit)
+TEST(CommitParserTests, onlySingleLineMsg)
 {
-    const std::string commitLog = "hash;parent1 parent2;authorName;authorEmail;authorDate;committerName;committerEmail;committerDate;message;description";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "hash");
-    EXPECT_EQ(commit.getParents().size(), 2);
-    EXPECT_EQ(commit.getParents()[0], "parent1");
-    EXPECT_EQ(commit.getParents()[1], "parent2");
-    EXPECT_EQ(authorSignature.name, "authorName");
-    EXPECT_EQ(authorSignature.email, "authorEmail");
-    EXPECT_EQ(commit.getAuthorDate(), "authorDate");
-    EXPECT_EQ(committerSignature.name, "committerName");
-    EXPECT_EQ(committerSignature.email, "committerEmail");
-    EXPECT_EQ(commit.getCommitterDate(), "committerDate");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "description");
-}
-TEST(CommitParserTests, defaultFormat_fullCommit_multiLineDescription)
-{
-    const std::string commitLog = "hash;parent1 parent2;authorName;authorEmail;authorDate;committerName;committerEmail;committerDate;message;description\nline1\nline2";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+msg msg msg)";
 
-    EXPECT_EQ(commit.getHash(), "hash");
-    EXPECT_EQ(commit.getParents().size(), 2);
-    EXPECT_EQ(commit.getParents()[0], "parent1");
-    EXPECT_EQ(commit.getParents()[1], "parent2");
-    EXPECT_EQ(authorSignature.name, "authorName");
-    EXPECT_EQ(authorSignature.email, "authorEmail");
-    EXPECT_EQ(commit.getAuthorDate(), "authorDate");
-    EXPECT_EQ(committerSignature.name, "committerName");
-    EXPECT_EQ(committerSignature.email, "committerEmail");
-    EXPECT_EQ(commit.getCommitterDate(), "committerDate");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "description\nline1\nline2");
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
+    EXPECT_EQ(parsedCommit.getDescription(), "");
 }
 
-TEST(CommitParserTests, defaultFormat_fullCommit_singleParent)
+TEST(CommitParserTests, multiLineMsg)
 {
-    const std::string commitLog = "hash;parent1;authorName;authorEmail;authorDate;committerName;committerEmail;committerDate;message;description";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "hash");
-    EXPECT_EQ(commit.getParents().size(), 1);
-    EXPECT_EQ(commit.getParents()[0], "parent1");
-    EXPECT_EQ(authorSignature.name, "authorName");
-    EXPECT_EQ(authorSignature.email, "authorEmail");
-    EXPECT_EQ(commit.getAuthorDate(), "authorDate");
-    EXPECT_EQ(committerSignature.name, "committerName");
-    EXPECT_EQ(committerSignature.email, "committerEmail");
-    EXPECT_EQ(commit.getCommitterDate(), "committerDate");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "description");
+msg
+msg2)";
+
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg\nmsg2");
+    EXPECT_EQ(parsedCommit.getDescription(), "");
 }
 
-TEST(CommitParserTests, defaultFormat_noParents)
+TEST(CommitParserTests, singleLineMsg_singleLineDesc)
 {
-    const std::string commitLog = "hash;;authorName;authorEmail;authorDate;committerName;committerEmail;committerDate;message;description";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "hash");
-    EXPECT_EQ(commit.getParents().size(), 0);
-    EXPECT_EQ(authorSignature.name, "authorName");
-    EXPECT_EQ(authorSignature.email, "authorEmail");
-    EXPECT_EQ(commit.getAuthorDate(), "authorDate");
-    EXPECT_EQ(committerSignature.name, "committerName");
-    EXPECT_EQ(committerSignature.email, "committerEmail");
-    EXPECT_EQ(commit.getCommitterDate(), "committerDate");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "description");
+msg
+
+desc)";
+
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg");
+    EXPECT_EQ(parsedCommit.getDescription(), "desc");
 }
 
-TEST(CommitParserTests, defaultFormat_noDescription)
+TEST(CommitParserTests, multiLineMsg_multiLineDesc)
 {
-    const std::string commitLog = "hash;parent1 parent2;authorName;authorEmail;authorDate;committerName;committerEmail;committerDate;message;";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "hash");
-    EXPECT_EQ(commit.getParents().size(), 2);
-    EXPECT_EQ(commit.getParents()[0], "parent1");
-    EXPECT_EQ(commit.getParents()[1], "parent2");
-    EXPECT_EQ(authorSignature.name, "authorName");
-    EXPECT_EQ(authorSignature.email, "authorEmail");
-    EXPECT_EQ(commit.getAuthorDate(), "authorDate");
-    EXPECT_EQ(committerSignature.name, "committerName");
-    EXPECT_EQ(committerSignature.email, "committerEmail");
-    EXPECT_EQ(commit.getCommitterDate(), "committerDate");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "");
+msg
+msg2
+
+desc
+desc2)";
+
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg\nmsg2");
+    EXPECT_EQ(parsedCommit.getDescription(), "desc\ndesc2");
 }
 
-TEST(CommitParserTests, defaultFormat_emptyCommit)
+TEST(CommitParserTests, withSingleParent)
 {
-    const std::string commitLog = ";;;;;;;;;";
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+parent 8120cca3edbd848e900b41d3d217ca2803dd0e74
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "");
-    EXPECT_EQ(commit.getParents().size(), 0);
-    EXPECT_EQ(authorSignature.name, "");
-    EXPECT_EQ(authorSignature.email, "");
-    EXPECT_EQ(commit.getAuthorDate(), "");
-    EXPECT_EQ(committerSignature.name, "");
-    EXPECT_EQ(committerSignature.email, "");
-    EXPECT_EQ(commit.getCommitterDate(), "");
-    EXPECT_EQ(commit.getMessage(), "");
-    EXPECT_EQ(commit.getDescription(), "");
+msg msg msg)";
+
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    ASSERT_EQ(parsedCommit.getParents().size(), 1);
+    EXPECT_EQ(parsedCommit.getParents()[0], "8120cca3edbd848e900b41d3d217ca2803dd0e74");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
+    EXPECT_EQ(parsedCommit.getDescription(), "");
 }
 
-TEST(CommitParserTests, customFormat)
+TEST(CommitParserTests, withMultiParent)
 {
-    const std::string commitLog = "ad34f5b|message";
-    const std::string format = "%h|%s";
-    const char delimiter = '|';
-    const CppGit::Commit commit = CppGit::CommitParser::parseCommit(commitLog, format, delimiter);
-    auto authorSignature = commit.getAuthor();
-    auto committerSignature = commit.getCommitter();
+    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+parent 8120cca3edbd848e900b41d3d217ca2803dd0e74
+parent 8120cca3edbd848e900b41d3d217ca2803dd0e75
+author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
+committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
-    EXPECT_EQ(commit.getHash(), "ad34f5b");
-    EXPECT_EQ(commit.getParents().size(), 0);
-    EXPECT_EQ(authorSignature.name, "");
-    EXPECT_EQ(authorSignature.email, "");
-    EXPECT_EQ(commit.getAuthorDate(), "");
-    EXPECT_EQ(committerSignature.name, "");
-    EXPECT_EQ(committerSignature.email, "");
-    EXPECT_EQ(commit.getCommitterDate(), "");
-    EXPECT_EQ(commit.getMessage(), "message");
-    EXPECT_EQ(commit.getDescription(), "");
+msg msg msg)";
+
+    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit(commit);
+    CppGit::Signature author = parsedCommit.getAuthor();
+    CppGit::Signature committer = parsedCommit.getCommitter();
+
+    EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+    ASSERT_EQ(parsedCommit.getParents().size(), 2);
+    EXPECT_EQ(parsedCommit.getParents()[0], "8120cca3edbd848e900b41d3d217ca2803dd0e74");
+    EXPECT_EQ(parsedCommit.getParents()[1], "8120cca3edbd848e900b41d3d217ca2803dd0e75");
+    EXPECT_EQ(author.name, "Firstauthor Secondauthor");
+    EXPECT_EQ(author.email, "author@email.com");
+    EXPECT_EQ(parsedCommit.getAuthorDate(), "1722791195 +0200");
+    EXPECT_EQ(committer.name, "Firstcommiter Secondcommiter");
+    EXPECT_EQ(committer.email, "committer@email.com");
+    EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
+    EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
+    EXPECT_EQ(parsedCommit.getDescription(), "");
 }

@@ -1,6 +1,7 @@
 #include "Index.hpp"
 
 #include "Parser/IndexParser.hpp"
+#include "Repository.hpp"
 
 namespace CppGit {
 

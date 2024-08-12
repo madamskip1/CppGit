@@ -22,6 +22,11 @@ CppGit::Index Repository::Index() const
     return CppGit::Index(*this);
 }
 
+CppGit::Commits Repository::Commits() const
+{
+    return CppGit::Commits(*this);
+}
+
 std::string Repository::getPathAsString() const
 {
     return path.string();

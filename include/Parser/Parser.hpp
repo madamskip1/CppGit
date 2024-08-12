@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -11,7 +12,43 @@ public:
     Parser() = delete;
     virtual ~Parser() = default;
 
-    static std::vector<std::string_view> split(const std::string_view line, const char delimiter);
+    template <typename T>
+    static std::vector<std::string_view> split(const std::string_view line, const T& delimiter)
+    {
+        const auto delimiterSize = getDelimiterSize(delimiter);
+
+        std::vector<std::string_view> result;
+        std::size_t start = 0;
+        std::size_t end = line.find(delimiter);
+
+        while (end != std::string::npos)
+        {
+            result.emplace_back(line.substr(start, end - start));
+            start = end + delimiterSize;
+            end = line.find(delimiter, start);
+        }
+
+        result.emplace_back(line.substr(start, end - start));
+
+        return result;
+    }
+
+    template <typename T>
+    static std::size_t getDelimiterSize(const T& delimiter)
+    {
+        if constexpr (std::is_same_v<T, char>)
+        {
+            return std::size_t{ 1 };
+        }
+        else if constexpr (std::is_same_v<T, std::string_view> || std::is_same_v<T, std::string>)
+        {
+            return delimiter.size();
+        }
+        else
+        {
+            return std::strlen(delimiter);
+        }
+    }
 };
 
 } // namespace CppGit
