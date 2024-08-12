@@ -6,6 +6,7 @@
 namespace CppGit {
 
 class Repository; // Forward declaration
+class Commit;     // Forward declaration
 
 class Commits
 {
@@ -17,6 +18,7 @@ public:
     bool hasAnyCommits() const;
 
     std::string getHeadCommitHash() const;
+    Commit getCommitInfo(const std::string_view commitHash) const;
 
 private:
     const Repository& repo;

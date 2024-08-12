@@ -1,6 +1,8 @@
 #include "Commits.hpp"
 
+#include "Commit.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
+#include "Parser/CommitParser.hpp"
 #include "Repository.hpp"
 
 namespace CppGit {
@@ -52,6 +54,17 @@ std::string Commits::getHeadCommitHash() const
 {
     auto branches = repo.Branches();
     return branches.getHashBranchRefersTo("HEAD");
+}
+
+Commit Commits::getCommitInfo(const std::string_view commitHash) const
+{
+    auto output = repo.executeGitCommand("cat-file", "-p", commitHash);
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to get commit info");
+    }
+
+    return CommitParser::parseCommit(output.stdout);
 }
 
 } // namespace CppGit
