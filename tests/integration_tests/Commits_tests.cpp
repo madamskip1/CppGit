@@ -1,6 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
+#include "CommitsHistory.hpp"
 
 #include <gtest/gtest.h>
 
@@ -15,16 +16,23 @@ TEST_F(CommitsTests, emptyRepo_checkIfThereAreAnyCommits)
     ASSERT_FALSE(commits.hasAnyCommits());
 }
 
+TEST_F(CommitsTests, getHeadCommitHash_noCommits)
+{
+    auto commits = repository->Commits();
+
+    EXPECT_THROW(commits.getHeadCommitHash(), std::runtime_error);
+}
+
 TEST_F(CommitsTests, createCommit_empty)
 {
     auto commits = repository->Commits();
 
-    commits.createCommit("Initial commit");
+    auto commitHash = commits.createCommit("Initial commit");
 
     ASSERT_TRUE(commits.hasAnyCommits());
+    EXPECT_EQ(commitHash, commits.getHeadCommitHash());
 
-    auto lastCommitHash = commits.getHeadCommitHash();
-    auto commit = commits.getCommitInfo(lastCommitHash);
+    auto commit = commits.getCommitInfo(commitHash);
     EXPECT_EQ(commit.getMessage(), "Initial commit");
 }
 
@@ -32,17 +40,17 @@ TEST_F(CommitsTests, createCommit_empty_withParent)
 {
     auto commits = repository->Commits();
 
-    commits.createCommit("Initial commit");
+    auto firstCommitHash = commits.createCommit("Initial commit");
 
     ASSERT_TRUE(commits.hasAnyCommits());
+    EXPECT_EQ(firstCommitHash, commits.getHeadCommitHash());
 
-    auto firstCommitHash = commits.getHeadCommitHash();
     auto commit = commits.getCommitInfo(firstCommitHash);
     EXPECT_EQ(commit.getMessage(), "Initial commit");
 
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
 
-    auto secondCommitHash = commits.getHeadCommitHash();
+    EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
     commit = commits.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     EXPECT_EQ(commit.getParents().size(), 1);
@@ -53,12 +61,12 @@ TEST_F(CommitsTests, createCommit_empty_withDescription)
 {
     auto commits = repository->Commits();
 
-    commits.createCommit("Initial commit", "Initial commit description");
+    auto commitHash = commits.createCommit("Initial commit", "Initial commit description");
 
     ASSERT_TRUE(commits.hasAnyCommits());
+    EXPECT_EQ(commitHash, commits.getHeadCommitHash());
 
-    auto lastCommitHash = commits.getHeadCommitHash();
-    auto commit = commits.getCommitInfo(lastCommitHash);
+    auto commit = commits.getCommitInfo(commitHash);
     EXPECT_EQ(commit.getMessage(), "Initial commit");
     EXPECT_EQ(commit.getDescription(), "Initial commit description");
 }

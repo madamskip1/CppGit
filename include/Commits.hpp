@@ -13,7 +13,7 @@ class Commits
 public:
     explicit Commits(const Repository& repo);
 
-    void createCommit(const std::string_view message, const std::string_view description = "") const;
+    std::string createCommit(const std::string_view message, const std::string_view description = "") const;
 
     bool hasAnyCommits() const;
 

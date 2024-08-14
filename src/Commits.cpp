@@ -12,7 +12,7 @@ Commits::Commits(const Repository& repo)
 {
 }
 
-void Commits::createCommit(const std::string_view message, const std::string_view description) const
+std::string Commits::createCommit(const std::string_view message, const std::string_view description) const
 {
     auto writeTreeOutput = repo.executeGitCommand("write-tree");
     if (writeTreeOutput.return_code != 0)
@@ -32,6 +32,8 @@ void Commits::createCommit(const std::string_view message, const std::string_vie
     const auto& commitHash = commitOutput.stdout;
     const auto branches = repo.Branches();
     branches.changeBranchRef("HEAD", commitHash);
+
+    return commitHash;
 }
 
 bool Commits::hasAnyCommits() const
