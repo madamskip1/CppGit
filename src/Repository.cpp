@@ -27,6 +27,11 @@ CppGit::Commits Repository::Commits() const
     return CppGit::Commits(*this);
 }
 
+CppGit::CommitsHistory Repository::CommitsHistory() const
+{
+    return CppGit::CommitsHistory(*this);
+}
+
 std::string Repository::getPathAsString() const
 {
     return path.string();
