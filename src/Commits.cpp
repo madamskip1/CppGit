@@ -12,7 +12,7 @@ Commits::Commits(const Repository& repo)
 {
 }
 
-std::string Commits::createCommit(const std::string_view message, const std::string_view description) const
+auto Commits::createCommit(const std::string_view message, const std::string_view description) const -> std::string
 {
     auto writeTreeOutput = repo.executeGitCommand("write-tree");
     if (writeTreeOutput.return_code != 0)
@@ -36,7 +36,7 @@ std::string Commits::createCommit(const std::string_view message, const std::str
     return commitHash;
 }
 
-bool Commits::hasAnyCommits() const
+auto Commits::hasAnyCommits() const -> bool
 {
     auto output = repo.executeGitCommand("rev-parse", "--verify", "HEAD");
     if (output.return_code == 0)
@@ -52,13 +52,13 @@ bool Commits::hasAnyCommits() const
     throw std::runtime_error("Failed to check if there are any commits");
 }
 
-std::string Commits::getHeadCommitHash() const
+auto Commits::getHeadCommitHash() const -> std::string
 {
     auto branches = repo.Branches();
     return branches.getHashBranchRefersTo("HEAD");
 }
 
-Commit Commits::getCommitInfo(const std::string_view commitHash) const
+auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit
 {
     auto output = repo.executeGitCommand("cat-file", "-p", commitHash);
     if (output.return_code != 0)

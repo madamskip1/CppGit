@@ -12,42 +12,42 @@ Repository::Repository(const std::filesystem::path& path)
     : path(path)
 { }
 
-CppGit::Branches Repository::Branches() const
+auto Repository::Branches() const -> CppGit::Branches
 {
     return CppGit::Branches(*this);
 }
 
-CppGit::Index Repository::Index() const
+auto Repository::Index() const -> CppGit::Index
 {
     return CppGit::Index(*this);
 }
 
-CppGit::Commits Repository::Commits() const
+auto Repository::Commits() const -> CppGit::Commits
 {
     return CppGit::Commits(*this);
 }
 
-CppGit::CommitsHistory Repository::CommitsHistory() const
+auto Repository::CommitsHistory() const -> CppGit::CommitsHistory
 {
     return CppGit::CommitsHistory(*this);
 }
 
-std::string Repository::getPathAsString() const
+auto Repository::getPathAsString() const -> std::string
 {
     return path.string();
 }
 
-std::filesystem::path Repository::getPath() const
+auto Repository::getPath() const -> std::filesystem::path
 {
     return path;
 }
 
-std::string Repository::getTopLevelPathAsString() const
+auto Repository::getTopLevelPathAsString() const -> std::string
 {
     return getTopLevelPath().string();
 }
 
-std::filesystem::path Repository::getTopLevelPath() const
+auto Repository::getTopLevelPath() const -> std::filesystem::path
 {
     auto commandExecutor = GitCommandExecutorUnix();
 
@@ -67,18 +67,18 @@ std::filesystem::path Repository::getTopLevelPath() const
     return std::filesystem::path(output.stdout);
 }
 
-std::filesystem::path Repository::getGitDirectoryPath() const
+auto Repository::getGitDirectoryPath() const -> std::filesystem::path
 {
     auto gitDir = getTopLevelPath() / ".git";
     return gitDir;
 }
 
-std::filesystem::path Repository::getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const
+auto Repository::getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const -> std::filesystem::path
 {
     return getTopLevelPath() / relativePath;
 }
 
-std::filesystem::path Repository::getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const
+auto Repository::getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const -> std::filesystem::path
 {
     if (std::filesystem::is_symlink(absolutePath))
     {
@@ -95,7 +95,7 @@ std::filesystem::path Repository::getRelativeFromAbsolutePath(const std::filesys
     return std::filesystem::relative(absolutePath, getTopLevelPath());
 }
 
-bool Repository::isPathInGitDirectory(const std::filesystem::path& path) const
+auto Repository::isPathInGitDirectory(const std::filesystem::path& path) const -> bool
 {
     const auto canonicalGitDir = std::filesystem::canonical(getGitDirectoryPath());
     const auto canonicalArgPath = std::filesystem::canonical((path.is_absolute() ? path : getAbsoluteFromRelativePath(path)));
@@ -111,7 +111,7 @@ bool Repository::isPathInGitDirectory(const std::filesystem::path& path) const
     return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
 }
 
-bool Repository::isValidGitRepository() const
+auto Repository::isValidGitRepository() const -> bool
 {
     if (!std::filesystem::exists(path))
     {
@@ -126,7 +126,7 @@ bool Repository::isValidGitRepository() const
     return true;
 }
 
-Repository Repository::clone(const std::string& url, const std::filesystem::path& path)
+auto Repository::clone(const std::string& url, const std::filesystem::path& path) -> Repository
 {
     auto repository = Repository(path);
     if (repository.clone(url) != ErrorCode::NO_ERROR)
@@ -136,7 +136,7 @@ Repository Repository::clone(const std::string& url, const std::filesystem::path
     return repository;
 }
 
-ErrorCode Repository::clone(const std::string& url) const
+auto Repository::clone(const std::string& url) const -> ErrorCode
 {
     if (path.empty())
     {
@@ -176,7 +176,7 @@ ErrorCode Repository::clone(const std::string& url) const
     return ErrorCode::NO_ERROR;
 }
 
-bool Repository::initRepository(bool bare, std::string_view mainBranchName) const
+auto Repository::initRepository(bool bare, std::string_view mainBranchName) const -> bool
 {
     std::filesystem::path gitDir = path;
     if (!bare)
@@ -263,7 +263,7 @@ bool Repository::initRepository(bool bare, std::string_view mainBranchName) cons
     return true;
 }
 
-std::unordered_set<std::string> Repository::getRemoteUrls() const
+auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 {
     auto commandExecutor = GitCommandExecutorUnix();
     auto remote_output = commandExecutor.execute(path.string(), "remote", "get-url", "--all", "origin");
@@ -288,7 +288,7 @@ std::unordered_set<std::string> Repository::getRemoteUrls() const
     return urls;
 }
 
-std::vector<GitConfigEntry> Repository::getConfig() const
+auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 {
     auto commandExecutor = GitCommandExecutorUnix();
     auto config_output = commandExecutor.execute(path.string(), "config", "--list", "--local");
@@ -320,7 +320,7 @@ std::vector<GitConfigEntry> Repository::getConfig() const
     return config;
 }
 
-std::string Repository::getDescription() const
+auto Repository::getDescription() const -> std::string
 {
     auto topLevelRepoPathString = getTopLevelPathAsString();
     std::filesystem::path descriptionPath;

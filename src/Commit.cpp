@@ -24,47 +24,47 @@ Commit::Commit(const std::string& hash, const std::vector<std::string>& parents,
 }
 
 
-const std::string& Commit::getHash() const
+auto Commit::getHash() const -> const std::string&
 {
     return hash;
 }
 
-const std::vector<std::string>& Commit::getParents() const
+auto Commit::getParents() const -> const std::vector<std::string>&
 {
     return parents;
 }
 
-const Signature& Commit::getAuthor() const
+auto Commit::getAuthor() const -> const Signature&
 {
     return author;
 }
 
-const std::string& Commit::getAuthorDate() const
+auto Commit::getAuthorDate() const -> const std::string&
 {
     return authorDate;
 }
 
-const Signature& Commit::getCommitter() const
+auto Commit::getCommitter() const -> const Signature&
 {
     return committer;
 }
 
-const std::string& Commit::getCommitterDate() const
+auto Commit::getCommitterDate() const -> const std::string&
 {
     return committerDate;
 }
 
-const std::string& Commit::getMessage() const
+auto Commit::getMessage() const -> const std::string&
 {
     return message;
 }
 
-const std::string& Commit::getDescription() const
+auto Commit::getDescription() const -> const std::string&
 {
     return description;
 }
 
-const std::string& Commit::getTreeHash() const
+auto Commit::getTreeHash() const -> const std::string&
 {
     return treeHash;
 }

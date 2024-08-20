@@ -6,7 +6,7 @@
 
 namespace CppGit {
 
-GitCommandOutput GitCommandExecutorUnix::executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args)
+auto GitCommandExecutorUnix::executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) -> GitCommandOutput
 {
     createPipes();
     pid = fork();
@@ -27,7 +27,7 @@ GitCommandOutput GitCommandExecutorUnix::executeImpl(const std::string_view path
     return GitCommandOutput();
 }
 
-void GitCommandExecutorUnix::createPipes()
+auto GitCommandExecutorUnix::createPipes() -> void
 {
     if (pipe(stdoutPipe.data()) == -1)
     {
@@ -39,7 +39,7 @@ void GitCommandExecutorUnix::createPipes()
     }
 }
 
-GitCommandOutput GitCommandExecutorUnix::parentProcess()
+auto GitCommandExecutorUnix::parentProcess() -> GitCommandOutput
 {
     close(stdoutPipe[1]);
     close(stderrPipe[1]);
@@ -91,7 +91,7 @@ GitCommandOutput GitCommandExecutorUnix::parentProcess()
     return GitCommandOutput{ returnCode, stdoutStr, stderrStr };
 }
 
-void GitCommandExecutorUnix::childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args)
+auto GitCommandExecutorUnix::childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) -> void
 {
     close(stdoutPipe[0]);
     close(stderrPipe[0]);

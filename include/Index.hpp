@@ -21,21 +21,21 @@ public:
     explicit Index(const Repository& repo);
     Index() = delete;
 
-    void add(const std::filesystem::path& path) const;
-    void remove(const std::filesystem::path& path) const;
-    void reset() const;
+    auto add(const std::filesystem::path& path) const -> void;
+    auto remove(const std::filesystem::path& path) const -> void;
+    auto reset() const -> void;
 
-    bool isFileStaged(const std::filesystem::path& path) const;
+    auto isFileStaged(const std::filesystem::path& path) const -> bool;
 
-    std::vector<std::string> getStagedFilesList() const;
-    std::vector<IndexEntry> getStagedFilesListWithDetails() const;
+    auto getStagedFilesList() const -> std::vector<std::string>;
+    auto getStagedFilesListWithDetails() const -> std::vector<IndexEntry>;
 
 private:
     const Repository& repo;
 
-    static std::string getFileMode(const std::filesystem::path& absolutePath);
-    void addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const;
-    void removeFileFromIndex(const std::filesystem::path& relativePath) const;
+    static auto getFileMode(const std::filesystem::path& absolutePath) -> std::string;
+    auto addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const -> void;
+    auto removeFileFromIndex(const std::filesystem::path& relativePath) const -> void;
 };
 
 } // namespace CppGit

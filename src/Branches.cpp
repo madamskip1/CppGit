@@ -10,22 +10,22 @@ Branches::Branches(const Repository& repo)
 {
 }
 
-std::vector<Branch> Branches::getAllBranches() const
+auto Branches::getAllBranches() const -> std::vector<Branch>
 {
     return getBranchesImpl(true, true);
 }
 
-std::vector<Branch> Branches::getRemoteBranches() const
+auto Branches::getRemoteBranches() const -> std::vector<Branch>
 {
     return getBranchesImpl(false, true);
 }
 
-std::vector<Branch> Branches::getLocalBranches() const
+auto Branches::getLocalBranches() const -> std::vector<Branch>
 {
     return getBranchesImpl(true, false);
 }
 
-std::string Branches::getCurrentBranchRef() const
+auto Branches::getCurrentBranchRef() const -> std::string
 {
     auto output = repo.executeGitCommand("symbolic-ref", "HEAD");
     if (output.return_code != 0)
@@ -36,20 +36,20 @@ std::string Branches::getCurrentBranchRef() const
     return output.stdout;
 }
 
-bool Branches::branchExists(std::string_view branchName, bool remote) const
+auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
     auto output = repo.executeGitCommand("show-ref", "--verify", "--quiet", branchNameWithPrefix);
     return output.return_code == 0;
 }
 
-bool Branches::branchExists(const Branch& branch) const
+auto Branches::branchExists(const Branch& branch) const -> bool
 {
     // remote = false/true doesn't matter here
     return branchExists(branch.getRefName(), false);
 }
 
-void Branches::deleteBranch(std::string_view branchName) const
+auto Branches::deleteBranch(std::string_view branchName) const -> void
 {
     // TODO: delete remote
 
@@ -62,12 +62,12 @@ void Branches::deleteBranch(std::string_view branchName) const
     }
 }
 
-void Branches::deleteBranch(const Branch& branch) const
+auto Branches::deleteBranch(const Branch& branch) const -> void
 {
     return deleteBranch(branch.getRefName());
 }
 
-std::string Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const
+auto Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const -> std::string
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
     auto output = repo.executeGitCommand("rev-parse", branchNameWithPrefix);
@@ -80,13 +80,13 @@ std::string Branches::getHashBranchRefersTo(std::string_view branchName, bool re
     return output.stdout;
 }
 
-std::string Branches::getHashBranchRefersTo(const Branch& branch) const
+auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
 {
     // remote = false/true doesn't matter here
     return getHashBranchRefersTo(branch.getRefName(), false);
 }
 
-void Branches::createBranch(std::string_view branchName, std::string_view hash) const
+auto Branches::createBranch(std::string_view branchName, std::string_view hash) const -> void
 {
     // TODO: can we create remote branches this way?
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
@@ -98,12 +98,12 @@ void Branches::createBranch(std::string_view branchName, std::string_view hash) 
     }
 }
 
-void Branches::createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const
+auto Branches::createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const -> void
 {
     createBranch(newBranchName, getHashBranchRefersTo(branch));
 }
 
-void Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const
+auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
     auto output = repo.executeGitCommand("update-ref", branchNameWithPrefix, newHash);
@@ -114,12 +114,12 @@ void Branches::changeBranchRef(std::string_view branchName, std::string_view new
     }
 }
 
-void Branches::changeBranchRef(const Branch& branch, std::string_view newHash) const
+auto Branches::changeBranchRef(const Branch& branch, std::string_view newHash) const -> void
 {
     changeBranchRef(branch.getRefName(), newHash);
 }
 
-std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
+auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>
 {
     auto argLocal = local ? "refs/heads" : "";
     auto argRemote = remote ? "refs/remotes" : "";
@@ -154,7 +154,7 @@ std::vector<Branch> Branches::getBranchesImpl(bool local, bool remote) const
     return branches;
 }
 
-std::string Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const
+auto Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string
 {
     if (remote)
     {

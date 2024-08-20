@@ -13,12 +13,12 @@ class Commits
 public:
     explicit Commits(const Repository& repo);
 
-    std::string createCommit(const std::string_view message, const std::string_view description = "") const;
+    auto createCommit(const std::string_view message, const std::string_view description = "") const -> std::string;
 
-    bool hasAnyCommits() const;
+    auto hasAnyCommits() const -> bool;
 
-    std::string getHeadCommitHash() const;
-    Commit getCommitInfo(const std::string_view commitHash) const;
+    auto getHeadCommitHash() const -> std::string;
+    auto getCommitInfo(const std::string_view commitHash) const -> Commit;
 
 private:
     const Repository& repo;

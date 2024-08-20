@@ -32,15 +32,15 @@ public:
            const std::string& description,
            const std::string& treeHash);
 
-    const std::string& getHash() const;
-    const std::vector<std::string>& getParents() const;
-    const Signature& getAuthor() const;
-    const std::string& getAuthorDate() const;
-    const Signature& getCommitter() const;
-    const std::string& getCommitterDate() const;
-    const std::string& getMessage() const;
-    const std::string& getDescription() const;
-    const std::string& getTreeHash() const;
+    auto getHash() const -> const std::string&;
+    auto getParents() const -> const std::vector<std::string>&;
+    auto getAuthor() const -> const Signature&;
+    auto getAuthorDate() const -> const std::string&;
+    auto getCommitter() const -> const Signature&;
+    auto getCommitterDate() const -> const std::string&;
+    auto getMessage() const -> const std::string&;
+    auto getDescription() const -> const std::string&;
+    auto getTreeHash() const -> const std::string&;
 
 private:
     std::string hash;

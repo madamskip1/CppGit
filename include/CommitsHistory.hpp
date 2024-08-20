@@ -30,25 +30,25 @@ public:
 
     explicit CommitsHistory(const Repository& repo);
 
-    std::vector<std::string> getCommitsLogHashesOnly() const;
-    std::vector<Commit> getCommitsLogDetailed() const;
+    auto getCommitsLogHashesOnly() const -> std::vector<std::string>;
+    auto getCommitsLogDetailed() const -> std::vector<Commit>;
 
-    CommitsHistory& setAllBranches(bool allBranches);
-    CommitsHistory& resetAllBranches();
-    CommitsHistory& setMaxCount(int maxCount);
-    CommitsHistory& resetMaxCount();
-    CommitsHistory& setSkip(int skip);
-    CommitsHistory& resetSkip();
-    CommitsHistory& setLogMerges(LOG_MERGES logMerges);
-    CommitsHistory& resetLogMerges();
-    CommitsHistory& setOrder(Order order);
-    CommitsHistory& resetOrder();
-    CommitsHistory& setAuthorPattern(const std::string_view authorPattern);
-    CommitsHistory& resetAuthorPattern();
-    CommitsHistory& setCommitterPattern(const std::string_view committerPattern);
-    CommitsHistory& resetCommitterPattern();
-    CommitsHistory& setMessagePattern(const std::string_view messagePattern);
-    CommitsHistory& resetMessagePattern();
+    auto setAllBranches(bool allBranches) -> CommitsHistory&;
+    auto resetAllBranches() -> CommitsHistory&;
+    auto setMaxCount(int maxCount) -> CommitsHistory&;
+    auto resetMaxCount() -> CommitsHistory&;
+    auto setSkip(int skip) -> CommitsHistory&;
+    auto resetSkip() -> CommitsHistory&;
+    auto setLogMerges(LOG_MERGES logMerges) -> CommitsHistory&;
+    auto resetLogMerges() -> CommitsHistory&;
+    auto setOrder(Order order) -> CommitsHistory&;
+    auto resetOrder() -> CommitsHistory&;
+    auto setAuthorPattern(const std::string_view authorPattern) -> CommitsHistory&;
+    auto resetAuthorPattern() -> CommitsHistory&;
+    auto setCommitterPattern(const std::string_view committerPattern) -> CommitsHistory&;
+    auto resetCommitterPattern() -> CommitsHistory&;
+    auto setMessagePattern(const std::string_view messagePattern) -> CommitsHistory&;
+    auto resetMessagePattern() -> CommitsHistory&;
 
 private:
     const Repository& repo_;
@@ -61,7 +61,7 @@ private:
     std::string committerPattern_;
     std::string messagePattern_;
 
-    std::vector<std::string> prepareCommandsArgument() const;
+    auto prepareCommandsArgument() const -> std::vector<std::string>;
 };
 
 } // namespace CppGit

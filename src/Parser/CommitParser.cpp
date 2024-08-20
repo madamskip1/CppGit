@@ -5,7 +5,7 @@
 
 namespace CppGit {
 
-Commit CommitParser::parseCommit_CatFile(std::string_view commitLog)
+auto CommitParser::parseCommit_CatFile(std::string_view commitLog) -> Commit
 {
     static constexpr auto regexStr = R"(^tree\s+([a-z0-9]{40})(?:\r\n|\r|\n)(parent [\S\s]+?)?author\s+(.+?)\s+<(.+?)>\s+(\d+ [+-]\d{4})(?:\r\n|\r|\n)committer\s+(.+?)\s+<(.+?)>\s+(\d+ [+-]\d{4})(?:\r\n|\r|\n){2}([\S\s]+?)(?:(?:\r\n|\r|\n){2,}|$)([\s\S]+)?$)";
     const auto regex = std::regex{ regexStr };
@@ -42,12 +42,12 @@ Commit CommitParser::parseCommit_CatFile(std::string_view commitLog)
 }
 
 
-Commit CommitParser::parseCommit_PrettyFormat(std::string_view commitLog)
+auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog) -> Commit
 {
     return parseCommit_PrettyFormat(commitLog, COMMIT_LOG_DEFAULT_FORMAT, COMMIT_LOG_DEFAULT_DELIMITER);
 }
 
-Commit CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter)
+auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit
 {
     const std::vector<std::string_view> commitTokens = split(commitLog, delimiter);
     const std::vector<std::string_view> formatTokens = split(format, delimiter);
@@ -129,57 +129,57 @@ Commit CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::s
 
     return Commit(hash, parents, authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, message, description, treeHash);
 }
-bool CommitParser::isHashToken(std::string_view token)
+auto CommitParser::isHashToken(std::string_view token) -> bool
 {
     return token == "%H" || token == "%h";
 }
 
-bool CommitParser::isParentsToken(std::string_view token)
+auto CommitParser::isParentsToken(std::string_view token) -> bool
 {
     return token == "%P" || token == "%p";
 }
 
-bool CommitParser::isAuthorNameToken(std::string_view token)
+auto CommitParser::isAuthorNameToken(std::string_view token) -> bool
 {
     return token == "%an" || token == "%aN";
 }
 
-bool CommitParser::isAuthorEmailToken(std::string_view token)
+auto CommitParser::isAuthorEmailToken(std::string_view token) -> bool
 {
     return token == "%ae" || token == "%aE" || token == "%aL";
 }
 
-bool CommitParser::isAuthorDateToken(std::string_view token)
+auto CommitParser::isAuthorDateToken(std::string_view token) -> bool
 {
     return token == "%ad" || token == "%aD" || token == "%ar" || token == "%at" || token == "%ai" || token == "%aI" || token == "%as" || token == "%ah";
 }
 
-bool CommitParser::isCommitterNameToken(std::string_view token)
+auto CommitParser::isCommitterNameToken(std::string_view token) -> bool
 {
     return token == "%cn" || token == "%cN";
 }
 
-bool CommitParser::isCommitterEmailToken(std::string_view token)
+auto CommitParser::isCommitterEmailToken(std::string_view token) -> bool
 {
     return token == "%ce" || token == "%cE" || token == "%cL";
 }
 
-bool CommitParser::isCommitterDateToken(std::string_view token)
+auto CommitParser::isCommitterDateToken(std::string_view token) -> bool
 {
     return token == "%cd" || token == "%cD" || token == "%cr" || token == "%ct" || token == "%ci" || token == "%cI" || token == "%cs" || token == "%ch";
 }
 
-bool CommitParser::isMessageToken(std::string_view token)
+auto CommitParser::isMessageToken(std::string_view token) -> bool
 {
     return token == "%s" || token == "%f";
 }
 
-bool CommitParser::isDescriptionToken(std::string_view token)
+auto CommitParser::isDescriptionToken(std::string_view token) -> bool
 {
     return token == "%b" || token == "%B";
 }
 
-bool CommitParser::isTreeHashToken(std::string_view token)
+auto CommitParser::isTreeHashToken(std::string_view token) -> bool
 {
     return token == "%T" || token == "%t";
 }

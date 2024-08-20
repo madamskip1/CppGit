@@ -11,7 +11,7 @@ CommitsHistory::CommitsHistory(const Repository& repo)
 {
 }
 
-std::vector<std::string> CommitsHistory::getCommitsLogHashesOnly() const
+auto CommitsHistory::getCommitsLogHashesOnly() const -> std::vector<std::string>
 {
     auto arguments = prepareCommandsArgument();
     auto output = repo_.executeGitCommand("rev-list", arguments);
@@ -27,7 +27,7 @@ std::vector<std::string> CommitsHistory::getCommitsLogHashesOnly() const
     return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
 }
 
-std::vector<Commit> CommitsHistory::getCommitsLogDetailed() const
+auto CommitsHistory::getCommitsLogDetailed() const -> std::vector<Commit>
 {
     auto arguments = prepareCommandsArgument();
     auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
@@ -57,91 +57,91 @@ std::vector<Commit> CommitsHistory::getCommitsLogDetailed() const
     return commits;
 }
 
-CommitsHistory& CommitsHistory::setAllBranches(bool allBranches)
+auto CommitsHistory::setAllBranches(bool allBranches) -> CommitsHistory&
 {
     allBranches_ = allBranches;
     return *this;
 }
 
-CommitsHistory& CommitsHistory::resetAllBranches()
+auto CommitsHistory::resetAllBranches() -> CommitsHistory&
 {
     allBranches_ = false;
     return *this;
 }
 
-CommitsHistory& CommitsHistory::setMaxCount(int maxCount)
+auto CommitsHistory::setMaxCount(int maxCount) -> CommitsHistory&
 {
     maxCount_ = maxCount;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetMaxCount()
+auto CommitsHistory::resetMaxCount() -> CommitsHistory&
 {
     maxCount_ = -1;
     return *this;
 }
-CommitsHistory& CommitsHistory::setSkip(int skip)
+auto CommitsHistory::setSkip(int skip) -> CommitsHistory&
 {
     skip_ = skip;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetSkip()
+auto CommitsHistory::resetSkip() -> CommitsHistory&
 {
     skip_ = -1;
     return *this;
 }
-CommitsHistory& CommitsHistory::setLogMerges(LOG_MERGES logMerges)
+auto CommitsHistory::setLogMerges(LOG_MERGES logMerges) -> CommitsHistory&
 {
     logMerges_ = logMerges;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetLogMerges()
+auto CommitsHistory::resetLogMerges() -> CommitsHistory&
 {
     logMerges_ = LOG_MERGES::ALL;
     return *this;
 }
-CommitsHistory& CommitsHistory::setOrder(Order order)
+auto CommitsHistory::setOrder(Order order) -> CommitsHistory&
 {
     order_ = order;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetOrder()
+auto CommitsHistory::resetOrder() -> CommitsHistory&
 {
     order_ = Order::CHRONOLOGICAL;
     return *this;
 }
-CommitsHistory& CommitsHistory::setAuthorPattern(std::string_view authorPattern)
+auto CommitsHistory::setAuthorPattern(std::string_view authorPattern) -> CommitsHistory&
 {
     authorPattern_ = authorPattern;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetAuthorPattern()
+auto CommitsHistory::resetAuthorPattern() -> CommitsHistory&
 {
     authorPattern_ = "";
     return *this;
 }
-CommitsHistory& CommitsHistory::setCommitterPattern(std::string_view committerPattern)
+auto CommitsHistory::setCommitterPattern(std::string_view committerPattern) -> CommitsHistory&
 {
     committerPattern_ = committerPattern;
     return *this;
 }
-CommitsHistory& CommitsHistory::resetCommitterPattern()
+auto CommitsHistory::resetCommitterPattern() -> CommitsHistory&
 {
     committerPattern_ = "";
     return *this;
 }
-CommitsHistory& CommitsHistory::setMessagePattern(std::string_view messagePattern)
+auto CommitsHistory::setMessagePattern(std::string_view messagePattern) -> CommitsHistory&
 {
     messagePattern_ = messagePattern;
     return *this;
 }
 
-CommitsHistory& CommitsHistory::resetMessagePattern()
+auto CommitsHistory::resetMessagePattern() -> CommitsHistory&
 {
     messagePattern_ = "";
     return *this;
 }
 
-std::vector<std::string> CommitsHistory::prepareCommandsArgument() const
+auto CommitsHistory::prepareCommandsArgument() const -> std::vector<std::string>
 {
     auto arguments = std::vector<std::string>();
     if (allBranches_)

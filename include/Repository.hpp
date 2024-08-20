@@ -24,38 +24,38 @@ public:
     Repository() = delete;
 
     template <typename... Args>
-    GitCommandOutput executeGitCommand(const std::string_view cmd, Args... args) const
+    auto executeGitCommand(const std::string_view cmd, Args... args) const -> GitCommandOutput
     {
         auto commandExecutor = GitCommandExecutorUnix();
         return commandExecutor.execute(path.string(), cmd, args...);
     }
 
-    CppGit::Branches Branches() const;
-    CppGit::Index Index() const;
-    CppGit::Commits Commits() const;
-    CppGit::CommitsHistory CommitsHistory() const;
+    auto Branches() const -> CppGit::Branches;
+    auto Index() const -> CppGit::Index;
+    auto Commits() const -> CppGit::Commits;
+    auto CommitsHistory() const -> CppGit::CommitsHistory;
 
-    std::string getPathAsString() const;
-    std::filesystem::path getPath() const;
-    std::string getTopLevelPathAsString() const;
-    std::filesystem::path getTopLevelPath() const;
-    std::filesystem::path getGitDirectoryPath() const;
+    auto getPathAsString() const -> std::string;
+    auto getPath() const -> std::filesystem::path;
+    auto getTopLevelPathAsString() const -> std::string;
+    auto getTopLevelPath() const -> std::filesystem::path;
+    auto getGitDirectoryPath() const -> std::filesystem::path;
 
-    std::filesystem::path getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const;
-    std::filesystem::path getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const;
+    auto getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const -> std::filesystem::path;
+    auto getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const -> std::filesystem::path;
 
-    bool isPathInGitDirectory(const std::filesystem::path& path) const;
+    auto isPathInGitDirectory(const std::filesystem::path& path) const -> bool;
 
-    bool isValidGitRepository() const;
+    auto isValidGitRepository() const -> bool;
 
-    static Repository clone(const std::string& url, const std::filesystem::path& path);
-    ErrorCode clone(const std::string& url) const;
+    static auto clone(const std::string& url, const std::filesystem::path& path) -> Repository;
+    auto clone(const std::string& url) const -> ErrorCode;
 
-    bool initRepository(bool bare = false, std::string_view mainBranchName = "main") const;
+    auto initRepository(bool bare = false, std::string_view mainBranchName = "main") const -> bool;
 
-    std::unordered_set<std::string> getRemoteUrls() const;
-    std::vector<GitConfigEntry> getConfig() const;
-    std::string getDescription() const;
+    auto getRemoteUrls() const -> std::unordered_set<std::string>;
+    auto getConfig() const -> std::vector<GitConfigEntry>;
+    auto getDescription() const -> std::string;
 
 private:
     std::filesystem::path path;

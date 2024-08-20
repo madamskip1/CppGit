@@ -13,9 +13,9 @@ class BranchesParser : protected Parser
 public:
     static constexpr const char* const BRANCHES_FORMAT = "%(refname);%(upstream);%(push)";
 
-    static Branch parseBranch(std::string_view line);
+    static auto parseBranch(std::string_view line) -> Branch;
 
-    static bool isLocalBranch(std::string_view refName);
+    static auto isLocalBranch(std::string_view refName) -> bool;
 };
 
 

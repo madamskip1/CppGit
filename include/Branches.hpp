@@ -17,29 +17,29 @@ public:
     explicit Branches(const Repository& repo);
     Branches() = delete;
 
-    std::vector<Branch> getAllBranches() const;
-    std::vector<Branch> getRemoteBranches() const;
-    std::vector<Branch> getLocalBranches() const;
-    std::string getCurrentBranchRef() const;
+    auto getAllBranches() const -> std::vector<Branch>;
+    auto getRemoteBranches() const -> std::vector<Branch>;
+    auto getLocalBranches() const -> std::vector<Branch>;
+    auto getCurrentBranchRef() const -> std::string;
 
-    bool branchExists(std::string_view branchName, bool remote = false) const;
-    bool branchExists(const Branch& branch) const;
+    auto branchExists(std::string_view branchName, bool remote = false) const -> bool;
+    auto branchExists(const Branch& branch) const -> bool;
 
-    void deleteBranch(std::string_view branchName) const;
-    void deleteBranch(const Branch& branch) const;
+    auto deleteBranch(std::string_view branchName) const -> void;
+    auto deleteBranch(const Branch& branch) const -> void;
 
-    std::string getHashBranchRefersTo(std::string_view branchName, bool remote = false) const;
-    std::string getHashBranchRefersTo(const Branch& branch) const;
+    auto getHashBranchRefersTo(std::string_view branchName, bool remote = false) const -> std::string;
+    auto getHashBranchRefersTo(const Branch& branch) const -> std::string;
 
-    void createBranch(std::string_view branchName, std::string_view hash = "HEAD") const;
-    void createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const;
+    auto createBranch(std::string_view branchName, std::string_view hash = "HEAD") const -> void;
+    auto createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const -> void;
 
-    void changeBranchRef(std::string_view branchName, std::string_view newHash) const;
-    void changeBranchRef(const Branch& branch, std::string_view newHash) const;
+    auto changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void;
+    auto changeBranchRef(const Branch& branch, std::string_view newHash) const -> void;
 
 private:
-    std::vector<Branch> getBranchesImpl(bool local, bool remote) const;
-    std::string addPrefixIfNeeded(std::string_view branchName, bool remote) const;
+    auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;
+    auto addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string;
 
     const Repository& repo;
 };

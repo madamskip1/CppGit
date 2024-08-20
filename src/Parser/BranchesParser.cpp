@@ -3,7 +3,7 @@
 #include <iostream>
 namespace CppGit {
 
-Branch BranchesParser::parseBranch(std::string_view line)
+auto BranchesParser::parseBranch(std::string_view line) -> Branch
 {
     auto parts = split(line, ';');
 
@@ -14,7 +14,7 @@ Branch BranchesParser::parseBranch(std::string_view line)
     return Branch(refName, upstreamPull, upstreamPush, isLocal);
 }
 
-bool BranchesParser::isLocalBranch(std::string_view refName)
+auto BranchesParser::isLocalBranch(std::string_view refName) -> bool
 {
     return refName.find("refs/heads/") == 0;
 }

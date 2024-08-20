@@ -14,23 +14,23 @@ public:
     static constexpr const char* const COMMIT_LOG_DEFAULT_FORMAT = "%H;%P;%an;%ae;%at;%cn;%ce;%ct;%s;%b";
     static constexpr const char* const COMMIT_LOG_DEFAULT_DELIMITER = ";";
 
-    static Commit parseCommit_CatFile(std::string_view commitLog);
+    static auto parseCommit_CatFile(std::string_view commitLog) -> Commit;
 
-    static Commit parseCommit_PrettyFormat(std::string_view commitLog);
-    static Commit parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter);
+    static auto parseCommit_PrettyFormat(std::string_view commitLog) -> Commit;
+    static auto parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit;
 
 private:
-    static bool isHashToken(std::string_view token);
-    static bool isParentsToken(std::string_view token);
-    static bool isAuthorNameToken(std::string_view token);
-    static bool isAuthorEmailToken(std::string_view token);
-    static bool isAuthorDateToken(std::string_view token);
-    static bool isCommitterNameToken(std::string_view token);
-    static bool isCommitterEmailToken(std::string_view token);
-    static bool isCommitterDateToken(std::string_view token);
-    static bool isMessageToken(std::string_view token);
-    static bool isDescriptionToken(std::string_view token);
-    static bool isTreeHashToken(std::string_view token);
+    static auto isHashToken(std::string_view token) -> bool;
+    static auto isParentsToken(std::string_view token) -> bool;
+    static auto isAuthorNameToken(std::string_view token) -> bool;
+    static auto isAuthorEmailToken(std::string_view token) -> bool;
+    static auto isAuthorDateToken(std::string_view token) -> bool;
+    static auto isCommitterNameToken(std::string_view token) -> bool;
+    static auto isCommitterEmailToken(std::string_view token) -> bool;
+    static auto isCommitterDateToken(std::string_view token) -> bool;
+    static auto isMessageToken(std::string_view token) -> bool;
+    static auto isDescriptionToken(std::string_view token) -> bool;
+    static auto isTreeHashToken(std::string_view token) -> bool;
 };
 
 } // namespace CppGit

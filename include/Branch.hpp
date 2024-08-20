@@ -10,10 +10,10 @@ class Branch
 public:
     explicit Branch(const std::string& refName, const std::string& upstreamPull = "", const std::string& upstreamPush = "", bool isLocalBranch = false);
 
-    const std::string& getRefName() const;
-    const std::string& getUpstreamPull() const;
-    const std::string& getUpstreamPush() const;
-    bool isLocalBranch() const;
+    auto getRefName() const -> const std::string&;
+    auto getUpstreamPull() const -> const std::string&;
+    auto getUpstreamPush() const -> const std::string&;
+    auto isLocalBranch() const -> bool;
 
 private:
     std::string refName;

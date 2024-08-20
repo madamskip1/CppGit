@@ -13,7 +13,7 @@ public:
     virtual ~Parser() = default;
 
     template <typename T>
-    static std::vector<std::string_view> split(const std::string_view line, const T& delimiter)
+    static auto split(const std::string_view line, const T& delimiter) -> std::vector<std::string_view>
     {
         const auto delimiterSize = getDelimiterSize(delimiter);
 
@@ -34,7 +34,7 @@ public:
     }
 
     template <typename T>
-    static std::size_t getDelimiterSize(const T& delimiter)
+    static auto getDelimiterSize(const T& delimiter) -> std::size_t
     {
         if constexpr (std::is_same_v<T, char>)
         {

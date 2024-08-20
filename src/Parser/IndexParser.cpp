@@ -4,7 +4,7 @@
 
 namespace CppGit {
 
-IndexEntry IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
+auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine) -> IndexEntry
 {
     constexpr auto pattern = R"((^\d{6})\s+(.{40})\s+(\d)\s+(\S+)$)";
     auto match = std::cmatch{};
@@ -16,7 +16,7 @@ IndexEntry IndexParser::parseStageDetailedEntry(const std::string_view indexEntr
     return IndexEntry{ match[1].str(), match[2].str(), std::stoi(match[3].str()), match[4].str() };
 }
 
-std::vector<IndexEntry> IndexParser::parseStageDetailedList(const std::string_view indexContent)
+auto IndexParser::parseStageDetailedList(const std::string_view indexContent) -> std::vector<IndexEntry>
 {
     auto splitIndexContent = split(indexContent, '\n');
     std::vector<IndexEntry> indexEntries;
@@ -35,7 +35,7 @@ std::vector<IndexEntry> IndexParser::parseStageDetailedList(const std::string_vi
 }
 
 
-std::vector<std::string> IndexParser::parseStageSimpleCacheList(const std::string_view indexContent)
+auto IndexParser::parseStageSimpleCacheList(const std::string_view indexContent) -> std::vector<std::string>
 {
     auto listSV = split(indexContent, '\n');
     auto result = std::vector<std::string>{};

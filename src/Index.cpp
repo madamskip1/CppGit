@@ -10,7 +10,7 @@ Index::Index(const Repository& repo)
 {
 }
 
-void Index::add(const std::filesystem::path& path) const
+auto Index::add(const std::filesystem::path& path) const -> void
 {
     const auto& absolutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
 
@@ -44,7 +44,7 @@ void Index::add(const std::filesystem::path& path) const
     }
 }
 
-void Index::remove(const std::filesystem::path& path) const
+auto Index::remove(const std::filesystem::path& path) const -> void
 {
     const auto& aboslutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
 
@@ -78,7 +78,7 @@ void Index::remove(const std::filesystem::path& path) const
     }
 }
 
-void Index::reset() const
+auto Index::reset() const -> void
 {
     const auto filesInIndex = getStagedFilesList();
     for (const auto& file : filesInIndex)
@@ -87,7 +87,7 @@ void Index::reset() const
     }
 }
 
-bool Index::isFileStaged(const std::filesystem::path& path) const
+auto Index::isFileStaged(const std::filesystem::path& path) const -> bool
 {
     const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
     const auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache", relativePath.string());
@@ -100,7 +100,7 @@ bool Index::isFileStaged(const std::filesystem::path& path) const
     return output.stdout == relativePath.string();
 }
 
-std::vector<std::string> Index::getStagedFilesList() const
+auto Index::getStagedFilesList() const -> std::vector<std::string>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");
 
@@ -112,7 +112,7 @@ std::vector<std::string> Index::getStagedFilesList() const
     return IndexParser::parseStageSimpleCacheList(output.stdout);
 }
 
-std::vector<IndexEntry> Index::getStagedFilesListWithDetails() const
+auto Index::getStagedFilesListWithDetails() const -> std::vector<IndexEntry>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--stage");
 
@@ -124,7 +124,7 @@ std::vector<IndexEntry> Index::getStagedFilesListWithDetails() const
     return IndexParser::parseStageDetailedList(output.stdout);
 }
 
-std::string Index::getFileMode(const std::filesystem::path& absolutePath)
+auto Index::getFileMode(const std::filesystem::path& absolutePath) -> std::string
 {
     if (std::filesystem::is_symlink(absolutePath))
     {
@@ -145,7 +145,7 @@ std::string Index::getFileMode(const std::filesystem::path& absolutePath)
     return "100644";
 }
 
-void Index::addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const
+auto Index::addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const -> void
 {
     auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", relativePath.string());
 
@@ -165,7 +165,7 @@ void Index::addFileToIndex(const std::filesystem::path& relativePath, const std:
     }
 }
 
-void Index::removeFileFromIndex(const std::filesystem::path& relativePath) const
+auto Index::removeFileFromIndex(const std::filesystem::path& relativePath) const -> void
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--force-remove", relativePath.string());
 

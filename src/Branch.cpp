@@ -10,22 +10,22 @@ Branch::Branch(const std::string& refName, const std::string& upstreamPull, cons
 {
 }
 
-const std::string& Branch::getRefName() const
+auto Branch::getRefName() const -> const std::string&
 {
     return refName;
 }
 
-const std::string& Branch::getUpstreamPull() const
+auto Branch::getUpstreamPull() const -> const std::string&
 {
     return upstreamPull;
 }
 
-const std::string& Branch::getUpstreamPush() const
+auto Branch::getUpstreamPush() const -> const std::string&
 {
     return upstreamPush;
 }
 
-bool Branch::isLocalBranch() const
+auto Branch::isLocalBranch() const -> bool
 {
     return isLocal;
 }
