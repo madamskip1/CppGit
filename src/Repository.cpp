@@ -58,8 +58,7 @@ auto Repository::getTopLevelPath() const -> std::filesystem::path
         throw std::runtime_error("Failed to get top level path");
     }
 
-    std::string x;
-    if (output.stdout.find("\n") != std::string::npos)
+    if (output.stdout.find('\n') != std::string::npos)
     {
         output.stdout.replace(output.stdout.find('\n'), 1, "");
     }
@@ -149,7 +148,7 @@ auto Repository::clone(const std::string& url) const -> ErrorCode
         {
             std::filesystem::create_directories(path);
         }
-        catch (const std::filesystem::filesystem_error& e)
+        catch (const std::filesystem::filesystem_error&)
         {
             return ErrorCode::GIT_CLONE_FAILED_TO_CREATE_DIRECTORIES;
         }
@@ -314,7 +313,7 @@ auto Repository::getConfig() const -> std::vector<GitConfigEntry>
             config.emplace_back(line, "");
             continue;
         }
-        config.emplace_back(std::make_pair(line.substr(0, delimiterPos), line.substr(delimiterPos + 1)));
+        config.emplace_back(line.substr(0, delimiterPos), line.substr(delimiterPos + 1));
     }
 
     return config;
@@ -351,7 +350,7 @@ auto Repository::getDescription() const -> std::string
     auto description = buffer.str();
 
     if (auto unnamedPos = description.find("Unnamed repository");
-        unnamedPos != std::string::npos && unnamedPos == 0)
+        unnamedPos == 0)
     {
         return std::string();
     }
