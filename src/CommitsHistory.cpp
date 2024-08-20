@@ -1,5 +1,7 @@
 #include "CommitsHistory.hpp"
 
+#include "Commit.hpp"
+#include "Parser/CommitParser.hpp"
 #include "Parser/Parser.hpp"
 #include "Repository.hpp"
 
@@ -23,6 +25,36 @@ std::vector<std::string> CommitsHistory::getCommitsLogHashesOnly() const
     auto hasheshSplited = Parser::split(output.stdout, '\n');
 
     return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
+}
+
+std::vector<Commit> CommitsHistory::getCommitsLogDetailed() const
+{
+    auto arguments = prepareCommandsArgument();
+    auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
+    arguments.push_back(formatString);
+    arguments.emplace_back("--no-commit-header");
+
+    auto output = repo_.executeGitCommand("rev-list", arguments);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Error while getting commits log detailed");
+    }
+
+    auto commits = std::vector<Commit>();
+    output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line
+    auto commitsSplitted = Parser::split(output.stdout, "$:>\n");
+
+    for (const auto commitLog : commitsSplitted)
+    {
+        if (commitLog.empty())
+        {
+            continue;
+        }
+        commits.push_back(CommitParser::parseCommit_PrettyFormat(commitLog));
+    }
+
+    return commits;
 }
 
 CommitsHistory& CommitsHistory::setAllBranches(bool allBranches)

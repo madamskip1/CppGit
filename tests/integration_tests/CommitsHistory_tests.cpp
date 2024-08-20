@@ -1,4 +1,5 @@
 #include "BaseRepositoryFixture.hpp"
+#include "Commit.hpp"
 #include "CommitsHistory.hpp"
 
 #include <gtest/gtest.h>
@@ -102,4 +103,37 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_messagePattern)
     ASSERT_EQ(commitsLogHashesOnly.size(), 2);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[4]);
     EXPECT_EQ(commitsLogHashesOnly[1], commitsHashes[3]);
+}
+
+TEST_F(CommitsHistoryTests, getCommitsDetailed_NoFilters)
+{
+    const auto& commitsHistory = repository->CommitsHistory();
+    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed();
+
+    ASSERT_EQ(commitsDetailed.size(), 5);
+
+    EXPECT_EQ(commitsDetailed[0].getHash(), commitsHashes[4]);
+    EXPECT_EQ(commitsDetailed[0].getMessage(), "Commit42");
+    EXPECT_EQ(commitsDetailed[0].getDescription(), "Description42");
+    EXPECT_EQ(commitsDetailed[0].getParents(), std::vector<std::string>{ commitsHashes[3] });
+
+    EXPECT_EQ(commitsDetailed[1].getHash(), commitsHashes[3]);
+    EXPECT_EQ(commitsDetailed[1].getMessage(), "Commit41");
+    EXPECT_EQ(commitsDetailed[1].getDescription(), "Description41");
+    EXPECT_EQ(commitsDetailed[1].getParents(), std::vector<std::string>{ commitsHashes[2] });
+
+    EXPECT_EQ(commitsDetailed[2].getHash(), commitsHashes[2]);
+    EXPECT_EQ(commitsDetailed[2].getMessage(), "Commit3");
+    EXPECT_EQ(commitsDetailed[2].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[2].getParents(), std::vector<std::string>{ commitsHashes[1] });
+
+    EXPECT_EQ(commitsDetailed[3].getHash(), commitsHashes[1]);
+    EXPECT_EQ(commitsDetailed[3].getMessage(), "Commit2");
+    EXPECT_EQ(commitsDetailed[3].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[3].getParents(), std::vector<std::string>{ commitsHashes[0] });
+
+    EXPECT_EQ(commitsDetailed[4].getHash(), commitsHashes[0]);
+    EXPECT_EQ(commitsDetailed[4].getMessage(), "Commit1");
+    EXPECT_EQ(commitsDetailed[4].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[4].getParents(), std::vector<std::string>{});
 }

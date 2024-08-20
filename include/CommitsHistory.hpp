@@ -7,6 +7,7 @@
 namespace CppGit {
 
 class Repository; // forward-declaration
+class Commit;     // forward-declaration
 
 class CommitsHistory
 {
@@ -30,6 +31,7 @@ public:
     explicit CommitsHistory(const Repository& repo);
 
     std::vector<std::string> getCommitsLogHashesOnly() const;
+    std::vector<Commit> getCommitsLogDetailed() const;
 
     CommitsHistory& setAllBranches(bool allBranches);
     CommitsHistory& resetAllBranches();
