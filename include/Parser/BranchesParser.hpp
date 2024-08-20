@@ -3,7 +3,6 @@
 #include "../Branch.hpp"
 #include "Parser.hpp"
 
-#include <string>
 #include <string_view>
 
 namespace CppGit {

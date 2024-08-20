@@ -4,7 +4,6 @@
 #include "Parser.hpp"
 
 #include <string_view>
-#include <vector>
 
 namespace CppGit {
 
