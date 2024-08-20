@@ -2,6 +2,7 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
+#include "CommitsHistory.hpp"
 #include "ErrorCodes.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
@@ -32,6 +33,7 @@ public:
     CppGit::Branches Branches() const;
     CppGit::Index Index() const;
     CppGit::Commits Commits() const;
+    CppGit::CommitsHistory CommitsHistory() const;
 
     std::string getPathAsString() const;
     std::filesystem::path getPath() const;

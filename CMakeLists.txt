@@ -17,6 +17,7 @@ target_sources(CppGit
         src/Branches.cpp
         src/Index.cpp
         src/Commits.cpp
+        src/CommitsHistory.cpp
 
         src/Parser/CommitParser.cpp
         src/Parser/BranchesParser.cpp
