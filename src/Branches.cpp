@@ -156,6 +156,11 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
 
 auto Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string
 {
+    if (branchName == "HEAD")
+    {
+        return std::string{ "HEAD" };
+    }
+
     if (remote)
     {
         if (branchName.find("refs/remotes/") == std::string::npos)
