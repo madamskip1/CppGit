@@ -9,6 +9,7 @@ target_sources(CppGit_integration_tests
         Index_tests.cpp
         Commits_tests.cpp
         CommitsHistory_tests.cpp
+        Branches_tests.cpp
 )
 
 target_link_libraries(CppGit_integration_tests
