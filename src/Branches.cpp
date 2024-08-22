@@ -1,5 +1,6 @@
 #include "Branches.hpp"
 
+#include "Branch.hpp"
 #include "Parser/BranchesParser.hpp"
 #include "Repository.hpp"
 
@@ -23,6 +24,19 @@ auto Branches::getRemoteBranches() const -> std::vector<Branch>
 auto Branches::getLocalBranches() const -> std::vector<Branch>
 {
     return getBranchesImpl(true, false);
+}
+
+auto Branches::getCurrentBranch() const -> Branch
+{
+    auto currentBranchRef = getCurrentBranchRef();
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string(BranchesParser::BRANCHES_FORMAT), currentBranchRef);
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to get current branch");
+    }
+
+    auto branch = BranchesParser::parseBranch(output.stdout);
+    return branch;
 }
 
 auto Branches::getCurrentBranchRef() const -> std::string

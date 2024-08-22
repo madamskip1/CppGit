@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Branch.hpp"
-
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace CppGit {
 
 class Repository; // forward-declaration
+class Branch;     // forward-declaration
 
 class Branches
 {
@@ -20,6 +21,7 @@ public:
     auto getAllBranches() const -> std::vector<Branch>;
     auto getRemoteBranches() const -> std::vector<Branch>;
     auto getLocalBranches() const -> std::vector<Branch>;
+    auto getCurrentBranch() const -> Branch;
     auto getCurrentBranchRef() const -> std::string;
 
     auto branchExists(std::string_view branchName, bool remote = false) const -> bool;

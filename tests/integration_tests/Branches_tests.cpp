@@ -161,3 +161,14 @@ TEST_F(BranchesTests, changeBranchRef_shortName)
 
     EXPECT_EQ(hashAfterChange, initialCommitHash);
 }
+
+TEST_F(BranchesTests, currentBranchInfo)
+{
+    const auto& branches = repository->Branches();
+    const auto currentBranch = branches.getCurrentBranch();
+
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
+    EXPECT_EQ(currentBranch.getUpstreamPull(), "");
+    EXPECT_EQ(currentBranch.getUpstreamPush(), "");
+    EXPECT_TRUE(currentBranch.isLocalBranch());
+}
