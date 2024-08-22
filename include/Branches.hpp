@@ -24,6 +24,8 @@ public:
     auto getCurrentBranch() const -> Branch;
     auto getCurrentBranchRef() const -> std::string;
 
+    auto changeCurrentBranch(std::string_view branchName) const -> void;
+
     auto branchExists(std::string_view branchName, bool remote = false) const -> bool;
     auto branchExists(const Branch& branch) const -> bool;
 

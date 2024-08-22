@@ -172,3 +172,35 @@ TEST_F(BranchesTests, currentBranchInfo)
     EXPECT_EQ(currentBranch.getUpstreamPush(), "");
     EXPECT_TRUE(currentBranch.isLocalBranch());
 }
+
+TEST_F(BranchesTests, changeBranch_shortName)
+{
+    const auto& branches = repository->Branches();
+    branches.createBranch("new_branch");
+
+    auto allBranches = branches.getAllBranches();
+    ASSERT_EQ(allBranches.size(), 2);
+    EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
+    EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
+    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+
+    branches.changeCurrentBranch("new_branch");
+
+    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
+}
+
+TEST_F(BranchesTests, changeBranch_fullName)
+{
+    const auto& branches = repository->Branches();
+    branches.createBranch("new_branch");
+
+    auto allBranches = branches.getAllBranches();
+    ASSERT_EQ(allBranches.size(), 2);
+    EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
+    EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
+    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+
+    branches.changeCurrentBranch("refs/heads/new_branch");
+
+    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
+}

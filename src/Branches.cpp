@@ -50,6 +50,17 @@ auto Branches::getCurrentBranchRef() const -> std::string
     return output.stdout;
 }
 
+auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
+{
+    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    auto output = repo.executeGitCommand("symbolic-ref", "HEAD", branchNameWithPrefix);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+}
+
 auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
