@@ -22,6 +22,7 @@ target_sources(CppGit
         src/Parser/CommitParser.cpp
         src/Parser/BranchesParser.cpp
         src/Parser/IndexParser.cpp
+        src/Parser/DiffParser.cpp
 )
 
 target_include_directories(CppGit
