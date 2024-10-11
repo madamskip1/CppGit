@@ -9,7 +9,6 @@ namespace CppGit {
 class Parser
 {
 public:
-    Parser() = delete;
     virtual ~Parser() = default;
 
     template <typename T>

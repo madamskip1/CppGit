@@ -7,52 +7,63 @@
 #include <variant>
 #include <vector>
 
+namespace CppGit {
+
 enum class DiffStatus
 {
-    ADDED,
+    UNKNOWN,
+    NEW,
     COPIED,
+    COPIED_AND_MODIFIED,
     DELETED,
     MODDIFIED,
     RENAMED,
+    RENAMED_AND_MODIFIED,
     TYPE_CHANGED,
-    UNKNOWN
+    TYPE_CHANGED_SYMLINK,
+    BINARY_CHANGED
 };
 
-struct DiffHunk
+enum class DiffType
 {
-    std::pair<int, int> rangeBefore;
-    std::pair<int, int> rangeAfter;
-    std::vector<std::string> content;
+    NORMAL,
+    COMBINED
 };
-
 struct DiffFile
 {
+    DiffType isCombined;
+    DiffStatus diffStatus;
+
     std::string fileA;
     std::string fileB;
     std::vector<std::string> indicesBefore;
-    std::string indexesAfter;
+    std::string indexAfter;
+    int oldMode{ 0 };
+    int newMode{ 0 };
+    int similarityIndex{ 0 };
+
+    std::vector<std::pair<int, int>> hunkRangesBefore;
+    std::pair<int, int> hunkRangeAfter;
+    std::vector<std::string> hunkContent;
 };
-
-namespace CppGit {
-
 class DiffParser : protected Parser
 {
 public:
+    DiffParser() = default;
+
+    auto parse(const std::string_view diffContent) -> std::vector<DiffFile>;
+
+    // private:
     enum class ParseState
     {
         WAITING_FOR_DIFF,
         HEADER,
-        EXTENDED_HEADER,
-        HUNK_FILES,
+        HUNK_FILE_A,
+        HUNK_FILE_B,
         HUNK_HEADER,
         HUNK_CONTENT
     };
 
-    enum class DiffType
-    {
-        NORMAL,
-        COMBINED
-    };
 
     enum class HeaderLineType
     {
@@ -78,10 +89,13 @@ public:
 
     ParseState currentState;
 
+    static auto isCombinedDiff(const std::string_view line) -> bool;
     static auto parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine;
 
 private:
     static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
+    static auto parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>;
 };
+
 
 } // namespace CppGit
