@@ -3,7 +3,9 @@
 #include <charconv>
 #include <regex>
 
-auto CppGit::DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFile>
+namespace CppGit {
+
+auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFile>
 {
     auto splittedDiff = split(diffContent, '\n');
     std::vector<HeaderLine> headersLines;
@@ -192,7 +194,7 @@ auto CppGit::DiffParser::parse(const std::string_view diffContent) -> std::vecto
 }
 
 
-auto CppGit::DiffParser::isCombinedDiff(const std::string_view line) -> bool
+auto DiffParser::isCombinedDiff(const std::string_view line) -> bool
 {
     static constexpr auto pattern = R"(^diff --(\w+) .+$)";
 
@@ -210,7 +212,7 @@ auto CppGit::DiffParser::isCombinedDiff(const std::string_view line) -> bool
     return false;
 }
 
-auto CppGit::DiffParser::parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine
+auto DiffParser::parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine
 {
     static constexpr auto oldModePattern = R"(^old mode (\d{6})$)";
     static constexpr auto newModePattern = R"(^new mode (\d{6})$)";
@@ -301,7 +303,7 @@ auto CppGit::DiffParser::parseHeaderLine(const std::string_view line, const Head
     return HeaderLine();
 }
 
-auto CppGit::DiffParser::getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int
+auto DiffParser::getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int
 {
     int mode{ 0 };
     if (match[index].first != match[index].second)
@@ -312,7 +314,7 @@ auto CppGit::DiffParser::getIntFromStringViewMatch(const std::match_results<std:
     return mode;
 }
 
-auto CppGit::DiffParser::parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>
+auto DiffParser::parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>
 {
     static constexpr auto hunkHeaderPattern = R"(^@{2,} ((?:-\d+(?:,\d+)?\s)+)(\+\d+(?:,\d+)?) @{2,}$)";
 
@@ -337,7 +339,7 @@ auto CppGit::DiffParser::parseHunkHeader(const std::string_view line) -> std::pa
 }
 
 
-auto CppGit::DiffParser::parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>
+auto DiffParser::parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>
 {
     auto splittedRange = split(range, ',');
 
@@ -352,3 +354,5 @@ auto CppGit::DiffParser::parseHunkHeaderRange(const std::string_view range) -> s
 
     return std::make_pair(left, right);
 }
+
+} // namespace CppGit
