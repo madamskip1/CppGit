@@ -32,7 +32,7 @@ enum class DiffType
 struct DiffFile
 {
     DiffType isCombined;
-    DiffStatus diffStatus;
+    DiffStatus diffStatus{ DiffStatus::UNKNOWN };
 
     std::string fileA;
     std::string fileB;

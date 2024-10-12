@@ -17,6 +17,11 @@ auto CppGit::DiffParser::parse(const std::string_view diffContent) -> std::vecto
         switch (currentState)
         {
         case ParseState::WAITING_FOR_DIFF: {
+            if (line.empty())
+            {
+                continue;
+            }
+
             if (line.substr(0, 4) != "diff")
             {
                 throw std::runtime_error("Invalid diff format");
@@ -178,8 +183,10 @@ auto CppGit::DiffParser::parse(const std::string_view diffContent) -> std::vecto
             break;
         }
     }
-
-    diffFiles.push_back(std::move(diffFile));
+    if (diffFile.diffStatus != DiffStatus::UNKNOWN)
+    {
+        diffFiles.push_back(std::move(diffFile));
+    }
 
     return diffFiles;
 }

@@ -733,3 +733,13 @@ Binary files differ)";
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
     EXPECT_EQ(diffFile.hunkContent.size(), 0);
 }
+
+TEST(DiffParserTests, emptyDiff)
+{
+    std::string diff = "";
+
+    auto diffParser = CppGit::DiffParser();
+    auto diffFiles = diffParser.parse(diff);
+
+    ASSERT_EQ(diffFiles.size(), 0);
+}
