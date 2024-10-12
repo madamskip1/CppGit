@@ -32,6 +32,11 @@ auto Repository::CommitsHistory() const -> CppGit::CommitsHistory
     return CppGit::CommitsHistory(*this);
 }
 
+auto Repository::Diff() const -> CppGit::Diff
+{
+    return CppGit::Diff(*this);
+}
+
 auto Repository::getPathAsString() const -> std::string
 {
     return path.string();
