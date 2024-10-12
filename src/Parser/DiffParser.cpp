@@ -311,36 +311,37 @@ auto CppGit::DiffParser::parseHunkHeader(const std::string_view line) -> std::pa
 
     auto match = std::match_results<std::string_view::const_iterator>();
     std::regex_match(line.cbegin(), line.cend(), match, std::regex{ hunkHeaderPattern });
+
     auto beforeIndicesSV = string_viewIteratorToString_view(match[1].first, match[1].second - 1);
     auto beforeIndices = split(beforeIndicesSV, ' ');
 
     auto hunkRangesBefore = std::vector<std::pair<int, int>>{};
-    auto hunkRangeAfter = std::pair<int, int>{};
 
     for (auto beforeRange : beforeIndices)
     {
-        auto splittedRange = split(beforeRange, ',');
-        int left{ 0 };
-        int right{ -1 };
-        std::from_chars(splittedRange[0].data() + 1, splittedRange[0].data() + splittedRange[0].size(), left);
-        if (splittedRange.size() == 2)
-        {
-            std::from_chars(splittedRange[1].data(), splittedRange[1].data() + splittedRange[1].size(), right);
-        }
+        auto hunkRangeBefore = parseHunkHeaderRange(beforeRange);
 
-        hunkRangesBefore.emplace_back(left, right);
+        hunkRangesBefore.push_back(hunkRangeBefore);
     }
 
-    auto splittedRange = split(string_viewIteratorToString_view(match[2].first, match[2].second), ',');
+    auto hunkRangeAfter = parseHunkHeaderRange(string_viewIteratorToString_view(match[2].first, match[2].second));
+
+    return std::make_pair(hunkRangesBefore, hunkRangeAfter);
+}
+
+
+auto CppGit::DiffParser::parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>
+{
+    auto splittedRange = split(range, ',');
+
     int left{ 0 };
-    int right{ -1 };
     std::from_chars(splittedRange[0].data() + 1, splittedRange[0].data() + splittedRange[0].size(), left);
+
+    int right{ -1 };
     if (splittedRange.size() == 2)
     {
         std::from_chars(splittedRange[1].data(), splittedRange[1].data() + splittedRange[1].size(), right);
     }
 
-    hunkRangeAfter = std::make_pair(left, right);
-
-    return std::make_pair(hunkRangesBefore, hunkRangeAfter);
+    return std::make_pair(left, right);
 }

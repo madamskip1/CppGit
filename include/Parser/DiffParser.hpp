@@ -95,6 +95,7 @@ public:
 private:
     static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
     static auto parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>;
+    static auto parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>;
 };
 
 
