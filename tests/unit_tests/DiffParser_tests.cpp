@@ -508,9 +508,8 @@ new mode 100755)";
     EXPECT_EQ(diffFile.oldMode, 100'644);
     EXPECT_EQ(diffFile.newMode, 100'755);
     EXPECT_EQ(diffFile.similarityIndex, 0);
-    // TODO: Change to get file name from diff line
-    // EXPECT_EQ(diffFile.fileA, "file.txt");
-    // EXPECT_EQ(diffFile.fileB, "file.txt");
+    EXPECT_EQ(diffFile.fileA, "file.txt");
+    EXPECT_EQ(diffFile.fileB, "file.txt");
     EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
@@ -725,9 +724,8 @@ Binary files differ)";
     EXPECT_EQ(diffFile.oldMode, 0);
     EXPECT_EQ(diffFile.newMode, 0);
     EXPECT_EQ(diffFile.similarityIndex, 0);
-    // TODO: Change to get file name from diff line
-    // EXPECT_EQ(diffFile.fileA, "image.png");
-    // EXPECT_EQ(diffFile.fileB, "image.png");
+    EXPECT_EQ(diffFile.fileA, "image.png");
+    EXPECT_EQ(diffFile.fileB, "image.png");
     EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);

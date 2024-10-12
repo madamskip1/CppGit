@@ -31,7 +31,11 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             currentState = ParseState::HEADER;
             diffFile = DiffFile{};
             headersLines.clear();
-            diffFile.isCombined = isCombinedDiff(line) ? DiffType::COMBINED : DiffType::NORMAL;
+
+            auto diffLine = parseDiffLine(line);
+            diffFile.isCombined = diffLine.isCombined ? DiffType::COMBINED : DiffType::NORMAL;
+            diffFile.fileA = diffLine.fileA;
+            diffFile.fileB = diffLine.fileB;
             break;
         }
         case ParseState::HEADER: {
@@ -194,24 +198,6 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
 }
 
 
-auto DiffParser::isCombinedDiff(const std::string_view line) -> bool
-{
-    static constexpr auto pattern = R"(^diff --(\w+) .+$)";
-
-    std::regex regex{ pattern };
-
-    if (std::match_results<std::string_view::const_iterator> match; std::regex_match(line.begin(), line.end(), match, regex))
-    {
-        std::string_view captured_group(match[1].first, std::distance(match[1].first, match[1].second));
-
-        return captured_group == "cc";
-    }
-
-    throw std::runtime_error("Invalid diff format");
-
-    return false;
-}
-
 auto DiffParser::parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine
 {
     static constexpr auto oldModePattern = R"(^old mode (\d{6})$)";
@@ -353,6 +339,38 @@ auto DiffParser::parseHunkHeaderRange(const std::string_view range) -> std::pair
     }
 
     return std::make_pair(left, right);
+}
+
+auto DiffParser::parseDiffLine(const std::string_view line) -> DiffLine
+{
+    static constexpr auto pattern = R"(^diff --(\w{2,3}) (\S+)\s?(\S+)?$)";
+
+    auto match = std::match_results<std::string_view::const_iterator>();
+    std::regex_match(line.cbegin(), line.cend(), match, std::regex{ pattern });
+
+    auto isCombined = false;
+    if (string_viewIteratorToString_view(match[1].first, match[1].second) == "cc")
+    {
+        isCombined = true;
+    }
+
+    auto fileA = string_viewIteratorToString_view(match[2].first, match[2].second);
+    if (fileA.substr(0, 2) == "a/")
+    {
+        fileA.remove_prefix(2);
+    }
+
+    auto fileB = std::string_view{};
+    if (match[3].matched)
+    {
+        fileB = string_viewIteratorToString_view(match[2].first, match[2].second);
+        if (fileB.substr(0, 2) == "a/")
+        {
+            fileB.remove_prefix(2);
+        }
+    }
+
+    return DiffLine{ isCombined, fileA, fileB };
 }
 
 } // namespace CppGit

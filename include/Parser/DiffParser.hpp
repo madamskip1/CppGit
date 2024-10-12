@@ -64,7 +64,6 @@ public:
         HUNK_CONTENT
     };
 
-
     enum class HeaderLineType
     {
         NO_LINE,
@@ -87,15 +86,22 @@ public:
         std::variant<int, std::string_view, std::tuple<std::string_view, std::string_view, int>> value;
     };
 
+    struct DiffLine
+    {
+        bool isCombined;
+        std::string_view fileA;
+        std::string_view fileB;
+    };
+
     ParseState currentState;
 
-    static auto isCombinedDiff(const std::string_view line) -> bool;
     static auto parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine;
 
 private:
     static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
     static auto parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>;
     static auto parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>;
+    static auto parseDiffLine(const std::string_view line) -> DiffLine;
 };
 
 
