@@ -98,11 +98,13 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
                     if (headerLine.type == HeaderLineType::NEW_FILE)
                     {
                         diffFile.diffStatus = DiffStatus::NEW;
+                        diffFile.fileA = "/dev/null";
                         diffFile.newMode = std::get<int>(headerLine.value);
                     }
                     else if (headerLine.type == HeaderLineType::DELETED_FILE)
                     {
                         diffFile.diffStatus = DiffStatus::DELETED;
+                        diffFile.fileB = "/dev/null";
                         diffFile.oldMode = std::get<int>(headerLine.value);
                     }
                     else if (headerLine.type == HeaderLineType::RENAME_FROM)

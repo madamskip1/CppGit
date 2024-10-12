@@ -221,7 +221,7 @@ index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
 +Line 3
 +Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -250,6 +250,36 @@ index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
     EXPECT_EQ(diffFile.hunkContent[3], "+Line 4");
 }
 
+TEST(DiffParserTests, fileAddedWithoutContext)
+{
+    std::string diff = R"(diff --git a/test4.txt b/test4.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391)";
+
+    auto diffParser = CppGit::DiffParser{};
+    auto diffFiles = diffParser.parse(diff);
+
+    ASSERT_EQ(diffFiles.size(), 1);
+
+    auto diffFile = diffFiles[0];
+
+    EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
+    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 1);
+    EXPECT_EQ(diffFile.indicesBefore[0], "0000000000000000000000000000000000000000");
+    EXPECT_EQ(diffFile.indexAfter, "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+    EXPECT_EQ(diffFile.oldMode, 0);
+    EXPECT_EQ(diffFile.newMode, 100'644);
+    EXPECT_EQ(diffFile.similarityIndex, 0);
+    EXPECT_EQ(diffFile.fileA, "/dev/null");
+    EXPECT_EQ(diffFile.fileB, "test4.txt");
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
+    EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
+}
+
+
 TEST(DiffParserTests, fileDeleted)
 {
     std::string diff = R"(diff --git a/deleted_file.txt b/deleted_file.txt
@@ -263,7 +293,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
 -Line 3
 -Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -292,6 +322,35 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
     EXPECT_EQ(diffFile.hunkContent[3], "-Line 4");
 }
 
+TEST(DiffPraserTests, fileDeletedWithoutContext)
+{
+    std::string diff = R"(diff --git a/test4.txt b/test4.txt
+deleted file mode 100644
+index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..0000000000000000000000000000000000000000)";
+
+    auto diffParser = CppGit::DiffParser{};
+    auto diffFiles = diffParser.parse(diff);
+
+    ASSERT_EQ(diffFiles.size(), 1);
+
+    auto diffFile = diffFiles[0];
+
+    EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::DELETED);
+    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 1);
+    EXPECT_EQ(diffFile.indicesBefore[0], "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+    EXPECT_EQ(diffFile.indexAfter, "0000000000000000000000000000000000000000");
+    EXPECT_EQ(diffFile.oldMode, 100'644);
+    EXPECT_EQ(diffFile.newMode, 0);
+    EXPECT_EQ(diffFile.similarityIndex, 0);
+    EXPECT_EQ(diffFile.fileA, "test4.txt");
+    EXPECT_EQ(diffFile.fileB, "/dev/null");
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
+    EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
+}
+
 TEST(DiffParserTests, fileModified)
 {
     std::string diff = R"(diff --git a/modified_file.txt b/modified_file.txt
@@ -305,7 +364,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 +Modified Line 3
  Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -343,7 +402,7 @@ similarity index 90%
 rename from old_name.txt
 rename to new_name.txt)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -381,7 +440,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 +Modified Line 3
  Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -418,7 +477,7 @@ similarity index 100%
 copy from original.txt
 copy to copied_file.txt)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -458,7 +517,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 +Modified Line 3
  Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -494,7 +553,7 @@ TEST(DiffParserTests, fileTypeChanged)
 old mode 100644
 new mode 100755)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -530,7 +589,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 -File content
 +/path/to/symlink)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -573,7 +632,7 @@ index 6fefc78134f4d22c90a778f555c4137feded408e,1d89a1850b82787e2766aa3c724048fc7
   Line 3
   Line 4)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -634,7 +693,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
 @@ -0,0 +1 @@
 +test3_content)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 3);
@@ -709,7 +768,7 @@ TEST(DiffParserTests, binaryFileChanged)
 index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc74ea4fbc
 Binary files differ)";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
@@ -736,7 +795,7 @@ TEST(DiffParserTests, emptyDiff)
 {
     std::string diff = "";
 
-    auto diffParser = CppGit::DiffParser();
+    auto diffParser = CppGit::DiffParser{};
     auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 0);
