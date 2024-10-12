@@ -352,17 +352,17 @@ rename to new_name.txt)";
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::RENAMED);
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile.indicesBefore.size(), 0);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 0);
     EXPECT_EQ(diffFile.newMode, 0);
     EXPECT_EQ(diffFile.similarityIndex, 90);
     EXPECT_EQ(diffFile.fileA, "old_name.txt");
     EXPECT_EQ(diffFile.fileB, "new_name.txt");
-    EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
-    EXPECT_EQ(diffFile.hunkContent.size(), 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
 }
 
 TEST(DiffParserTests, fileRenamedWithContentChanged)
@@ -427,19 +427,19 @@ copy to copied_file.txt)";
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::COPIED);
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile.indicesBefore.size(), 0);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 0);
     EXPECT_EQ(diffFile.newMode, 0);
     EXPECT_EQ(diffFile.similarityIndex, 100);
     EXPECT_EQ(diffFile.fileA, "original.txt");
     EXPECT_EQ(diffFile.fileB, "copied_file.txt");
-    EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
-    EXPECT_EQ(diffFile.hunkContent.size(), 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
 }
 
 TEST(DiffParserTests, fileCopiedWithContentChanged)
@@ -503,19 +503,19 @@ new mode 100755)";
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::TYPE_CHANGED);
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile.indicesBefore.size(), 0);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 100'644);
     EXPECT_EQ(diffFile.newMode, 100'755);
     EXPECT_EQ(diffFile.similarityIndex, 0);
     EXPECT_EQ(diffFile.fileA, "file.txt");
     EXPECT_EQ(diffFile.fileB, "file.txt");
-    EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
-    EXPECT_EQ(diffFile.hunkContent.size(), 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
 }
 
 TEST(DiffParserTests, fileTypeChangedSymlink)
@@ -666,7 +666,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
 
     EXPECT_EQ(diffFile2.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile2.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile2.indicesBefore.size(), 1);
+    ASSERT_EQ(diffFile2.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile2.indicesBefore[0], "0000000000000000000000000000000000000000");
     EXPECT_EQ(diffFile2.indexAfter, "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile2.oldMode, 0);
@@ -686,7 +686,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
 
     EXPECT_EQ(diffFile3.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile3.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile3.indicesBefore.size(), 1);
+    ASSERT_EQ(diffFile3.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile3.indicesBefore[0], "0000000000000000000000000000000000000000");
     EXPECT_EQ(diffFile3.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
     EXPECT_EQ(diffFile3.oldMode, 0);
@@ -718,7 +718,7 @@ Binary files differ)";
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::BINARY_CHANGED);
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
-    EXPECT_EQ(diffFile.indicesBefore.size(), 1);
+    ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
     EXPECT_EQ(diffFile.oldMode, 0);
@@ -726,10 +726,10 @@ Binary files differ)";
     EXPECT_EQ(diffFile.similarityIndex, 0);
     EXPECT_EQ(diffFile.fileA, "image.png");
     EXPECT_EQ(diffFile.fileB, "image.png");
-    EXPECT_EQ(diffFile.hunkRangesBefore.size(), 0);
+    ASSERT_EQ(diffFile.hunkRangesBefore.size(), 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.first, 0);
     EXPECT_EQ(diffFile.hunkRangeAfter.second, 0);
-    EXPECT_EQ(diffFile.hunkContent.size(), 0);
+    ASSERT_EQ(diffFile.hunkContent.size(), 0);
 }
 
 TEST(DiffParserTests, emptyDiff)
