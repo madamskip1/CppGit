@@ -44,6 +44,7 @@ public:
     auto createBranchFromCommit(std::string_view newBranchName, std::string_view commitHash) const -> void;
     auto createBranchFromCommit(std::string_view newBranchName, const Commit& commit) const -> void;
 
+    auto changeCurrentBranchRef(std::string_view newHash) const -> void;
     auto changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void;
     auto changeBranchRef(const Branch& branch, std::string_view newHash) const -> void;
 
