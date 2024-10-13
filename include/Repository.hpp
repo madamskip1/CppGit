@@ -3,6 +3,7 @@
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
+#include "Diff.hpp"
 #include "ErrorCodes.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
@@ -34,6 +35,7 @@ public:
     auto Index() const -> CppGit::Index;
     auto Commits() const -> CppGit::Commits;
     auto CommitsHistory() const -> CppGit::CommitsHistory;
+    auto Diff() const -> CppGit::Diff;
 
     auto getPathAsString() const -> std::string;
     auto getPath() const -> std::filesystem::path;

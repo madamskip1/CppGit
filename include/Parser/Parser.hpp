@@ -9,7 +9,6 @@ namespace CppGit {
 class Parser
 {
 public:
-    Parser() = delete;
     virtual ~Parser() = default;
 
     template <typename T>
@@ -48,6 +47,12 @@ public:
         {
             return std::strlen(delimiter);
         }
+    }
+
+    static auto string_viewIteratorToString_view(const std::string_view::const_iterator& begin, const std::string_view::const_iterator& end) -> std::string_view
+    {
+        auto count = static_cast<std::string_view::size_type>(end - begin);
+        return std::string_view{ begin, count };
     }
 };
 
