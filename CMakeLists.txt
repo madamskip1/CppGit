@@ -19,6 +19,7 @@ target_sources(CppGit
         src/Commits.cpp
         src/CommitsHistory.cpp
         src/Diff.cpp
+        src/Merge.cpp
 
         src/Parser/CommitParser.cpp
         src/Parser/BranchesParser.cpp

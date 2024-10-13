@@ -18,6 +18,7 @@ class Index;          // forward-declaration
 class Commits;        // forward-declaration
 class CommitsHistory; // forward-declaration
 class Diff;           // forward-declaration
+class Merge;          // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 class Repository
@@ -38,6 +39,7 @@ public:
     auto Commits() const -> CppGit::Commits;
     auto CommitsHistory() const -> CppGit::CommitsHistory;
     auto Diff() const -> CppGit::Diff;
+    auto Merge() const -> CppGit::Merge;
 
     auto getPathAsString() const -> std::string;
     auto getPath() const -> std::filesystem::path;

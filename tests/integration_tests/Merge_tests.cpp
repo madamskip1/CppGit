@@ -1,0 +1,98 @@
+#include "BaseRepositoryFixture.hpp"
+#include "Branches.hpp"
+#include "Commits.hpp"
+#include "Merge.hpp"
+
+#include <gtest/gtest.h>
+
+class MergeTests : public BaseRepositoryFixture
+{
+};
+
+TEST_F(MergeTests, canFastForward_emptyRepo_sameBranch)
+{
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.canFastForward("main"), std::runtime_error);
+}
+
+TEST_F(MergeTests, canFastForward_emptyRepo_head)
+{
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.canFastForward("HEAD"), std::runtime_error);
+}
+
+TEST_F(MergeTests, canFastForward_sameBranch)
+{
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_TRUE(merge.canFastForward("main"));
+}
+
+TEST_F(MergeTests, canFastForward_head)
+{
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_TRUE(merge.canFastForward("HEAD"));
+}
+
+TEST_F(MergeTests, canFastForward_linearBehind)
+{
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+    branches.changeCurrentBranch("second_branch");
+
+    commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("main");
+
+    auto merge = repository->Merge();
+
+    EXPECT_TRUE(merge.canFastForward("second_branch"));
+}
+
+TEST_F(MergeTests, canFastForward_linearAhead)
+{
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    commits.createCommit("Second commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_FALSE(merge.canFastForward("second_branch"));
+}
+
+TEST_F(MergeTests, canFastForward_changesInBothBranches)
+{
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    commits.createCommit("Third commit");
+
+    branches.changeCurrentBranch("main");
+
+    auto merge = repository->Merge();
+
+    EXPECT_FALSE(merge.canFastForward("second_branch"));
+}
