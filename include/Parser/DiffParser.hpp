@@ -1,51 +1,14 @@
 #pragma once
 
+#include "DiffFile.hpp"
 #include "Parser.hpp"
 
 #include <regex>
-#include <string>
 #include <variant>
 #include <vector>
 
 namespace CppGit {
 
-enum class DiffStatus
-{
-    UNKNOWN,
-    NEW,
-    COPIED,
-    COPIED_AND_MODIFIED,
-    DELETED,
-    MODDIFIED,
-    RENAMED,
-    RENAMED_AND_MODIFIED,
-    TYPE_CHANGED,
-    TYPE_CHANGED_SYMLINK,
-    BINARY_CHANGED
-};
-
-enum class DiffType
-{
-    NORMAL,
-    COMBINED
-};
-struct DiffFile
-{
-    DiffType isCombined;
-    DiffStatus diffStatus{ DiffStatus::UNKNOWN };
-
-    std::string fileA;
-    std::string fileB;
-    std::vector<std::string> indicesBefore;
-    std::string indexAfter;
-    int oldMode{ 0 };
-    int newMode{ 0 };
-    int similarityIndex{ 0 };
-
-    std::vector<std::pair<int, int>> hunkRangesBefore;
-    std::pair<int, int> hunkRangeAfter;
-    std::vector<std::string> hunkContent;
-};
 class DiffParser : protected Parser
 {
 public:
@@ -53,7 +16,7 @@ public:
 
     auto parse(const std::string_view diffContent) -> std::vector<DiffFile>;
 
-    // private:
+private:
     enum class ParseState
     {
         WAITING_FOR_DIFF,
@@ -93,15 +56,13 @@ public:
         std::string_view fileB;
     };
 
-    ParseState currentState;
+    ParseState currentState{ ParseState::WAITING_FOR_DIFF };
 
     static auto parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine;
-
-private:
-    static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
     static auto parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>;
     static auto parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>;
     static auto parseDiffLine(const std::string_view line) -> DiffLine;
+    static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
 };
 
 

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "DiffFile.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
-#include "Parser/DiffParser.hpp"
 
 #include <filesystem>
 #include <string_view>
@@ -26,6 +26,6 @@ public:
 private:
     const Repository& repo;
 
-    auto getDiffFilesFromOutput(const GitCommandOutput& output) const -> std::vector<DiffFile>;
+    static auto getDiffFilesFromOutput(const GitCommandOutput& output) -> std::vector<DiffFile>;
 };
 } // namespace CppGit

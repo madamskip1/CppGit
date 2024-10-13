@@ -1,5 +1,6 @@
 #include "Diff.hpp"
 
+#include "Parser/DiffParser.hpp"
 #include "Repository.hpp"
 
 namespace CppGit {
@@ -43,7 +44,7 @@ auto Diff::getDiffFile(const std::string_view commitHashA, const std::string_vie
     return getDiffFilesFromOutput(output);
 }
 
-auto Diff::getDiffFilesFromOutput(const GitCommandOutput& output) const -> std::vector<DiffFile>
+auto Diff::getDiffFilesFromOutput(const GitCommandOutput& output) -> std::vector<DiffFile>
 {
     if (output.return_code != 0)
     {
