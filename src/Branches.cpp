@@ -1,5 +1,7 @@
 #include "Branches.hpp"
 
+#include "Branch.hpp"
+#include "Commit.hpp"
 #include "Parser/BranchesParser.hpp"
 #include "Repository.hpp"
 
@@ -25,6 +27,19 @@ auto Branches::getLocalBranches() const -> std::vector<Branch>
     return getBranchesImpl(true, false);
 }
 
+auto Branches::getCurrentBranch() const -> Branch
+{
+    auto currentBranchRef = getCurrentBranchRef();
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string(BranchesParser::BRANCHES_FORMAT), currentBranchRef);
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to get current branch");
+    }
+
+    auto branch = BranchesParser::parseBranch(output.stdout);
+    return branch;
+}
+
 auto Branches::getCurrentBranchRef() const -> std::string
 {
     auto output = repo.executeGitCommand("symbolic-ref", "HEAD");
@@ -34,6 +49,22 @@ auto Branches::getCurrentBranchRef() const -> std::string
     }
 
     return output.stdout;
+}
+
+auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
+{
+    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    auto output = repo.executeGitCommand("symbolic-ref", "HEAD", branchNameWithPrefix);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+}
+
+auto Branches::changeCurrentBranch(const Branch& branch) const -> void
+{
+    return changeCurrentBranch(branch.getRefName());
 }
 
 auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
@@ -86,21 +117,38 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
     return getHashBranchRefersTo(branch.getRefName(), false);
 }
 
-auto Branches::createBranch(std::string_view branchName, std::string_view hash) const -> void
+auto Branches::createBranch(std::string_view branchName) const -> void
 {
-    // TODO: can we create remote branches this way?
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("update-ref", branchNameWithPrefix, hash);
+    auto newBranchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    createBranchImpl(newBranchNameWithPrefix, "HEAD");
+}
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to create branch");
-    }
+auto Branches::createBranch(const Branch& branch) const -> void
+{
+    createBranch(branch.getRefName());
+}
+
+auto Branches::createBranchFromBranch(std::string_view newBranchName, std::string_view sourceBranch) const -> void
+{
+    auto newBranchNameWithPrefix = addPrefixIfNeeded(newBranchName, false);
+    auto sourceBranchNameWithPrefix = addPrefixIfNeeded(sourceBranch, false);
+    createBranchImpl(newBranchNameWithPrefix, sourceBranchNameWithPrefix);
 }
 
 auto Branches::createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const -> void
 {
-    createBranch(newBranchName, getHashBranchRefersTo(branch));
+    createBranchFromBranch(newBranchName, branch.getRefName());
+}
+
+auto Branches::createBranchFromCommit(std::string_view newBranchName, std::string_view commitHash) const -> void
+{
+    auto newBranchNameWithPrefix = addPrefixIfNeeded(newBranchName, false);
+    createBranchImpl(newBranchNameWithPrefix, commitHash);
+}
+
+auto Branches::createBranchFromCommit(std::string_view newBranchName, const Commit& commit) const -> void
+{
+    createBranchFromCommit(newBranchName, commit.getHash());
 }
 
 auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
@@ -154,8 +202,24 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
     return branches;
 }
 
+auto Branches::createBranchImpl(std::string_view branchName, std::string_view source) const -> void
+{
+    // TODO: can we create remote branches this way?
+    auto output = repo.executeGitCommand("update-ref", branchName, source);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to create branch");
+    }
+}
+
 auto Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string
 {
+    if (branchName == "HEAD")
+    {
+        return std::string{ "HEAD" };
+    }
+
     if (remote)
     {
         if (branchName.find("refs/remotes/") == std::string::npos)
