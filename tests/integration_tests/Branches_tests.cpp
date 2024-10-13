@@ -147,10 +147,10 @@ TEST_F(BranchesTests, createBranchFromCommit_fullName)
     auto allBranches = branches.getAllBranches();
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
-    EXPECT_EQ(allBranches[2].getRefName(), "refs/heads/new_branch_from_commit");
+    EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch_from_commit");
 
     EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branches.getHashBranchRefersTo("refs/heads/new_branch_from_commit"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromCommit_shortName)
@@ -159,15 +159,15 @@ TEST_F(BranchesTests, createBranchFromCommit_shortName)
     const auto& commits = repository->Commits();
 
     auto secondCommitHash = commits.createCommit("second commit");
-    branches.createBranchFromCommit("refs/heads/new_branch_from_commit", initialCommitHash);
+    branches.createBranchFromCommit("new_branch_from_commit", initialCommitHash);
 
     auto allBranches = branches.getAllBranches();
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
-    EXPECT_EQ(allBranches[2].getRefName(), "new_branch_from_commit");
+    EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch_from_commit");
 
     EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branches.getHashBranchRefersTo("refs/heads/new_branch_from_commit"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, deleteBranch_fullName)

@@ -119,7 +119,8 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
 
 auto Branches::createBranch(std::string_view branchName) const -> void
 {
-    createBranchImpl(branchName, "HEAD");
+    auto newBranchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    createBranchImpl(newBranchNameWithPrefix, "HEAD");
 }
 
 auto Branches::createBranch(const Branch& branch) const -> void
