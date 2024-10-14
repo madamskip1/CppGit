@@ -7,6 +7,44 @@
 
 namespace CppGit {
 
+auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::string
+{
+    return mergeFastForward(sourceBranch, "HEAD");
+}
+
+auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
+{
+    auto index = repo.Index();
+
+    if (index.isDirty())
+    {
+        throw std::runtime_error("Cannot merge with dirty worktree");
+    }
+
+    auto ancestor = getAncestor(sourceBranch, targetBranch);
+
+    auto branches = repo.Branches();
+
+    auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
+    auto targetBranchRef = branches.getHashBranchRefersTo(targetBranch);
+
+    if (ancestor == sourceBranchRef)
+    {
+        // Nothing to merge
+        return targetBranchRef;
+    }
+
+    if (ancestor != targetBranchRef)
+    {
+        throw std::runtime_error("Cannot fast-forward");
+    }
+
+    branches.changeCurrentBranchRef(sourceBranchRef);
+
+    return sourceBranchRef;
+}
+
+
 auto Merge::canFastForward(const std::string_view sourceBranch) const -> bool
 {
     return canFastForward(sourceBranch, "HEAD");

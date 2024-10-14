@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <string_view>
 #include "Repository.hpp"
 
@@ -11,6 +12,9 @@ public:
     explicit Merge(const Repository& repo)
         : repo(repo)
     { }
+
+    auto mergeFastForward(const std::string_view sourceBranch) const -> std::string;
+    auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
 
     auto canFastForward(const std::string_view sourceBranch) const -> bool;
     auto canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
