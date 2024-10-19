@@ -10,7 +10,7 @@ class IndexTests : public BaseRepositoryFixture
 
 TEST_F(IndexTests, addAndRemoveRegularFile)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -27,7 +27,7 @@ TEST_F(IndexTests, addAndRemoveRegularFile)
 
 TEST_F(IndexTests, addAndRemoveRegularFile_StagedListWithDetail)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -45,13 +45,13 @@ TEST_F(IndexTests, addAndRemoveRegularFile_StagedListWithDetail)
 
 TEST_F(IndexTests, addRegularFile_FileDoesNotExist)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     ASSERT_THROW(index.add(repositoryPath / "file.txt"), std::runtime_error);
 }
 
 TEST_F(IndexTests, addAndRemoveExecutableFile)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.sh");
     file << "echo Hello, World!";
     file.close();
@@ -70,7 +70,7 @@ TEST_F(IndexTests, addAndRemoveExecutableFile)
 
 TEST_F(IndexTests, addAndRemoveSymlink)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -89,7 +89,7 @@ TEST_F(IndexTests, addAndRemoveSymlink)
 
 TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectPath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -107,7 +107,7 @@ TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectPath)
 
 TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectoryPath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -125,7 +125,7 @@ TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectoryPath)
 
 TEST_F(IndexTests, addAndRemoveReuglarFileInDir_DirectoryRelativePath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -144,7 +144,7 @@ TEST_F(IndexTests, addAndRemoveReuglarFileInDir_DirectoryRelativePath)
 
 TEST_F(IndexTests, addAndRemoveRegularFileInDir_RecursivePath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directories(repositoryPath / "dir1" / "dir2");
     std::ofstream file1(repositoryPath / "dir1" / "file1.txt");
     file1 << "Hello, World!";
@@ -166,7 +166,7 @@ TEST_F(IndexTests, addAndRemoveRegularFileInDir_RecursivePath)
 
 TEST_F(IndexTests, addAndRemoveRegularFile_RelativePath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -183,7 +183,7 @@ TEST_F(IndexTests, addAndRemoveRegularFile_RelativePath)
 
 TEST_F(IndexTests, addAndRemoveRegularFile_RelativePathInDir)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -201,7 +201,7 @@ TEST_F(IndexTests, addAndRemoveRegularFile_RelativePathInDir)
 
 TEST_F(IndexTests, addAndRemoveAll_RepositoryPath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -219,7 +219,7 @@ TEST_F(IndexTests, addAndRemoveAll_RepositoryPath)
 
 TEST_F(IndexTests, addAndRemoveAllDotPath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::filesystem::create_directory(repositoryPath / "dir");
     std::ofstream file(repositoryPath / "dir" / "file.txt");
     file << "Hello, World!";
@@ -237,7 +237,7 @@ TEST_F(IndexTests, addAndRemoveAllDotPath)
 
 TEST_F(IndexTests, tryAddFileFromGitDirectory_absolutePath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / ".git" / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -247,7 +247,7 @@ TEST_F(IndexTests, tryAddFileFromGitDirectory_absolutePath)
 
 TEST_F(IndexTests, tryAddFileFromGitDirectory_repoPath)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / ".git" / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -257,7 +257,7 @@ TEST_F(IndexTests, tryAddFileFromGitDirectory_repoPath)
 
 TEST_F(IndexTests, resetIndex)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file1(repositoryPath / "file1.txt");
     file1 << "Hello, World!";
     file1.close();
@@ -280,7 +280,7 @@ TEST_F(IndexTests, resetIndex)
 
 TEST_F(IndexTests, isFileStaged_EmptyIndex)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -290,7 +290,7 @@ TEST_F(IndexTests, isFileStaged_EmptyIndex)
 
 TEST_F(IndexTests, isFileStaged_FileStaged)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
@@ -301,11 +301,130 @@ TEST_F(IndexTests, isFileStaged_FileStaged)
 
 TEST_F(IndexTests, isFileStaged_FileNotStaged)
 {
-    CppGit::Index index(*repository);
+    auto index = repository->Index();
     std::ofstream file(repositoryPath / "file.txt");
     file << "Hello, World!";
     file.close();
     index.add("file.txt");
 
     EXPECT_FALSE(index.isFileStaged("file2.txt"));
+}
+
+TEST_F(IndexTests, notDirty_emptyRepo)
+{
+    auto index = repository->Index();
+
+    EXPECT_THROW(index.isDirty(), std::runtime_error);
+}
+
+TEST_F(IndexTests, dirty_emptyRepo)
+{
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    EXPECT_THROW(index.isDirty(), std::runtime_error);
+}
+
+TEST_F(IndexTests, dirty_emptyRepo_FileAddedToIndex)
+{
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    EXPECT_THROW(index.isDirty(), std::runtime_error);
+}
+
+TEST_F(IndexTests, notDirty)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    EXPECT_FALSE(index.isDirty());
+}
+
+
+TEST_F(IndexTests, dirty_trackedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Changed";
+    file.close();
+
+    EXPECT_TRUE(index.isDirty());
+}
+
+TEST_F(IndexTests, dirty_cachedTrackedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Changed";
+    file.close();
+    index.add("file.txt");
+
+    EXPECT_TRUE(index.isDirty());
+}
+
+TEST_F(IndexTests, notdirty_untrackedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    std::ofstream utrackedFile(repositoryPath / "file2.txt");
+    utrackedFile << "Hello, World!";
+    utrackedFile.close();
+
+    EXPECT_FALSE(index.isDirty());
+}
+
+TEST_F(IndexTests, dirty_untrackedFileAddedToIndex)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    std::ofstream utrackedFile(repositoryPath / "file2.txt");
+    utrackedFile << "Hello, World!";
+    utrackedFile.close();
+    index.add("file2.txt");
+
+    EXPECT_TRUE(index.isDirty());
 }
