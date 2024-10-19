@@ -3,6 +3,8 @@
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 
+#include <filesystem>
+#include <fstream>
 #include <gtest/gtest.h>
 
 class CommitsTests : public BaseRepositoryFixture
@@ -69,4 +71,70 @@ TEST_F(CommitsTests, createCommit_empty_withDescription)
     auto commit = commits.getCommitInfo(commitHash);
     EXPECT_EQ(commit.getMessage(), "Initial commit");
     EXPECT_EQ(commit.getDescription(), "Initial commit description");
+}
+
+TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified";
+    file.close();
+
+    std::ofstream secondFile = std::ofstream(repositoryPath / "file2.txt");
+    secondFile << "Second file";
+    secondFile.close();
+    index.add("file2.txt");
+    commits.createCommit("Second commit");
+
+    auto commit = commits.getCommitInfo(commits.getHeadCommitHash());
+    EXPECT_EQ(commit.getMessage(), "Second commit");
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
+
+    std::ifstream fileRead(repositoryPath / "file.txt");
+    std::ostringstream fileContentStream;
+    fileContentStream << fileRead.rdbuf();
+    EXPECT_EQ(fileContentStream.str(), "Hello, World! Modified");
+}
+
+TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    std::ofstream secondFile = std::ofstream(repositoryPath / "file2.txt");
+    secondFile << "Second file";
+    secondFile.close();
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+    auto commit = commits.getCommitInfo(commits.getHeadCommitHash());
+    EXPECT_EQ(commit.getMessage(), "Second commit");
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+
+    std::ifstream file2Read(repositoryPath / "file2.txt");
+    std::ostringstream file2ContentStream;
+    file2ContentStream << file2Read.rdbuf();
+    EXPECT_EQ(file2ContentStream.str(), "Second file");
 }
