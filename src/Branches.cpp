@@ -53,8 +53,31 @@ auto Branches::getCurrentBranchRef() const -> std::string
 
 auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
 {
+    auto index = repo.Index();
+
+    if (index.isDirty())
+    {
+        throw std::runtime_error("Worktree is dirty");
+    }
+
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("symbolic-ref", "HEAD", branchNameWithPrefix);
+    auto hash = getHashBranchRefersTo(branchNameWithPrefix, false);
+
+    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", hash);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+
+    output = repo.executeGitCommand("checkout-index", "-a", "-f");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+
+    output = repo.executeGitCommand("symbolic-ref", "HEAD", branchNameWithPrefix);
 
     if (output.return_code != 0)
     {
