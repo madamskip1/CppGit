@@ -1,5 +1,7 @@
 #include "Index.hpp"
 
+#include "Commit.hpp"
+#include "Commits.hpp"
 #include "Parser/IndexParser.hpp"
 #include "Repository.hpp"
 
@@ -122,6 +124,20 @@ auto Index::getStagedFilesListWithDetails() const -> std::vector<IndexEntry>
     }
 
     return IndexParser::parseStageDetailedList(output.stdout);
+}
+
+auto Index::isDirty() const -> bool
+{
+    auto commits = repo.Commits();
+    auto headCommit = commits.getCommitInfo("HEAD");
+
+    auto output = repo.executeGitCommand("diff-index", "--quiet", "--exit-code", headCommit.getTreeHash());
+    if (output.return_code > 1)
+    {
+        throw std::runtime_error("Failed to check if index is dirty");
+    }
+
+    return output.return_code == 1;
 }
 
 auto Index::getFileMode(const std::filesystem::path& absolutePath) -> std::string

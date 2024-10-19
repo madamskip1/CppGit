@@ -30,6 +30,8 @@ public:
     auto getStagedFilesList() const -> std::vector<std::string>;
     auto getStagedFilesListWithDetails() const -> std::vector<IndexEntry>;
 
+    auto isDirty() const -> bool;
+
 private:
     const Repository& repo;
 

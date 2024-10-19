@@ -30,8 +30,16 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
     }
 
     const auto& commitHash = commitOutput.stdout;
+
     const auto branches = repo.Branches();
     branches.changeBranchRef("HEAD", commitHash);
+
+    auto x = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet");
+
+    if (x.return_code != 0)
+    {
+        throw std::runtime_error("Failed to read tree2");
+    }
 
     return commitHash;
 }
