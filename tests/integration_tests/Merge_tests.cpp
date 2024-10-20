@@ -331,3 +331,189 @@ TEST_F(MergeTests, mergeFastForward_dirtyRepo)
     auto merge = repository->Merge();
     EXPECT_THROW(merge.mergeFastForward("second_branch"), std::runtime_error);
 }
+
+TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
+{
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeNoFastForward_sameBranch)
+{
+    auto commits = repository->Commits();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "merge commit"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
+{
+    auto commits = repository->Commits();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("second_branch", "merge commit"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeNoFastForward_linearBehind)
+{
+    auto commits = repository->Commits();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file.close();
+
+    auto index = repository->Index();
+    index.add("file.txt");
+
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    auto merge = repository->Merge();
+    auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
+
+    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
+
+    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
+
+    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommit.getParents().size(), 2);
+    EXPECT_EQ(mergeCommit.getParents()[0], initialCommitHash);
+    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
+}
+
+TEST_F(MergeTests, mergeNoFastForward_linearAhead)
+{
+    auto commits = repository->Commits();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+    branches.changeCurrentBranch("second_branch");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file.close();
+
+    auto index = repository->Index();
+    index.add("file.txt");
+
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+    branches.changeCurrentBranch("second_branch");
+
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("main");
+
+    file.open(repositoryPath / "file.txt", std::ios::app);
+    file << "Hello, World! Modified.";
+    file.close();
+
+    ASSERT_TRUE(index.isDirty());
+
+    auto merge = repository->Merge();
+    EXPECT_THROW(merge.mergeNoFastForward("second_branch", "merge commit"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
+{
+    auto commits = repository->Commits();
+    auto initialCommitHash = commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file.close();
+
+    auto index = repository->Index();
+    index.add("file.txt");
+
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    std::ofstream file2(repositoryPath / "file2.txt");
+    file2.close();
+    index.add("file2.txt");
+
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    auto merge = repository->Merge();
+    auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
+
+    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
+
+    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
+
+    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommit.getParents().size(), 2);
+    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommitHash);
+    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+}
+
+TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    file.open(repositoryPath / "file.txt", std::ios::app);
+    file << "Hello, World! Modified 1.";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    file.open(repositoryPath / "file.txt", std::ios::app);
+    file << "Hello, World! Modified 2.";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Third commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+}
