@@ -5,6 +5,9 @@
 #include "GitCommandExecutor/GitCommandOutput.hpp"
 #include "Repository.hpp"
 
+#include <filesystem>
+#include <fstream>
+
 namespace CppGit {
 
 auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::string
@@ -44,7 +47,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
     return sourceBranchRef;
 }
 
-auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::string
+auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) -> std::string
 {
     auto index = repo.Index();
 
@@ -98,7 +101,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     if (!gitLsFilesOutput.stdout.empty())
     {
-        // TODO
+        startMergeConflict(sourceBranchRef, sourceBranch, targetBranchRef, "HEAD", message, description);
         throw std::runtime_error("Conflicts detected");
     }
 
@@ -132,6 +135,25 @@ auto Merge::isAnythingToMerge(const std::string_view sourceBranch, const std::st
     auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
 
     return ancestor != sourceBranchRef;
+}
+
+auto Merge::isMergeInProgress() const -> bool
+{
+    auto topLevelPath = repo.getTopLevelPath();
+    return std::filesystem::exists(topLevelPath / ".git/MERGE_HEAD");
+}
+
+auto Merge::isThereAnyConflict() const -> bool
+{
+    auto gitLsFilesOutput = repo.executeGitCommand("ls-files", "-u");
+
+    if (gitLsFilesOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list files");
+    }
+
+
+    return !gitLsFilesOutput.stdout.empty();
 }
 
 auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
@@ -179,6 +201,148 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
     return commitHash;
 
     return std::string();
+}
+
+auto Merge::startMergeConflict(const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void
+{
+    createNoFFMergeFiles(sourceBranchRef, message, description);
+    mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef.cbegin(), sourceBranchRef.cend() };
+    mergeInProgress_targetBranchRef = std::string{ targetBranchRef };
+    mergeInProgress_message = std::string{ message };
+    mergeInProgress_description = std::string{ description };
+
+    auto index = repo.Index();
+    auto unmergedLsFiles = index.getUnmergedFilesListWithDetails();
+    const auto unmergedFiles = parseUnmergedFiles(unmergedLsFiles);
+
+    auto repoRootPath = repo.getTopLevelPath();
+
+    for (const auto& [file, unmergedFile] : unmergedFiles)
+    {
+        auto baseTempFile = unpackFile(unmergedFile.baseBlob);
+        auto targetTempFile = unpackFile(unmergedFile.targetBlob);
+        auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
+
+        if (baseTempFile.empty())
+        {
+            baseTempFile = "/dev/null";
+        }
+
+        auto mergeFileOutput = repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
+
+        auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
+
+        auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
+
+        auto targetTempFilePath = std::filesystem::path{ repoRootPath / targetTempFile };
+        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / sourceTempFile };
+        auto filePath = std::filesystem::path{ repoRootPath / file };
+
+        auto src_file = std::ifstream{ targetTempFilePath, std::ios::binary };
+        auto dst_file = std::ofstream{ filePath, std::ios::binary | std::ios::trunc };
+        dst_file << src_file.rdbuf();
+        src_file.close();
+        dst_file.close();
+
+        std::filesystem::remove(targetTempFilePath);
+        std::filesystem::remove(sourceTempFilePath);
+        if (baseTempFile != "/dev/null")
+        {
+            std::filesystem::remove(baseTempFilePath);
+        }
+    }
+}
+
+auto Merge::unpackFile(const std::string_view fileBlob) const -> std::string
+{
+    auto output = repo.executeGitCommand("unpack-file", fileBlob);
+
+    return std::move(output.stdout);
+}
+
+auto Merge::parseUnmergedFiles(const std::vector<CppGit::IndexEntry>& indexEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>
+{
+    std::unordered_map<std::string, UnmergedFileBlobs> unmergedFiles;
+
+    for (const auto& indexEntry : indexEntries)
+    {
+        auto& unmergedFile = unmergedFiles[indexEntry.path];
+        const auto& fileBlob = indexEntry.objectHash;
+
+        if (indexEntry.stageNumber == 1)
+        {
+            unmergedFile.baseBlob = fileBlob;
+        }
+        else if (indexEntry.stageNumber == 2)
+        {
+            unmergedFile.targetBlob = fileBlob;
+        }
+        else if (indexEntry.stageNumber == 3)
+        {
+            unmergedFile.sourceBlob = fileBlob;
+        }
+    }
+
+    return unmergedFiles;
+}
+
+auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void
+{
+    auto topLevelPath = repo.getTopLevelPath();
+    std::ofstream MERGE_HEAD{ topLevelPath / ".git/MERGE_HEAD" };
+    MERGE_HEAD << sourceBranchRef;
+    MERGE_HEAD.close();
+
+    std::ofstream MERGE_MSG{ topLevelPath / ".git/MERGE_MSG" };
+    MERGE_MSG << message;
+    if (!description.empty())
+    {
+        MERGE_MSG << "\n\n"
+                  << description;
+    }
+    MERGE_MSG.close();
+
+    std::ofstream MERGE_MODE{ topLevelPath / ".git/MERGE_MODE" };
+    MERGE_MODE << "no-ff";
+    MERGE_MODE.close();
+}
+
+auto Merge::removeNoFFMergeFiles() const -> void
+{
+    auto topLevelPath = repo.getTopLevelPath();
+    std::filesystem::remove(topLevelPath / ".git/MERGE_HEAD");
+    std::filesystem::remove(topLevelPath / ".git/MERGE_MSG");
+    std::filesystem::remove(topLevelPath / ".git/MERGE_MODE");
+}
+
+auto Merge::abortMerge() const -> void
+{
+    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", "HEAD");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to reset tree");
+    }
+    removeNoFFMergeFiles();
+}
+
+auto Merge::continueMerge() const -> std::string
+{
+    if (!isMergeInProgress())
+    {
+        throw std::runtime_error("No merge in progress");
+    }
+
+    if (isThereAnyConflict())
+    {
+        throw std::runtime_error("Cannot continue merge with conflicts");
+    }
+
+    auto mergeCommitHash = createMergeCommit(mergeInProgress_sourceBranchRef, mergeInProgress_targetBranchRef, mergeInProgress_message, mergeInProgress_description);
+
+    removeNoFFMergeFiles();
+
+    return mergeCommitHash;
 }
 
 } // namespace CppGit

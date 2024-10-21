@@ -81,6 +81,7 @@ public:
     auto getStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
     auto getStagedFilesListWithStatus(const std::string_view filePattern = "") const -> std::vector<DiffIndexEntry>;
     auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
     auto isDirty() const -> bool;
 

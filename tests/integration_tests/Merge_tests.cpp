@@ -8,6 +8,14 @@
 
 class MergeTests : public BaseRepositoryFixture
 {
+protected:
+    static auto readFile(const std::filesystem::path& filePath) -> std::string
+    {
+        auto file = std::ifstream{ filePath };
+        std::ostringstream content;
+        content << file.rdbuf();
+        return content.str();
+    }
 };
 
 TEST_F(MergeTests, canFastForward_emptyRepo_sameBranch)
@@ -485,7 +493,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 }
 
-TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict)
+TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
@@ -499,15 +507,89 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict)
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::app);
+    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
     file << "Hello, World! Modified 1.";
     file.close();
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::app);
+    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
+    file << "Hello, World! Modified 2.";
+    file.close();
+    index.add("file.txt");
+    auto thirdCommithash = commits.createCommit("Third commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+
+    EXPECT_TRUE(merge.isThereAnyConflict());
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+
+    ASSERT_TRUE(merge.isMergeInProgress());
+
+    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
+
+    auto fileContent = readFile(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
+
+    file.open(repositoryPath / "file.txt", std::ios::out);
+    file << "Hello, World! Merge resolved.";
+    file.close();
+    index.add("file.txt");
+
+    auto mergeCommitHash = merge.continueMerge();
+
+    EXPECT_FALSE(merge.isMergeInProgress());
+    EXPECT_FALSE(merge.isThereAnyConflict());
+
+    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
+
+    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
+
+    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommit.getParents().size(), 2);
+    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommithash);
+    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
+
+    auto fileContentAfterMerge = readFile(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContentAfterMerge, "Hello, World! Merge resolved.");
+}
+
+TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName_abort)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
+    file << "Hello, World! Modified 1.";
+    file.close();
+    index.add("file.txt");
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
     file << "Hello, World! Modified 2.";
     file.close();
     index.add("file.txt");
@@ -516,4 +598,99 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict)
     auto merge = repository->Merge();
 
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+
+    EXPECT_TRUE(merge.isThereAnyConflict());
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+
+    ASSERT_TRUE(merge.isMergeInProgress());
+
+    merge.abortMerge();
+
+    EXPECT_FALSE(merge.isMergeInProgress());
+    EXPECT_FALSE(index.isDirty());
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
+
+    auto fileContent = readFile(repositoryPath / "file.txt");
+
+    EXPECT_EQ(fileContent, "Hello, World! Modified 2.");
+}
+
+TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName_notExistsInAncestorYet)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+
+    commits.createCommit("Initial commit");
+
+    auto branches = repository->Branches();
+    branches.createBranch("second_branch");
+
+    std::ofstream file(repositoryPath / "file.txt", std::ios::out);
+    file << "Hello, World! Modified 1.";
+    file.close();
+    index.add("file.txt");
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    file.open(repositoryPath / "file.txt", std::ios::out);
+    file << "Hello, World! Modified 2.";
+    file.close();
+    index.add("file.txt");
+    auto thirdCommithash = commits.createCommit("Third commit");
+
+    auto merge = repository->Merge();
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+
+    EXPECT_TRUE(merge.isThereAnyConflict());
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
+    EXPECT_EQ(readFile(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+
+    ASSERT_TRUE(merge.isMergeInProgress());
+
+    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
+
+    auto fileContent = readFile(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
+
+    file.open(repositoryPath / "file.txt", std::ios::out);
+    file << "Hello, World! Merge resolved.";
+    file.close();
+    index.add("file.txt");
+
+    auto mergeCommitHash = merge.continueMerge();
+
+    EXPECT_FALSE(merge.isMergeInProgress());
+    EXPECT_FALSE(merge.isThereAnyConflict());
+
+    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
+
+    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
+
+    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommit.getParents().size(), 2);
+    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommithash);
+    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
+
+    auto fileContentAfterMerge = readFile(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContentAfterMerge, "Hello, World! Merge resolved.");
 }
