@@ -5,6 +5,8 @@
 #include "Parser/IndexParser.hpp"
 #include "Repository.hpp"
 
+#include <algorithm>
+
 namespace CppGit {
 
 Index::Index(const Repository& repo)
@@ -82,7 +84,7 @@ auto Index::remove(const std::filesystem::path& path) const -> void
 
 auto Index::reset() const -> void
 {
-    const auto filesInIndex = getStagedFilesList();
+    const auto filesInIndex = getFilesInIndexList();
     for (const auto& file : filesInIndex)
     {
         removeFileFromIndex(file);
@@ -91,18 +93,17 @@ auto Index::reset() const -> void
 
 auto Index::isFileStaged(const std::filesystem::path& path) const -> bool
 {
-    const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
-    const auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache", relativePath.string());
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-only", "HEAD", "--", path.string());
 
     if (output.return_code != 0)
     {
-        throw std::runtime_error("Failed to check if file is staged");
+        throw std::runtime_error("Failed to list staged files");
     }
 
-    return output.stdout == relativePath.string();
+    return output.stdout == path.string();
 }
 
-auto Index::getStagedFilesList() const -> std::vector<std::string>
+auto Index::getFilesInIndexList() const -> std::vector<std::string>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");
 
@@ -114,7 +115,7 @@ auto Index::getStagedFilesList() const -> std::vector<std::string>
     return IndexParser::parseStageSimpleCacheList(output.stdout);
 }
 
-auto Index::getStagedFilesListWithDetails() const -> std::vector<IndexEntry>
+auto Index::getFilesInIndexListWithDetails() const -> std::vector<IndexEntry>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--stage");
 
@@ -124,6 +125,63 @@ auto Index::getStagedFilesListWithDetails() const -> std::vector<IndexEntry>
     }
 
     return IndexParser::parseStageDetailedList(output.stdout);
+}
+
+auto Index::getUntrackedFilesList() const -> std::vector<std::string>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--exclude-standard");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list untracked files");
+    }
+
+    if (output.stdout.empty())
+    {
+        return {};
+    }
+
+    auto splittedList_SV = Parser::split(output.stdout, '\n');
+    std::vector<std::string> untrackedFilesList;
+    untrackedFilesList.reserve(splittedList_SV.size());
+
+    for (const auto file : splittedList_SV)
+    {
+        untrackedFilesList.emplace_back(file);
+    }
+
+    return untrackedFilesList;
+}
+
+auto Index::getStagedFilesList() const -> std::vector<DiffIndexEntry>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-status", "HEAD", "--");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list staged files");
+    }
+
+    return IndexParser::parseDiffIndexWithStatus(output.stdout);
+}
+
+auto Index::getNotStagedFilesList() const -> std::vector<std::string>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list not staged files");
+    }
+
+    if (output.stdout.empty())
+    {
+        return std::vector<std::string>{};
+    }
+
+    auto splittedSV = Parser::split(output.stdout, '\n');
+
+    return std::vector<std::string>{ splittedSV.cbegin(), splittedSV.cend() };
 }
 
 auto Index::isDirty() const -> bool
