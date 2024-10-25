@@ -2,12 +2,12 @@
 
 #include "DiffFile.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
+#include "Repository.hpp"
 
 #include <filesystem>
 #include <string_view>
 
 namespace CppGit {
-class Repository; // forward-declaration
 
 class Diff
 {

@@ -1,8 +1,10 @@
 #include "BaseRepositoryFixture.hpp"
+#include "Commits.hpp"
 #include "Index.hpp"
 
 #include <fstream>
 #include <gtest/gtest.h>
+#include <vector>
 
 class IndexTests : public BaseRepositoryFixture
 {

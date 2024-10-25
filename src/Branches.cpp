@@ -1,9 +1,7 @@
 #include "Branches.hpp"
 
-#include "Branch.hpp"
-#include "Commit.hpp"
+#include "Index.hpp"
 #include "Parser/BranchesParser.hpp"
-#include "Repository.hpp"
 
 namespace CppGit {
 

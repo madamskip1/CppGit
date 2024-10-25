@@ -1,4 +1,6 @@
 #pragma once
+#include "Repository.hpp"
+
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -48,8 +50,6 @@ struct LsFilesEntry
     std::string path;
     LsFilesStatus status;
 };
-
-class Repository; // Forward declaration
 
 class Index
 {

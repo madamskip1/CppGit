@@ -3,7 +3,6 @@
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "Parser/IndexParser.hpp"
-#include "Repository.hpp"
 
 #include <algorithm>
 

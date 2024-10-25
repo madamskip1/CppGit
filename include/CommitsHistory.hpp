@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Commit.hpp"
+#include "Repository.hpp"
+
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace CppGit {
-
-class Repository; // forward-declaration
-class Commit;     // forward-declaration
 
 class CommitsHistory
 {

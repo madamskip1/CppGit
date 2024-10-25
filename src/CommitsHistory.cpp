@@ -1,9 +1,7 @@
 #include "CommitsHistory.hpp"
 
-#include "Commit.hpp"
 #include "Parser/CommitParser.hpp"
 #include "Parser/Parser.hpp"
-#include "Repository.hpp"
 
 namespace CppGit {
 CommitsHistory::CommitsHistory(const Repository& repo)
