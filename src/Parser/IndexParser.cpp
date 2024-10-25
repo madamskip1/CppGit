@@ -18,7 +18,7 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
 
 auto IndexParser::parseStageDetailedList(const std::string_view indexContent) -> std::vector<IndexEntry>
 {
-    auto splitIndexContent = split(indexContent, '\n');
+    auto splitIndexContent = splitToStringViewsVector(indexContent, '\n');
     std::vector<IndexEntry> indexEntries;
     indexEntries.reserve(splitIndexContent.size());
 
@@ -37,7 +37,7 @@ auto IndexParser::parseStageDetailedList(const std::string_view indexContent) ->
 
 auto IndexParser::parseStageSimpleCacheList(const std::string_view indexContent) -> std::vector<std::string>
 {
-    auto listSV = split(indexContent, '\n');
+    auto listSV = splitToStringViewsVector(indexContent, '\n');
     auto result = std::vector<std::string>{};
     result.reserve(listSV.size());
     for (const auto& entry : listSV)
@@ -111,7 +111,7 @@ auto IndexParser::parseDiffIndexWithStatus(const std::string_view diffIndexConte
         return std::vector<DiffIndexEntry>{};
     }
 
-    auto splitDiffIndexContent = split(diffIndexContent, '\n');
+    auto splitDiffIndexContent = splitToStringViewsVector(diffIndexContent, '\n');
     auto result = std::vector<DiffIndexEntry>{};
     result.reserve(splitDiffIndexContent.size());
 
@@ -181,7 +181,7 @@ auto IndexParser::parseLsFilesList(const std::string_view lsFilesContent) -> std
         return std::vector<LsFilesEntry>{};
     }
 
-    auto splitLsFilesContent = split(lsFilesContent, '\n');
+    auto splitLsFilesContent = splitToStringViewsVector(lsFilesContent, '\n');
     auto result = std::vector<LsFilesEntry>{};
     result.reserve(splitLsFilesContent.size());
 

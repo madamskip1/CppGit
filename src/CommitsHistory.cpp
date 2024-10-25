@@ -22,7 +22,7 @@ auto CommitsHistory::getCommitsLogHashesOnly() const -> std::vector<std::string>
     }
 
     auto hashes = std::vector<std::string>();
-    auto hasheshSplited = Parser::split(output.stdout, '\n');
+    auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
 
     return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
 }
@@ -43,7 +43,7 @@ auto CommitsHistory::getCommitsLogDetailed() const -> std::vector<Commit>
 
     auto commits = std::vector<Commit>();
     output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line
-    auto commitsSplitted = Parser::split(output.stdout, "$:>\n");
+    auto commitsSplitted = Parser::splitToStringViewsVector(output.stdout, "$:>\n");
 
     for (const auto commitLog : commitsSplitted)
     {

@@ -12,24 +12,15 @@ public:
     virtual ~Parser() = default;
 
     template <typename T>
-    static auto split(const std::string_view line, const T& delimiter) -> std::vector<std::string_view>
+    static auto splitToStringViewsVector(const std::string_view line, const T& delimiter) -> std::vector<std::string_view>
     {
-        const auto delimiterSize = getDelimiterSize(delimiter);
+        return splitImpl<std::string_view>(line, delimiter);
+    }
 
-        std::vector<std::string_view> result;
-        std::size_t start = 0;
-        std::size_t end = line.find(delimiter);
-
-        while (end != std::string::npos)
-        {
-            result.emplace_back(line.substr(start, end - start));
-            start = end + delimiterSize;
-            end = line.find(delimiter, start);
-        }
-
-        result.emplace_back(line.substr(start, end - start));
-
-        return result;
+    template <typename T>
+    static auto splitToStringsVector(const std::string_view line, const T& delimiter) -> std::vector<std::string>
+    {
+        return splitImpl<std::string>(line, delimiter);
     }
 
     template <typename T>
@@ -53,6 +44,28 @@ public:
     {
         auto count = static_cast<std::string_view::size_type>(end - begin);
         return std::string_view{ begin, count };
+    }
+
+private:
+    template <typename ReturnT, typename DelimiterT>
+    static auto splitImpl(const std::string_view line, const DelimiterT& delimiter) -> std::vector<ReturnT>
+    {
+        const auto delimiterSize = getDelimiterSize(delimiter);
+
+        std::vector<ReturnT> result;
+        std::size_t start = 0;
+        std::size_t end = line.find(delimiter);
+
+        while (end != std::string::npos)
+        {
+            result.emplace_back(line.substr(start, end - start));
+            start = end + delimiterSize;
+            end = line.find(delimiter, start);
+        }
+
+        result.emplace_back(line.substr(start, end - start));
+
+        return result;
     }
 };
 

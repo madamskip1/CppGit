@@ -19,7 +19,7 @@ auto CommitParser::parseCommit_CatFile(std::string_view commitLog) -> Commit
 
     auto treeHash = match[1].str();
     auto parentStr = match[2].str();
-    auto parentSV = split(parentStr, "parent ");
+    auto parentSV = splitToStringViewsVector(parentStr, "parent ");
     auto parents = std::vector<std::string>{};
     for (auto parent : parentSV)
     {
@@ -49,8 +49,8 @@ auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog) -> Commi
 
 auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit
 {
-    const std::vector<std::string_view> commitTokens = split(commitLog, delimiter);
-    const std::vector<std::string_view> formatTokens = split(format, delimiter);
+    const std::vector<std::string_view> commitTokens = splitToStringViewsVector(commitLog, delimiter);
+    const std::vector<std::string_view> formatTokens = splitToStringViewsVector(format, delimiter);
     if (commitTokens.size() < formatTokens.size())
     {
         throw std::runtime_error("Invalid format or commit log");
@@ -79,7 +79,7 @@ auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::str
         }
         else if (isParentsToken(formatToken))
         {
-            auto parents_sv = split(commitToken, ' ');
+            auto parents_sv = splitToStringViewsVector(commitToken, ' ');
             if (parents_sv.size() > 1 || (parents_sv.size() == 1 && !parents_sv[0].empty()))
             {
                 parents = std::vector<std::string>(parents_sv.begin(), parents_sv.end());

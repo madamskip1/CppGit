@@ -7,7 +7,7 @@ namespace CppGit {
 
 auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFile>
 {
-    auto splittedDiff = split(diffContent, '\n');
+    auto splittedDiff = splitToStringViewsVector(diffContent, '\n');
     std::vector<HeaderLine> headersLines;
 
     std::vector<DiffFile> diffFiles;
@@ -65,7 +65,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
                 if (headerLine.type == HeaderLineType::INDEX)
                 {
                     auto [indicesBeforeSV, indexAfter, mode] = std::get<std::tuple<std::string_view, std::string_view, int>>(headerLine.value);
-                    auto indicesBefore = split(indicesBeforeSV, ',');
+                    auto indicesBefore = splitToStringViewsVector(indicesBeforeSV, ',');
                     for (auto indexBefore : indicesBefore)
                     {
                         diffFile.indicesBefore.emplace_back(indexBefore);
@@ -149,7 +149,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             break;
         }
         case ParseState::HUNK_FILE_A: {
-            auto fileA = split(line, ' ')[1];
+            auto fileA = splitToStringViewsVector(line, ' ')[1];
             if (fileA.substr(0, 2) == "a/")
             {
                 fileA.remove_prefix(2);
@@ -159,7 +159,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             break;
         }
         case ParseState::HUNK_FILE_B: {
-            auto fileB = split(line, ' ')[1];
+            auto fileB = splitToStringViewsVector(line, ' ')[1];
             if (fileB.substr(0, 2) == "b/")
             {
                 fileB.remove_prefix(2);
@@ -310,7 +310,7 @@ auto DiffParser::parseHunkHeader(const std::string_view line) -> std::pair<std::
     std::regex_match(line.cbegin(), line.cend(), match, std::regex{ hunkHeaderPattern });
 
     auto beforeIndicesSV = string_viewIteratorToString_view(match[1].first, match[1].second - 1);
-    auto beforeIndices = split(beforeIndicesSV, ' ');
+    auto beforeIndices = splitToStringViewsVector(beforeIndicesSV, ' ');
 
     auto hunkRangesBefore = std::vector<std::pair<int, int>>{};
 
@@ -329,7 +329,7 @@ auto DiffParser::parseHunkHeader(const std::string_view line) -> std::pair<std::
 
 auto DiffParser::parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>
 {
-    auto splittedRange = split(range, ',');
+    auto splittedRange = splitToStringViewsVector(range, ',');
 
     int left{ 0 };
     std::from_chars(splittedRange[0].data() + 1, splittedRange[0].data() + splittedRange[0].size(), left);

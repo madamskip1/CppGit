@@ -141,7 +141,7 @@ auto Index::getUntrackedFilesList() const -> std::vector<std::string>
         return {};
     }
 
-    auto splittedList_SV = Parser::split(output.stdout, '\n');
+    auto splittedList_SV = Parser::splitToStringViewsVector(output.stdout, '\n');
     std::vector<std::string> untrackedFilesList;
     untrackedFilesList.reserve(splittedList_SV.size());
 
@@ -179,7 +179,7 @@ auto Index::getNotStagedFilesList() const -> std::vector<std::string>
         return std::vector<std::string>{};
     }
 
-    auto splittedSV = Parser::split(output.stdout, '\n');
+    auto splittedSV = Parser::splitToStringViewsVector(output.stdout, '\n');
 
     return std::vector<std::string>{ splittedSV.cbegin(), splittedSV.cend() };
 }
