@@ -257,28 +257,177 @@ class IndexTests : public BaseRepositoryFixture
 //     ASSERT_THROW(index.add(".git/file.txt"), std::runtime_error);
 // }
 
-// TEST_F(IndexTests, resetIndex)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file1(repositoryPath / "file1.txt");
-//     file1 << "Hello, World!";
-//     file1.close();
-//     index.add("file1.txt");
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file2(repositoryPath / "dir" / "file2.txt");
-//     file2 << "Hello, World!";
-//     file2.close();
-//     index.add("dir");
+TEST_F(IndexTests, restoreAllStaged_noChanges)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 2);
-//     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir/file2.txt") != stagedFiles.end());
-//     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "file1.txt") != stagedFiles.end());
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
 
-//     index.reset();
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Changed";
+    file.close();
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_stagedChanges)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Changed";
+    file.close();
+    index.add("file.txt");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("dir/file.txt");
+
+    commits.createCommit("Initial commit");
+
+    file.open(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World! Changed";
+    file.close();
+    index.add("dir/file.txt");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_multipleFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    std::ofstream file1(repositoryPath / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+    index.add("file1.txt");
+
+    commits.createCommit("Initial commit");
+
+    file1.open(repositoryPath / "file1.txt");
+    file1 << "Hello, World! Changed";
+    file1.close();
+    index.add("file1.txt");
+
+    std::ofstream file2(repositoryPath / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+    index.add("file2.txt");
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 2);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
+
+TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+    commits.createCommit("Initial commit");
+
+    std::ofstream file1(repositoryPath / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+    index.add("file1.txt");
+
+    std::ofstream file2(repositoryPath / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+
+    index.restoreAllStaged();
+
+    stagedFiles = index.getStagedFilesList();
+    EXPECT_EQ(stagedFiles.size(), 0);
+}
 
 
 TEST_F(IndexTests, notDirty_emptyRepo)
@@ -502,7 +651,7 @@ TEST_F(IndexTests, getStagedFilesList_emptyRepo)
 {
     auto index = repository->Index();
 
-    EXPECT_THROW(index.getStagedFilesList(), std::runtime_error);
+    EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
 }
 
 
@@ -514,7 +663,7 @@ TEST_F(IndexTests, getStagedFilesList_notStagedFile_notCommitYet)
     file << "Hello, World!";
     file.close();
 
-    EXPECT_THROW(index.getStagedFilesList(), std::runtime_error);
+    EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
 }
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile_notCommitYet)
@@ -526,7 +675,7 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile_notCommitYet)
     file.close();
     index.add("file.txt");
 
-    EXPECT_THROW(index.getStagedFilesList(), std::runtime_error);
+    EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
 }
 
 TEST_F(IndexTests, getStagedFilesList_commitedFile)
@@ -540,7 +689,7 @@ TEST_F(IndexTests, getStagedFilesList_commitedFile)
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = index.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 0);
 }
 
@@ -556,7 +705,7 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
     file.close();
     index.add("file.txt");
 
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = index.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0].path, "file.txt");
     EXPECT_EQ(stagedFiles[0].status, CppGit::DiffIndexStatus::ADDED);

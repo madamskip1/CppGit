@@ -81,12 +81,46 @@ auto Index::remove(const std::filesystem::path& path) const -> void
     }
 }
 
-auto Index::reset() const -> void
+auto Index::restoreAllStaged() const -> void
 {
-    const auto filesInIndex = getFilesInIndexList();
-    for (const auto& file : filesInIndex)
+    // TODO: Optimize it later - to many vector copies
+
+    auto stagedFiles = getStagedFilesListWithStatus();
+
+    if (stagedFiles.empty())
     {
-        removeFileFromIndex(file);
+        return;
+    }
+
+    auto args = std::vector<std::string>{};
+    args.reserve(2 + (3 * stagedFiles.size())); // --force-remove + filesCount + --add  + [(--cache-info + fileInfo) * filesCount] = 2 + 3 * filesCount
+
+    args.emplace_back("--force-remove");
+
+    for (auto& file : stagedFiles)
+    {
+        if (file.status == DiffIndexStatus::ADDED)
+        {
+            args.emplace_back("--force-remove");
+            args.push_back(std::move(file.path));
+        }
+    }
+
+    auto filesInfoInHEADCommit = getHeadFilesHashForGivenFiles(stagedFiles);
+
+    args.emplace_back("--add");
+
+    for (auto& fileInfo : filesInfoInHEADCommit)
+    {
+        args.emplace_back("--cacheinfo");
+        args.push_back(std::move(fileInfo));
+    }
+
+    auto output = repo.executeGitCommand("update-index", args);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to restore all staged files");
     }
 }
 
@@ -152,7 +186,24 @@ auto Index::getUntrackedFilesList() const -> std::vector<std::string>
     return untrackedFilesList;
 }
 
-auto Index::getStagedFilesList() const -> std::vector<DiffIndexEntry>
+auto Index::getStagedFilesList() const -> std::vector<std::string>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-only", "HEAD", "--");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list staged files");
+    }
+
+    if (output.stdout.empty())
+    {
+        return std::vector<std::string>{};
+    }
+
+    return Parser::splitToStringsVector(output.stdout, '\n');
+}
+
+auto Index::getStagedFilesListWithStatus() const -> std::vector<DiffIndexEntry>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-status", "HEAD", "--");
 
@@ -247,5 +298,42 @@ auto Index::removeFileFromIndex(const std::filesystem::path& relativePath) const
         throw std::runtime_error("Failed to remove file from index");
     }
 }
+
+auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>
+{
+    auto args = std::vector<std::string>{};
+    constexpr auto CMD_ARGS_SIZE = 5;
+
+    args.reserve(CMD_ARGS_SIZE + files.size());
+
+    args.emplace_back("-r");
+    args.emplace_back("--full-name");
+    args.emplace_back("--format=%(objectmode),%(objectname),%(path)");
+    args.emplace_back("HEAD");
+    args.emplace_back("--");
+
+    for (auto& file : files)
+    {
+        if (file.status != DiffIndexStatus::ADDED)
+        {
+            args.emplace_back(std::move(file.path));
+        }
+    }
+
+    auto output = repo.executeGitCommand("ls-tree", args);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to get head files hash");
+    }
+
+    if (output.stdout.empty())
+    {
+        return {};
+    }
+
+    return Parser::splitToStringsVector(output.stdout, '\n');
+}
+
 
 } // namespace CppGit
