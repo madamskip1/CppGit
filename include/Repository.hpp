@@ -1,13 +1,9 @@
 #pragma once
 
-#include "Branches.hpp"
-#include "Commits.hpp"
-#include "CommitsHistory.hpp"
-#include "Diff.hpp"
+
 #include "ErrorCodes.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "GitCommandExecutor/GitCommandOutput.hpp"
-#include "Index.hpp"
 
 #include <filesystem>
 #include <string>
@@ -16,6 +12,12 @@
 #include <vector>
 
 namespace CppGit {
+
+class Branches;       // forward-declaration
+class Index;          // forward-declaration
+class Commits;        // forward-declaration
+class CommitsHistory; // forward-declaration
+class Diff;           // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 class Repository

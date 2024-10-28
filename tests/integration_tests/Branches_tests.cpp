@@ -1,6 +1,8 @@
 #include "BaseRepositoryFixture.hpp"
 #include "Branch.hpp"
 #include "Branches.hpp"
+#include "Commits.hpp"
+#include "Index.hpp"
 
 #include <filesystem>
 #include <fstream>

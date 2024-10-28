@@ -5,7 +5,7 @@ namespace CppGit {
 
 auto BranchesParser::parseBranch(std::string_view line) -> Branch
 {
-    auto parts = split(line, ';');
+    auto parts = splitToStringViewsVector(line, ';');
 
     auto refName = std::string{ parts[0] };
     auto upstreamPull = std::string{ parts[1] };
