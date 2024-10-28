@@ -1,7 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
-#include "CommitsHistory.hpp"
+#include "Index.hpp"
 
 #include <filesystem>
 #include <fstream>
