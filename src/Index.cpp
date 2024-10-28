@@ -120,16 +120,11 @@ auto Index::restoreAllStaged() const -> void
     }
 }
 
-auto Index::isFileStaged(const std::filesystem::path& path) const -> bool
+auto Index::isFileStaged(const std::string_view file) const -> bool
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-only", "HEAD", "--", path.string());
+    auto stagedFiles = getStagedFilesList(file);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
-
-    return output.stdout == path.string();
+    return stagedFiles.size() == 1 && stagedFiles[0] == file;
 }
 
 auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std::vector<std::string>
@@ -156,9 +151,10 @@ auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) c
     return IndexParser::parseStageDetailedList(output.stdout);
 }
 
-auto Index::getUntrackedFilesList() const -> std::vector<std::string>
+
+auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--exclude-standard");
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--exclude-standard", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -182,7 +178,7 @@ auto Index::getUntrackedFilesList() const -> std::vector<std::string>
     return untrackedFilesList;
 }
 
-auto Index::getStagedFilesList() const -> std::vector<std::string>
+auto Index::getStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
     auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-only", "HEAD", "--");
 
@@ -199,9 +195,9 @@ auto Index::getStagedFilesList() const -> std::vector<std::string>
     return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
-auto Index::getStagedFilesListWithStatus() const -> std::vector<DiffIndexEntry>
+auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) const -> std::vector<DiffIndexEntry>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-status", "HEAD", "--");
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -211,9 +207,9 @@ auto Index::getStagedFilesListWithStatus() const -> std::vector<DiffIndexEntry>
     return IndexParser::parseDiffIndexWithStatus(output.stdout);
 }
 
-auto Index::getNotStagedFilesList() const -> std::vector<std::string>
+auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate");
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
 
     if (output.return_code != 0)
     {

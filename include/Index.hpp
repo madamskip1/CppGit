@@ -72,15 +72,15 @@ public:
     }
     auto restoreAllStaged() const -> void;
 
-    auto isFileStaged(const std::filesystem::path& path) const -> bool;
+    auto isFileStaged(const std::string_view file) const -> bool;
 
     auto getFilesInIndexList(const std::string_view filePattern = "") const -> std::vector<std::string>;
     auto getFilesInIndexListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
-    auto getUntrackedFilesList() const -> std::vector<std::string>;
-    auto getStagedFilesList() const -> std::vector<std::string>;
-    auto getStagedFilesListWithStatus() const -> std::vector<DiffIndexEntry>;
-    auto getNotStagedFilesList() const -> std::vector<std::string>;
+    auto getUntrackedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    auto getStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    auto getStagedFilesListWithStatus(const std::string_view filePattern = "") const -> std::vector<DiffIndexEntry>;
+    auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
 
     auto isDirty() const -> bool;
 
