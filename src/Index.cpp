@@ -13,71 +13,67 @@ Index::Index(const Repository& repo)
 {
 }
 
-auto Index::add(const std::filesystem::path& path) const -> void
+auto Index::add(const std::string_view filePattern) const -> void
 {
-    const auto& absolutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
+    auto filesList = getUntrackedAndIndexFilesList(filePattern);
 
-    if (!std::filesystem::exists(absolutePath))
+    if (filesList.empty())
     {
-        throw std::runtime_error("File does not exist");
+        throw std::runtime_error("Given file pattern did not match any files");
     }
 
-    if (repo.isPathInGitDirectory(absolutePath))
+    auto args = std::vector<std::string>{};
+    args.reserve(2 + filesList.size()); // --add --remove + num of files
+
+    args.emplace_back("--add");
+    // we do remove also, even method name is `add`, because we want to mimic `git add` behavior
+    // `git add` can also remove deleted files from index
+    args.emplace_back("--remove");
+
+    for (auto&& file : filesList)
     {
-        throw std::runtime_error("Cannot add file from git directory");
+        args.emplace_back(std::move(file));
     }
 
-    if (std::filesystem::is_directory(absolutePath))
-    {
-        for (const auto& entryAboslutePath : std::filesystem::recursive_directory_iterator(absolutePath))
-        {
-            if (!std::filesystem::is_directory(entryAboslutePath) && !repo.isPathInGitDirectory(entryAboslutePath))
-            {
-                const auto relativePathEntry = repo.getRelativeFromAbsolutePath(entryAboslutePath);
+    auto output = repo.executeGitCommand("update-index", args);
 
-                addFileToIndex(relativePathEntry, entryAboslutePath);
-            }
-        }
-    }
-    else
+    if (output.return_code != 0)
     {
-        const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
-
-        addFileToIndex(relativePath, absolutePath);
+        throw std::runtime_error("Error while updating index.");
     }
 }
 
-auto Index::remove(const std::filesystem::path& path) const -> void
+auto Index::remove(const std::string_view filePattern, bool force) const -> void
 {
-    const auto& aboslutePath = path.is_absolute() ? path : repo.getAbsoluteFromRelativePath(path);
+    auto filesList = getFilesInIndexList(filePattern);
 
-    if (!std::filesystem::exists(aboslutePath))
+    if (filesList.empty())
     {
-        throw std::runtime_error("File does not exist");
+        throw std::runtime_error("Given file pattern did not match any files");
     }
 
-    if (repo.isPathInGitDirectory(aboslutePath))
-    {
-        throw std::runtime_error("Cannot remove file from git directory");
-    }
+    auto args = std::vector<std::string>{};
+    args.reserve(1 + filesList.size()); // --remove/--force-remove + num of files
 
-    if (std::filesystem::is_directory(aboslutePath))
+    if (force)
     {
-        for (const auto& entryAboslutePath : std::filesystem::recursive_directory_iterator(aboslutePath))
-        {
-            if (!std::filesystem::is_directory(entryAboslutePath) && !repo.isPathInGitDirectory(entryAboslutePath))
-            {
-                const auto relativePathEntry = repo.getRelativeFromAbsolutePath(entryAboslutePath);
-
-                removeFileFromIndex(relativePathEntry);
-            }
-        }
+        args.emplace_back("--force-remove");
     }
     else
     {
-        const auto& relativePath = path.is_relative() ? path : repo.getRelativeFromAbsolutePath(path);
+        args.emplace_back("--remove");
+    }
 
-        removeFileFromIndex(relativePath);
+    for (auto&& file : filesList)
+    {
+        args.emplace_back(std::move(file));
+    }
+
+    auto output = repo.executeGitCommand("update-index", args);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Error while updating index.");
     }
 }
 
@@ -136,9 +132,9 @@ auto Index::isFileStaged(const std::filesystem::path& path) const -> bool
     return output.stdout == path.string();
 }
 
-auto Index::getFilesInIndexList() const -> std::vector<std::string>
+auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache");
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -148,9 +144,9 @@ auto Index::getFilesInIndexList() const -> std::vector<std::string>
     return IndexParser::parseStageSimpleCacheList(output.stdout);
 }
 
-auto Index::getFilesInIndexListWithDetails() const -> std::vector<IndexEntry>
+auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--stage");
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--stage", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -248,56 +244,6 @@ auto Index::isDirty() const -> bool
     return output.return_code == 1;
 }
 
-auto Index::getFileMode(const std::filesystem::path& absolutePath) -> std::string
-{
-    if (std::filesystem::is_symlink(absolutePath))
-    {
-        return "120000";
-    }
-
-    if (!std::filesystem::is_regular_file(absolutePath))
-    {
-        throw std::runtime_error("Unsupported file type");
-    }
-
-    if (auto permissions = std::filesystem::status(absolutePath).permissions();
-        (permissions & std::filesystem::perms::owner_exec) != std::filesystem::perms::none)
-    {
-        return "100755";
-    }
-
-    return "100644";
-}
-
-auto Index::addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const -> void
-{
-    auto hashOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "hash-object", "-w", relativePath.string());
-
-    if (hashOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to hash object");
-    }
-
-    const auto& objectHash = hashOutput.stdout;
-    const auto fileMode = getFileMode(absolutePath);
-
-    auto updateIndexOutput = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--add", "--cacheinfo", fileMode, objectHash, relativePath.string());
-
-    if (updateIndexOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to update index");
-    }
-}
-
-auto Index::removeFileFromIndex(const std::filesystem::path& relativePath) const -> void
-{
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "update-index", "--force-remove", relativePath.string());
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to remove file from index");
-    }
-}
 
 auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>
 {
@@ -335,5 +281,21 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
     return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
+auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const -> std::vector<std::string>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list untracked and index files");
+    }
+
+    if (output.stdout.empty())
+    {
+        return std::vector<std::string>{};
+    }
+
+    return Parser::splitToStringsVector(output.stdout, '\n');
+}
 
 } // namespace CppGit

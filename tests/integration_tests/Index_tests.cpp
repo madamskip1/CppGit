@@ -10,252 +10,504 @@ class IndexTests : public BaseRepositoryFixture
 {
 };
 
-// TEST_F(IndexTests, addAndRemoveRegularFile)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(repositoryPath / "file.txt");
+TEST_F(IndexTests, addRegularFile)
+{
+    // For staged we need at least one commit
+    // TODO: getStagedFileList should do ls-files if no commit
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "file.txt");
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-//     index.remove(repositoryPath / "file.txt");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    commits.createCommit("Initial commit");
 
-// TEST_F(IndexTests, addAndRemoveRegularFile_StagedListWithDetail)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(repositoryPath / "file.txt");
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
 
-//     auto stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0].fileMode, "100644");
-//     ASSERT_EQ(stagedFiles[0].path, "file.txt");
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
 
-//     index.remove(repositoryPath / "file.txt");
-//     stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    index.add("file.txt");
 
-// TEST_F(IndexTests, addRegularFile_FileDoesNotExist)
-// {
-//     auto index = repository->Index();
-//     ASSERT_THROW(index.add(repositoryPath / "file.txt"), std::runtime_error);
-// }
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
 
-// TEST_F(IndexTests, addAndRemoveExecutableFile)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / "file.sh");
-//     file << "echo Hello, World!";
-//     file.close();
-//     std::filesystem::permissions(repositoryPath / "file.sh", std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-//     index.add(repositoryPath / "file.sh");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file.txt");
+}
 
-//     auto stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0].fileMode, "100755");
-//     ASSERT_EQ(stagedFiles[0].path, "file.sh");
+TEST_F(IndexTests, addRegularFile_FileDoesNotExist)
+{
+    auto index = repository->Index();
+    ASSERT_THROW(index.add("file.txt"), std::runtime_error);
+}
 
-//     index.remove(repositoryPath / "file.sh");
-//     stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+TEST_F(IndexTests, addRegularFileInDir)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-// TEST_F(IndexTests, addAndRemoveSymlink)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     std::filesystem::create_symlink(repositoryPath / "file.txt", repositoryPath / "file-symlink.txt");
-//     index.add(repositoryPath / "file-symlink.txt");
+    commits.createCommit("Initial commit");
 
-//     auto stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0].fileMode, "120000");
-//     ASSERT_EQ(stagedFiles[0].path, "file-symlink.txt");
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
 
-//     index.remove(repositoryPath / "file-symlink.txt");
-//     stagedFiles = index.getFilesInIndexListWithDetails();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
 
-// TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectPath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(repositoryPath / "dir" / "file.txt");
+    index.add("dir/file.txt");
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-//     index.remove(repositoryPath / "dir" / "file.txt");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "dir/file.txt");
+}
 
-// TEST_F(IndexTests, addAndRemoveRegularFileInDir_DirectoryPath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(repositoryPath / "dir");
+TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+    commits.createCommit("Initial commit");
 
-//     index.remove(repositoryPath / "dir");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
 
-// TEST_F(IndexTests, addAndRemoveReuglarFileInDir_DirectoryRelativePath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add("dir");
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+    index.add("dir");
 
-//     index.remove("dir");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "dir/file.txt");
+}
 
-// TEST_F(IndexTests, addAndRemoveRegularFileInDir_RecursivePath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directories(repositoryPath / "dir1" / "dir2");
-//     std::ofstream file1(repositoryPath / "dir1" / "file1.txt");
-//     file1 << "Hello, World!";
-//     file1.close();
-//     std::ofstream file2(repositoryPath / "dir1" / "dir2" / "file2.txt");
-//     file2 << "Hello, World!";
-//     file2.close();
-//     index.add(repositoryPath / "dir1");
+TEST_F(IndexTests, addExecutableFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 2);
-//     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/dir2/file2.txt") != stagedFiles.end());
-//     ASSERT_TRUE(std::find(stagedFiles.begin(), stagedFiles.end(), "dir1/file1.txt") != stagedFiles.end());
+    commits.createCommit("Initial commit");
 
-//     index.remove(repositoryPath / "dir1");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    std::ofstream file(repositoryPath / "file.sh");
+    file << "echo Hello, World!";
+    file.close();
+    std::filesystem::permissions(repositoryPath / "file.sh", std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
-// TEST_F(IndexTests, addAndRemoveRegularFile_RelativePath)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add("file.txt");
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexListWithDetails();
+    ASSERT_EQ(indexFiles.size(), 0);
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "file.txt");
+    index.add("file.sh");
 
-//     index.remove("file.txt");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    indexFiles = index.getFilesInIndexListWithDetails();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0].fileMode, "100755");
+    EXPECT_EQ(indexFiles[0].path, "file.sh");
 
-// TEST_F(IndexTests, addAndRemoveRegularFile_RelativePathInDir)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add("dir/file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file.sh");
+}
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+TEST_F(IndexTests, addSymlink)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-//     index.remove("dir/file.txt");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    commits.createCommit("Initial commit");
 
-// TEST_F(IndexTests, addAndRemoveAll_RepositoryPath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(repositoryPath);
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    std::filesystem::create_symlink(repositoryPath / "file.txt", repositoryPath / "file-symlink.txt");
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexListWithDetails();
+    ASSERT_EQ(indexFiles.size(), 0);
 
-//     index.remove(repositoryPath);
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+    index.add("file-symlink.txt");
 
-// TEST_F(IndexTests, addAndRemoveAllDotPath)
-// {
-//     auto index = repository->Index();
-//     std::filesystem::create_directory(repositoryPath / "dir");
-//     std::ofstream file(repositoryPath / "dir" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
-//     index.add(".");
+    indexFiles = index.getFilesInIndexListWithDetails();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0].fileMode, "120000");
+    EXPECT_EQ(indexFiles[0].path, "file-symlink.txt");
 
-//     auto stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 1);
-//     ASSERT_EQ(stagedFiles[0], "dir/file.txt");
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file-symlink.txt");
+}
 
-//     index.remove(".");
-//     stagedFiles = index.getFilesInIndexList();
-//     ASSERT_EQ(stagedFiles.size(), 0);
-// }
+TEST_F(IndexTests, addOnDeletedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
 
-// TEST_F(IndexTests, tryAddFileFromGitDirectory_absolutePath)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / ".git" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
+    commits.createCommit("Initial commit");
 
-//     ASSERT_THROW(index.add(repositoryPath / ".git" / "file.txt"), std::runtime_error);
-// }
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
 
-// TEST_F(IndexTests, tryAddFileFromGitDirectory_repoPath)
-// {
-//     auto index = repository->Index();
-//     std::ofstream file(repositoryPath / ".git" / "file.txt");
-//     file << "Hello, World!";
-//     file.close();
+    commits.createCommit("Second commit");
 
-//     ASSERT_THROW(index.add(".git/file.txt"), std::runtime_error);
-// }
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+
+    std::filesystem::remove(repositoryPath / "file.txt");
+    index.add("file.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file.txt");
+}
+
+TEST_F(IndexTests, addFilesWithAsteriskPattern)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file1(repositoryPath / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+
+    std::ofstream file2(repositoryPath / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    index.add("*.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 2);
+    EXPECT_EQ(indexFiles[0], "file1.txt");
+    EXPECT_EQ(indexFiles[1], "file2.txt");
+
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 2);
+    EXPECT_EQ(stagedFiles[0], "file1.txt");
+    EXPECT_EQ(stagedFiles[1], "file2.txt");
+}
+
+TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir1");
+    std::ofstream file1(repositoryPath / "dir1" / "file1.txt");
+    file1 << "Hello, World!";
+    file1.close();
+
+    std::filesystem::create_directory(repositoryPath / "dir2");
+    std::ofstream file2(repositoryPath / "dir2" / "file2.txt");
+    file2 << "Hello, World!";
+    file2.close();
+
+    auto stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    index.add("dir*/*.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 2);
+    EXPECT_EQ(indexFiles[0], "dir1/file1.txt");
+    EXPECT_EQ(indexFiles[1], "dir2/file2.txt");
+
+    stagedFiles = index.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 2);
+    EXPECT_EQ(stagedFiles[0], "dir1/file1.txt");
+    EXPECT_EQ(stagedFiles[1], "dir2/file2.txt");
+}
+
+TEST_F(IndexTests, removeRegularFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+
+    index.remove("file.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
+}
+
+TEST_F(IndexTests, removeRegularFile_removedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+
+    std::filesystem::remove(repositoryPath / "file.txt");
+
+    index.remove("file.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+}
+
+TEST_F(IndexTests, removeRegularFile_force)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+
+    index.remove("file.txt", true);
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+}
+
+TEST_F(IndexTests, removeRegularFile_notInIndex)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    EXPECT_THROW(index.remove("file.txt"), std::runtime_error);
+}
+
+TEST_F(IndexTests, removeRegularFile_notInIndex_force)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    EXPECT_THROW(index.remove("file.txt", true), std::runtime_error);
+}
+
+TEST_F(IndexTests, removeRegularFile_notInIndex_removedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    std::filesystem::remove(repositoryPath / "file.txt");
+
+    EXPECT_THROW(index.remove("file.txt", true), std::runtime_error);
+}
+
+TEST_F(IndexTests, removeRegularFileInDir)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("dir/file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
+
+    index.remove("dir/file.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
+}
+
+TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("dir/file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
+
+    index.remove("dir");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
+}
+
+TEST_F(IndexTests, removeRegularFileInDir_force)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("dir/file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
+
+    index.remove("dir", true);
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+}
+
+TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    EXPECT_THROW(index.remove("dir"), std::runtime_error);
+}
+
+TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    EXPECT_THROW(index.remove("dir", true), std::runtime_error);
+}
+
+TEST_F(IndexTests, removeRegularFileInDir_removedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    std::filesystem::create_directory(repositoryPath / "dir");
+    std::ofstream file(repositoryPath / "dir" / "file.txt");
+    file << "Hello, World!";
+    file.close();
+    index.add("dir/file.txt");
+
+    auto indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "dir/file.txt");
+
+    std::filesystem::remove(repositoryPath / "dir" / "file.txt");
+
+    index.remove("dir/file.txt");
+
+    indexFiles = index.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+}
+
 
 TEST_F(IndexTests, restoreAllStaged_noChanges)
 {

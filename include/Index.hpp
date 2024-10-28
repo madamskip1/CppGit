@@ -57,8 +57,8 @@ public:
     explicit Index(const Repository& repo);
     Index() = delete;
 
-    auto add(const std::filesystem::path& path) const -> void;
-    auto remove(const std::filesystem::path& path) const -> void;
+    auto add(const std::string_view filePattern) const -> void;
+    auto remove(const std::string_view filePattern, bool force = false) const -> void;
 
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void
@@ -74,8 +74,8 @@ public:
 
     auto isFileStaged(const std::filesystem::path& path) const -> bool;
 
-    auto getFilesInIndexList() const -> std::vector<std::string>;
-    auto getFilesInIndexListWithDetails() const -> std::vector<IndexEntry>;
+    auto getFilesInIndexList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    auto getFilesInIndexListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
     auto getUntrackedFilesList() const -> std::vector<std::string>;
     auto getStagedFilesList() const -> std::vector<std::string>;
@@ -87,10 +87,8 @@ public:
 private:
     const Repository& repo;
 
-    static auto getFileMode(const std::filesystem::path& absolutePath) -> std::string;
-    auto addFileToIndex(const std::filesystem::path& relativePath, const std::filesystem::path& absolutePath) const -> void;
-    auto removeFileFromIndex(const std::filesystem::path& relativePath) const -> void;
     auto getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>;
+    auto getUntrackedAndIndexFilesList(const std::string_view pattern = "") const -> std::vector<std::string>;
 };
 
 } // namespace CppGit
