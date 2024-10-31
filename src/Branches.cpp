@@ -172,6 +172,11 @@ auto Branches::createBranchFromCommit(std::string_view newBranchName, const Comm
     createBranchFromCommit(newBranchName, commit.getHash());
 }
 
+auto Branches::changeCurrentBranchRef(std::string_view newHash) const -> void
+{
+    changeBranchRef("HEAD", newHash);
+}
+
 auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);

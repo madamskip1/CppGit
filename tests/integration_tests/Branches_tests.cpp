@@ -299,6 +299,22 @@ TEST_F(BranchesTests, changeBranch_fullName)
     EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
 }
 
+TEST_F(BranchesTests, changeCurrentBranchRef)
+{
+    const auto& commits = repository->Commits();
+    const auto& branches = repository->Branches();
+    auto secondCommitHash = commits.createCommit("second commit");
+
+    auto hashBeforeChange = branches.getHashBranchRefersTo("main");
+
+    ASSERT_EQ(hashBeforeChange, secondCommitHash);
+
+    branches.changeCurrentBranchRef(initialCommitHash);
+    auto hashAfterChange = branches.getHashBranchRefersTo("main");
+
+    EXPECT_EQ(hashAfterChange, initialCommitHash);
+}
+
 TEST_F(BranchesTests, changeBranch_shouldDeleteFile)
 {
     const auto& branches = repository->Branches();

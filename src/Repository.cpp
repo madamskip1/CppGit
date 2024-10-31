@@ -6,6 +6,7 @@
 #include "Diff.hpp"
 #include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "Index.hpp"
+#include "Merge.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -40,6 +41,11 @@ auto Repository::CommitsHistory() const -> CppGit::CommitsHistory
 auto Repository::Diff() const -> CppGit::Diff
 {
     return CppGit::Diff(*this);
+}
+
+auto Repository::Merge() const -> CppGit::Merge
+{
+    return CppGit::Merge(*this);
 }
 
 auto Repository::getPathAsString() const -> std::string

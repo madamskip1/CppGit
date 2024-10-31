@@ -226,6 +226,23 @@ auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> s
     return std::vector<std::string>{ splittedSV.cbegin(), splittedSV.cend() };
 }
 
+auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
+{
+    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--unmerged", "--", filePattern);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list unmerged files");
+    }
+
+    if (output.stdout.empty())
+    {
+        return std::vector<IndexEntry>{};
+    }
+
+    return IndexParser::parseStageDetailedList(output.stdout);
+}
+
 auto Index::isDirty() const -> bool
 {
     auto commits = repo.Commits();
