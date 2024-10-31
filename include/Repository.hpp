@@ -28,10 +28,10 @@ public:
     Repository() = delete;
 
     template <typename... Args>
-    auto executeGitCommand(const std::string_view cmd, Args... args) const -> GitCommandOutput
+    auto executeGitCommand(const std::string_view cmd, Args&&... args) const -> GitCommandOutput
     {
         auto commandExecutor = GitCommandExecutorUnix();
-        return commandExecutor.execute(path.string(), cmd, args...);
+        return commandExecutor.execute(path.string(), cmd, std::forward<Args>(args)...);
     }
 
     auto Branches() const -> CppGit::Branches;

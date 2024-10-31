@@ -28,7 +28,8 @@ auto Branches::getLocalBranches() const -> std::vector<Branch>
 auto Branches::getCurrentBranch() const -> Branch
 {
     auto currentBranchRef = getCurrentBranchRef();
-    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string(BranchesParser::BRANCHES_FORMAT), currentBranchRef);
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchRef));
+
     if (output.return_code != 0)
     {
         throw std::runtime_error("Failed to get current branch");
@@ -61,7 +62,7 @@ auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
     auto hash = getHashBranchRefersTo(branchNameWithPrefix, false);
 
-    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", hash);
+    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", std::move(hash));
 
     if (output.return_code != 0)
     {
@@ -75,7 +76,7 @@ auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
         throw std::runtime_error("Failed to change current branch");
     }
 
-    output = repo.executeGitCommand("symbolic-ref", "HEAD", branchNameWithPrefix);
+    output = repo.executeGitCommand("symbolic-ref", "HEAD", std::move(branchNameWithPrefix));
 
     if (output.return_code != 0)
     {
@@ -91,7 +92,7 @@ auto Branches::changeCurrentBranch(const Branch& branch) const -> void
 auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
-    auto output = repo.executeGitCommand("show-ref", "--verify", "--quiet", branchNameWithPrefix);
+    auto output = repo.executeGitCommand("show-ref", "--verify", "--quiet", std::move(branchNameWithPrefix));
     return output.return_code == 0;
 }
 
@@ -106,7 +107,7 @@ auto Branches::deleteBranch(std::string_view branchName) const -> void
     // TODO: delete remote
 
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("update-ref", "-d", branchNameWithPrefix);
+    auto output = repo.executeGitCommand("update-ref", "-d", std::move(branchNameWithPrefix));
 
     if (output.return_code != 0)
     {
@@ -122,7 +123,7 @@ auto Branches::deleteBranch(const Branch& branch) const -> void
 auto Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const -> std::string
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
-    auto output = repo.executeGitCommand("rev-parse", branchNameWithPrefix);
+    auto output = repo.executeGitCommand("rev-parse", std::move(branchNameWithPrefix));
 
     if (output.return_code != 0)
     {
@@ -180,7 +181,7 @@ auto Branches::changeCurrentBranchRef(std::string_view newHash) const -> void
 auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
 {
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("update-ref", branchNameWithPrefix, newHash);
+    auto output = repo.executeGitCommand("update-ref", std::move(branchNameWithPrefix), std::string{ newHash });
 
     if (output.return_code != 0)
     {
@@ -195,10 +196,10 @@ auto Branches::changeBranchRef(const Branch& branch, std::string_view newHash) c
 
 auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>
 {
-    auto argLocal = local ? "refs/heads" : "";
-    auto argRemote = remote ? "refs/remotes" : "";
+    const auto* argLocal = local ? "refs/heads" : "";
+    const auto* argRemote = remote ? "refs/remotes" : "";
 
-    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string(BranchesParser::BRANCHES_FORMAT), argLocal, argRemote);
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
 
     if (output.return_code != 0)
     {

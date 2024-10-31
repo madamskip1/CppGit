@@ -4,7 +4,6 @@
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Diff.hpp"
-#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "Index.hpp"
 #include "Merge.hpp"
 
@@ -65,9 +64,7 @@ auto Repository::getTopLevelPathAsString() const -> std::string
 
 auto Repository::getTopLevelPath() const -> std::filesystem::path
 {
-    auto commandExecutor = GitCommandExecutorUnix();
-
-    auto output = commandExecutor.execute(path.string(), "rev-parse", "--show-toplevel");
+    auto output = executeGitCommand("rev-parse", "--show-toplevel");
 
     if (output.return_code != 0)
     {
@@ -133,7 +130,7 @@ auto Repository::isValidGitRepository() const -> bool
         return false;
     }
 
-    if (auto commandExecutor = GitCommandExecutorUnix(); commandExecutor.execute(path.string(), "rev-parse", "--is-inside-work-tree").return_code != 0)
+    if (auto output = executeGitCommand("rev-parse", "--is-inside-work-tree"); output.return_code != 0)
     {
         return false;
     }
@@ -181,9 +178,7 @@ auto Repository::clone(const std::string& url) const -> ErrorCode
         }
     }
 
-    auto commandExecutor = GitCommandExecutorUnix();
-
-    if (auto clone_output = commandExecutor.execute(path.string(), "clone", url, path.string()); clone_output.return_code != 0)
+    if (auto outout = executeGitCommand("clone", url, path.string()); outout.return_code != 0)
     {
         return ErrorCode::GIT_CLONE_FAILED;
     }
@@ -280,8 +275,7 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
 
 auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 {
-    auto commandExecutor = GitCommandExecutorUnix();
-    auto remote_output = commandExecutor.execute(path.string(), "remote", "get-url", "--all", "origin");
+    auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
 
     if (remote_output.return_code != 0)
     {
@@ -305,8 +299,7 @@ auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 
 auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 {
-    auto commandExecutor = GitCommandExecutorUnix();
-    auto config_output = commandExecutor.execute(path.string(), "config", "--list", "--local");
+    auto config_output = executeGitCommand("config", "--list", "--local");
 
     if (config_output.return_code != 0)
     {

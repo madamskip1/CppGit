@@ -62,7 +62,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         throw std::runtime_error("Failed to find merge base");
     }
 
-    auto mergeBase = mergeBaseOutput.stdout;
+    auto& mergeBase = mergeBaseOutput.stdout;
 
     auto branches = repo.Branches();
     auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
@@ -78,7 +78,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         throw std::runtime_error("Nothing to merge");
     }
 
-    auto readTreeOutput = repo.executeGitCommand("read-tree", "-m", mergeBase, "HEAD", sourceBranch);
+    auto readTreeOutput = repo.executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
 
     if (readTreeOutput.return_code != 0)
     {
@@ -101,12 +101,12 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     if (!gitLsFilesOutput.stdout.empty())
     {
-        startMergeConflict(sourceBranchRef, sourceBranch, targetBranchRef, "HEAD", message, description);
+        startMergeConflict(std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
         throw std::runtime_error("Conflicts detected");
     }
 
 
-    return createMergeCommit(sourceBranchRef, targetBranchRef, message, description);
+    return createMergeCommit(std::move(sourceBranchRef), std::move(targetBranchRef), message, description);
 }
 
 
@@ -177,9 +177,9 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
     }
 
 
-    const auto& treeHash = writeTreeOutput.stdout;
+    auto& treeHash = writeTreeOutput.stdout;
 
-    auto commitOutput = repo.executeGitCommand("commit-tree", treeHash, "-p", targetBranchRef, "-p", sourceBranchRef, "-m", message, (description.empty() ? "" : "-m"), description);
+    auto commitOutput = repo.executeGitCommand("commit-tree", std::move(treeHash), "-p", targetBranchRef, "-p", sourceBranchRef, "-m", message, (description.empty() ? "" : "-m"), description);
 
     if (commitOutput.return_code != 0)
     {

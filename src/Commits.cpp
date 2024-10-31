@@ -19,10 +19,10 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
         throw std::runtime_error("Failed to write tree");
     }
 
-    const auto& treeHash = writeTreeOutput.stdout;
+    auto& treeHash = writeTreeOutput.stdout;
     auto parent = hasAnyCommits() ? getHeadCommitHash() : std::string{};
 
-    auto commitOutput = repo.executeGitCommand("commit-tree", treeHash, (parent.empty() ? "" : "-p"), parent, "-m", message, (description.empty() ? "" : "-m"), description);
+    auto commitOutput = repo.executeGitCommand("commit-tree", std::move(treeHash), (parent.empty() ? "" : "-p"), std::move(parent), "-m", message, (description.empty() ? "" : "-m"), description);
     if (commitOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to create commit");
