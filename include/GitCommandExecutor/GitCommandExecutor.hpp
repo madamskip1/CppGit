@@ -34,21 +34,9 @@ public:
         }
     }
 
-    template <typename... Args>
-    auto execute(const std::string_view repoPath, const std::string_view command, Args&&... args)
-        -> std::enable_if_t<(sizeof...(Args) != 1) || !std::conjunction_v<std::is_same<std::decay_t<Args>, std::vector<std::string>>...>, GitCommandOutput>
-    {
-        return execute(std::vector<std::string>{}, repoPath, command, std::forward<Args>(args)...);
-    }
-
     auto execute(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
     {
         return executeImpl(environmentVariables, repoPath, command, args);
-    }
-
-    auto execute(const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
-    {
-        return executeImpl(std::vector<std::string>{}, repoPath, command, args);
     }
 
 protected:
