@@ -9,7 +9,7 @@
 
 namespace CppGit {
 
-auto GitCommandExecutorUnix::executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
+auto GitCommandExecutorUnix::executeImpl(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
 {
     createPipes();
     pid = fork();
@@ -20,7 +20,7 @@ auto GitCommandExecutorUnix::executeImpl(const std::string_view path, const std:
 
     if (pid == 0)
     {
-        childProcess(path, command, args);
+        childProcess(environmentVariables, repoPath, command, args);
     }
     else
     {
@@ -95,7 +95,7 @@ auto GitCommandExecutorUnix::parentProcess() -> GitCommandOutput
     return GitCommandOutput{ returnCode, stdoutStr, stderrStr };
 }
 
-auto GitCommandExecutorUnix::childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string>& args) -> void
+auto GitCommandExecutorUnix::childProcess(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> void
 {
     close(stdoutPipe[0]);
     close(stderrPipe[0]);
@@ -113,7 +113,7 @@ auto GitCommandExecutorUnix::childProcess(const std::string_view path, const std
     argv.reserve(args.size() + 5);
     argv.emplace_back(GIT_EXECUTABLE);
     argv.emplace_back("-C");
-    argv.push_back(path.data());
+    argv.push_back(repoPath.data());
     argv.push_back(command.data());
 
     for (const auto& arg : args)
@@ -125,9 +125,35 @@ auto GitCommandExecutorUnix::childProcess(const std::string_view path, const std
     }
     argv.emplace_back(nullptr);
 
-    execvp("git", const_cast<char* const*>(argv.data()));
+    if (environmentVariables.empty())
+    {
+        execvp(GIT_EXECUTABLE, const_cast<char* const*>(argv.data()));
+        perror("execvp");
+    }
+    else
+    {
+        std::vector<const char*> envp;
 
-    perror("execlp");
+        for (char** env = environ; *env != nullptr; ++env)
+        {
+            envp.push_back(*env);
+        }
+
+        envp.reserve(envp.size() + environmentVariables.size() + 1);
+
+        for (const auto& envVar : environmentVariables)
+        {
+            if (!envVar.empty())
+            {
+                envp.push_back(envVar.data());
+            }
+        }
+
+        envp.push_back(nullptr);
+
+        execvpe(GIT_EXECUTABLE, const_cast<char* const*>(argv.data()), const_cast<char* const*>(envp.data()));
+        perror("execvpe");
+    }
     exit(EXIT_FAILURE);
 }
 

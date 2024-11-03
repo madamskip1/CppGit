@@ -13,11 +13,11 @@ public:
     ~GitCommandExecutorUnix() override = default;
 
 private:
-    auto executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput override;
+    auto executeImpl(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput override;
 
     auto createPipes() -> void;
     auto parentProcess() -> GitCommandOutput;
-    [[noreturn]] auto childProcess(const std::string_view path, const std::string_view command, const std::vector<std::string>& args) -> void;
+    [[noreturn]] auto childProcess(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> void;
 
     pid_t pid{};
     std::array<int, 2> stdoutPipe{};
