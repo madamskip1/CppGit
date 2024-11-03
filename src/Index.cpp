@@ -129,7 +129,7 @@ auto Index::isFileStaged(const std::string_view file) const -> bool
 
 auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--cache", "--", filePattern);
+    auto output = repo.executeGitCommand("ls-files", "--cache", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -141,7 +141,7 @@ auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std
 
 auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--stage", "--", filePattern);
+    auto output = repo.executeGitCommand("ls-files", "--stage", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -154,7 +154,7 @@ auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) c
 
 auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--exclude-standard", "--", filePattern);
+    auto output = repo.executeGitCommand("ls-files", "--others", "--exclude-standard", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -180,7 +180,7 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
 
 auto Index::getStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-only", "HEAD", "--");
+    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--");
 
     if (output.return_code != 0)
     {
@@ -197,7 +197,7 @@ auto Index::getStagedFilesList(const std::string_view filePattern) const -> std:
 
 auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) const -> std::vector<DiffIndexEntry>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
+    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -209,7 +209,7 @@ auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) con
 
 auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
+    auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -228,7 +228,7 @@ auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> s
 
 auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--unmerged", "--", filePattern);
+    auto output = repo.executeGitCommand("ls-files", "--unmerged", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -296,7 +296,7 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
 
 auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const -> std::vector<std::string>
 {
-    auto output = GitCommandExecutorUnix().execute(repo.getPathAsString(), "ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
+    auto output = repo.executeGitCommand("ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
 
     if (output.return_code != 0)
     {

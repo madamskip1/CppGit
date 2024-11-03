@@ -16,30 +16,31 @@ public:
     virtual ~GitCommandExecutor() = default;
 
     template <typename... Args>
-    auto execute(std::string_view path, std::string_view command, Args... args) -> GitCommandOutput
+    auto execute(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, Args&&... args)
+        -> std::enable_if_t<(sizeof...(Args) != 1) || !std::conjunction_v<std::is_same<std::decay_t<Args>, std::vector<std::string>>...>, GitCommandOutput>
     {
-        auto arguments = std::vector<std::string_view>{ args... };
-        return executeImpl(path, command, arguments);
-    }
-
-    auto execute(std::string_view path, std::string_view command, const std::vector<std::string_view>& args) -> GitCommandOutput
-    {
-        return executeImpl(path, command, args);
-    }
-
-    auto execute(std::string_view path, std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
-    {
-        std::vector<std::string_view> argsView;
-        argsView.reserve(args.size());
-        for (const auto& arg : args)
+        if constexpr (sizeof...(args) == 0)
         {
-            argsView.push_back(arg);
+            return executeImpl(environmentVariables, repoPath, command, {});
         }
-        return executeImpl(path, command, argsView);
+        else
+        {
+            auto arguments = std::vector<std::string>{};
+            arguments.reserve(sizeof...(args));
+
+            (arguments.emplace_back(std::forward<Args>(args)), ...);
+
+            return executeImpl(environmentVariables, repoPath, command, arguments);
+        }
+    }
+
+    auto execute(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput
+    {
+        return executeImpl(environmentVariables, repoPath, command, args);
     }
 
 protected:
-    virtual auto executeImpl(const std::string_view path, const std::string_view command, const std::vector<std::string_view>& args) -> GitCommandOutput = 0;
+    virtual auto executeImpl(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput = 0;
 };
 
 } // namespace CppGit

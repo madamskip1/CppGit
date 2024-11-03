@@ -28,11 +28,18 @@ public:
     Repository() = delete;
 
     template <typename... Args>
-    auto executeGitCommand(const std::string_view cmd, Args... args) const -> GitCommandOutput
+    auto executeGitCommand(const std::vector<std::string>& environmentVariables, const std::string_view cmd, Args&&... args) const -> GitCommandOutput
     {
         auto commandExecutor = GitCommandExecutorUnix();
-        return commandExecutor.execute(path.string(), cmd, args...);
+        return commandExecutor.execute(environmentVariables, path.string(), cmd, std::forward<Args>(args)...);
     }
+
+    template <typename... Args>
+    auto executeGitCommand(const std::string_view cmd, Args&&... args) const -> GitCommandOutput
+    {
+        return executeGitCommand(std::vector<std::string>{}, cmd, std::forward<Args>(args)...);
+    }
+
 
     auto Branches() const -> CppGit::Branches;
     auto Index() const -> CppGit::Index;
