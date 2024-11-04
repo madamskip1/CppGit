@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Repository.hpp"
 
@@ -8,9 +9,13 @@
 
 namespace CppGit {
 
+class CherryPick; // Forward declaration
 
 class Commits
 {
+
+    friend CherryPick; // for createCommitImpl method
+
 public:
     explicit Commits(const Repository& repo);
 

@@ -12,6 +12,7 @@ target_sources(CppGit_integration_tests
         Branches_tests.cpp
         Diff_tests.cpp
         Merge_tests.cpp
+        CherryPick_tests.cpp
 )
 
 target_link_libraries(CppGit_integration_tests
