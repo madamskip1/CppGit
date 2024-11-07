@@ -15,6 +15,7 @@ public:
     explicit Commits(const Repository& repo);
 
     auto createCommit(const std::string_view message, const std::string_view description = "") const -> std::string;
+    auto amendCommit(const std::string_view message = "", const std::string_view description = "") const -> std::string;
 
     auto hasAnyCommits() const -> bool;
 
