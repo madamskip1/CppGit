@@ -13,34 +13,24 @@ Commits::Commits(const Repository& repo)
 
 auto Commits::createCommit(const std::string_view message, const std::string_view description) const -> std::string
 {
-    auto writeTreeOutput = repo.executeGitCommand("write-tree");
-    if (writeTreeOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to write tree");
-    }
-
-    auto& treeHash = writeTreeOutput.stdout;
     auto parent = hasAnyCommits() ? getHeadCommitHash() : std::string{};
+    return createCommitImpl(message, description, { std::move(parent) });
+}
 
-    auto commitOutput = repo.executeGitCommand("commit-tree", std::move(treeHash), (parent.empty() ? "" : "-p"), std::move(parent), "-m", message, (description.empty() ? "" : "-m"), description);
-    if (commitOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to create commit");
-    }
+auto Commits::amendCommit(const std::string_view message, const std::string_view description) const -> std::string
+{
+    auto headCommitHash = getHeadCommitHash();
+    auto commitInfo = getCommitInfo(headCommitHash);
 
-    const auto& commitHash = commitOutput.stdout;
+    auto envp = std::vector<std::string>{};
+    envp.emplace_back("GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name);
+    envp.emplace_back("GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email);
+    envp.emplace_back("GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate());
 
-    const auto branches = repo.Branches();
-    branches.changeBranchRef("HEAD", commitHash);
+    auto newCommitMessage = (message == "" ? commitInfo.getMessage() : std::string{ message });
+    auto newCommitDescription = (message == "" ? commitInfo.getDescription() : std::string{ description });
 
-    auto x = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet");
-
-    if (x.return_code != 0)
-    {
-        throw std::runtime_error("Failed to read tree2");
-    }
-
-    return commitHash;
+    return createCommitImpl(newCommitMessage, newCommitDescription, commitInfo.getParents(), envp);
 }
 
 auto Commits::hasAnyCommits() const -> bool
@@ -74,6 +64,58 @@ auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit
     }
 
     return CommitParser::parseCommit_CatFile(output.stdout);
+}
+
+auto Commits::createCommitImpl(const std::string_view message, const std::string_view description, const std::vector<std::string>& parents, const std::vector<std::string>& envp) const -> std::string
+{
+    auto writeTreeOutput = repo.executeGitCommand("write-tree");
+    if (writeTreeOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to write tree");
+    }
+
+    auto commitArgs = std::vector<std::string>{};
+    commitArgs.reserve(1 + 2 * parents.size() + 4); // treeHash + parents*2 + message + description
+
+    commitArgs.push_back(std::move(writeTreeOutput.stdout));
+
+    commitArgs.emplace_back("-m");
+    commitArgs.emplace_back(message);
+
+    if (!description.empty())
+    {
+        commitArgs.emplace_back("-m");
+        commitArgs.emplace_back(description);
+    }
+
+    for (const auto& parent : parents)
+    {
+        if (!parent.empty())
+        {
+            commitArgs.emplace_back("-p");
+            commitArgs.push_back(parent);
+        }
+    }
+
+    auto commitOutput = (envp.empty() ? repo.executeGitCommand("commit-tree", commitArgs) : repo.executeGitCommand(envp, "commit-tree", commitArgs));
+
+    if (commitOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to create commit");
+    }
+
+    const auto& commitHash = commitOutput.stdout;
+
+    const auto branches = repo.Branches();
+    branches.changeBranchRef("HEAD", commitHash);
+
+
+    if (auto updateIndexOutput = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to update index");
+    }
+
+    return commitHash;
 }
 
 } // namespace CppGit
