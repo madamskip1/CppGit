@@ -24,6 +24,8 @@ public:
 
 private:
     const Repository& repo;
+
+    auto createCommitImpl(const std::string_view message, const std::string_view description, const std::vector<std::string>& parents, const std::vector<std::string>& envp = {}) const -> std::string;
 };
 
 } // namespace CppGit
