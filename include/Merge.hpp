@@ -1,16 +1,18 @@
 #pragma once
 
 #include "Index.hpp"
+#include "Repository.hpp"
 
 #include <string>
 #include <string_view>
-#include "Repository.hpp"
 #include <unordered_map>
 
 namespace CppGit {
 
 class Merge
 {
+    friend class CherryPick; // for threeWayMergeConflictedFiles
+
 public:
     explicit Merge(const Repository& repo)
         : repo(repo)
@@ -50,11 +52,13 @@ private:
 
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;
-    auto startMergeConflict(const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void;
+    auto startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void;
     auto unpackFile(const std::string_view fileBlob) const -> std::string;
     auto parseUnmergedFiles(const std::vector<CppGit::IndexEntry>& indexEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>;
     auto createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void;
     auto removeNoFFMergeFiles() const -> void;
+
+    auto threeWayMergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void;
 };
 
 } // namespace CppGit

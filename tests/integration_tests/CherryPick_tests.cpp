@@ -313,3 +313,163 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 
     EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
 }
+
+TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto cherryPick = repository->CherryPick();
+    auto commandExecutor = CppGit::GitCommandExecutorUnix{};
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    index.add("file.txt");
+
+    commits.createCommit("Initial commit");
+
+    branches.createBranch("second-branch");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified";
+    file.close();
+    index.add("file.txt");
+
+    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+
+    auto secondCommitHash = commits.getHeadCommitHash();
+    auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
+
+    EXPECT_EQ(secondCommitInfo.getMessage(), "Second commit");
+    EXPECT_EQ(secondCommitInfo.getAuthor().name, "TestAuthor");
+    EXPECT_EQ(secondCommitInfo.getAuthor().email, "test@email.com");
+    EXPECT_EQ(secondCommitInfo.getAuthorDate(), "1730738278 +0100");
+    EXPECT_EQ(secondCommitInfo.getCommitter().name, "TestAuthor");
+    EXPECT_EQ(secondCommitInfo.getCommitter().email, "test@email.com");
+    EXPECT_EQ(secondCommitInfo.getCommitterDate(), "1730738278 +0100");
+
+    branches.changeCurrentBranch("second-branch");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified";
+    file.close();
+    index.add("file.txt");
+
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified 2";
+    file.close();
+    index.add("file.txt");
+
+    auto fourthCommitHash = commits.createCommit("Fourth commit");
+
+    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), std::runtime_error);
+
+    auto headCommitHash = commits.getHeadCommitHash();
+
+    ASSERT_EQ(fourthCommitHash, headCommitHash);
+    ASSERT_TRUE(cherryPick.isCherryPickInProgress());
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
+
+    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
+    std::ostringstream cherryPickHeadFileContent;
+    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
+
+    EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
+
+    std::ifstream fileRead(repositoryPath / "file.txt");
+    std::ostringstream content;
+    content << fileRead.rdbuf();
+    EXPECT_EQ(content.str(), "<<<<<<< HEAD\nHello, World! Modified 2\n=======\nHello, World! Modified\n>>>>>>> " + secondCommitHash + "\n");
+}
+
+TEST_F(CherryPickTests, cherryPick_conflict_resolve)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto cherryPick = repository->CherryPick();
+    auto commandExecutor = CppGit::GitCommandExecutorUnix{};
+
+    std::ofstream file(repositoryPath / "file.txt");
+    file << "Hello, World!";
+    file.close();
+
+    index.add("file.txt");
+
+    commits.createCommit("Initial commit");
+
+    branches.createBranch("second-branch");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified";
+    file.close();
+    index.add("file.txt");
+
+    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+
+    auto secondCommitHash = commits.getHeadCommitHash();
+    auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
+
+    EXPECT_EQ(secondCommitInfo.getMessage(), "Second commit");
+    EXPECT_EQ(secondCommitInfo.getAuthor().name, "TestAuthor");
+    EXPECT_EQ(secondCommitInfo.getAuthor().email, "test@email.com");
+    EXPECT_EQ(secondCommitInfo.getAuthorDate(), "1730738278 +0100");
+    EXPECT_EQ(secondCommitInfo.getCommitter().name, "TestAuthor");
+    EXPECT_EQ(secondCommitInfo.getCommitter().email, "test@email.com");
+    EXPECT_EQ(secondCommitInfo.getCommitterDate(), "1730738278 +0100");
+
+    branches.changeCurrentBranch("second-branch");
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Modified 2";
+    file.close();
+    index.add("file.txt");
+
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), std::runtime_error);
+
+    auto headCommitHash = commits.getHeadCommitHash();
+
+    ASSERT_EQ(thirdCommitHash, headCommitHash);
+    ASSERT_TRUE(cherryPick.isCherryPickInProgress());
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
+
+    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
+    std::ostringstream cherryPickHeadFileContent;
+    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
+
+    EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
+
+    file.open(repositoryPath / "file.txt");
+    file << "Hello, World! Conflict resolved";
+    file.close();
+    index.add("file.txt");
+
+    auto cherryPickResolvedHash = cherryPick.cherryPickContinue();
+
+    auto cherryPickedInfo = commits.getCommitInfo(cherryPickResolvedHash);
+    headCommitHash = commits.getHeadCommitHash();
+
+    ASSERT_EQ(cherryPickResolvedHash, headCommitHash);
+    ASSERT_NE(secondCommitHash, cherryPickResolvedHash);
+    ASSERT_NE(thirdCommitHash, cherryPickResolvedHash);
+    EXPECT_EQ(cherryPickedInfo.getMessage(), "Second commit");
+    EXPECT_EQ(cherryPickedInfo.getAuthor().name, "TestAuthor");
+    EXPECT_EQ(cherryPickedInfo.getAuthor().email, "test@email.com");
+    EXPECT_EQ(cherryPickedInfo.getAuthorDate(), "1730738278 +0100");
+    EXPECT_NE(cherryPickedInfo.getCommitter().name, "TestAuthor");
+    EXPECT_NE(cherryPickedInfo.getCommitter().email, "test@email.com");
+    EXPECT_NE(cherryPickedInfo.getCommitterDate(), "1730738278 +0100");
+
+    auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
+    std::ostringstream content;
+    content << fileRead.rdbuf();
+    EXPECT_EQ(content.str(), "Hello, World! Conflict resolved");
+}

@@ -20,6 +20,7 @@ public:
 
     auto cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::string;
     auto commitEmptyCherryPickedCommit() const -> std::string;
+    auto cherryPickContinue() const -> std::string;
 
     auto isCherryPickInProgress() const -> bool;
 

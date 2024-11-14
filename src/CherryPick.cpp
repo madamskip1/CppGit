@@ -2,6 +2,7 @@
 
 #include "Commits.hpp"
 #include "Index.hpp"
+#include "Merge.hpp"
 
 #include <fstream>
 
@@ -29,13 +30,31 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
     diffFile << diffOutput.stdout;
     diffFile.close();
 
-    auto applyOutput = repo.executeGitCommand("apply", "--index", "--3way", repo.getGitDirectoryPath() / "patch.diff");
+    auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", repo.getGitDirectoryPath() / "patch.diff");
 
     std::filesystem::remove(repo.getGitDirectoryPath() / "patch.diff");
 
     if (applyOutput.return_code != 0)
     {
+        auto index = repo.Index();
+        auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
+
+        if (!unmergedFilesEntries.empty())
+        {
+            auto merge = Merge{ repo };
+            merge.threeWayMergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+            createCherryPickHeadFile(commitHash);
+            throw std::runtime_error("Conflicts detected");
+        }
+
         throw std::runtime_error("Failed to apply diff");
+    }
+
+    auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-a", "-f");
+
+    if (checkoutIndexOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to checkout index");
     }
 
     auto index = repo.Index();
@@ -132,6 +151,25 @@ auto CherryPick::getCherryPickHead() const -> std::string
     headFile.close();
 
     return head;
+}
+
+auto CherryPick::cherryPickContinue() const -> std::string
+{
+    if (!isCherryPickInProgress())
+    {
+        throw std::runtime_error("No cherry-pick in progress");
+    }
+
+    auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails();
+
+    if (!unmergedFilesEntries.empty())
+    {
+        throw std::runtime_error("Cannot continue cherry-pick with conflicts");
+    }
+
+    auto commitHash = getCherryPickHead();
+
+    return commitCherryPicked(commitHash);
 }
 
 auto CppGit::CherryPick::processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::string

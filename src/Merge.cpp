@@ -92,16 +92,11 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         throw std::runtime_error("Failed to checkout index");
     }
 
-    auto gitLsFilesOutput = repo.executeGitCommand("ls-files", "-u");
+    auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
 
-    if (gitLsFilesOutput.return_code != 0)
+    if (!unmergedFilesEntries.empty())
     {
-        throw std::runtime_error("Failed to list files");
-    }
-
-    if (!gitLsFilesOutput.stdout.empty())
-    {
-        startMergeConflict(std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
+        startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
         throw std::runtime_error("Conflicts detected");
     }
 
@@ -203,7 +198,7 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
     return std::string();
 }
 
-auto Merge::startMergeConflict(const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void
+auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void
 {
     createNoFFMergeFiles(sourceBranchRef, message, description);
     mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef.cbegin(), sourceBranchRef.cend() };
@@ -211,46 +206,7 @@ auto Merge::startMergeConflict(const std::string_view sourceBranchRef, const std
     mergeInProgress_message = std::string{ message };
     mergeInProgress_description = std::string{ description };
 
-    auto index = repo.Index();
-    auto unmergedLsFiles = index.getUnmergedFilesListWithDetails();
-    const auto unmergedFiles = parseUnmergedFiles(unmergedLsFiles);
-
-    auto repoRootPath = repo.getTopLevelPath();
-
-    for (const auto& [file, unmergedFile] : unmergedFiles)
-    {
-        auto baseTempFile = unpackFile(unmergedFile.baseBlob);
-        auto targetTempFile = unpackFile(unmergedFile.targetBlob);
-        auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
-
-        if (baseTempFile.empty())
-        {
-            baseTempFile = "/dev/null";
-        }
-
-        auto mergeFileOutput = repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
-
-        auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
-
-        auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
-
-        auto targetTempFilePath = std::filesystem::path{ repoRootPath / targetTempFile };
-        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / sourceTempFile };
-        auto filePath = std::filesystem::path{ repoRootPath / file };
-
-        auto src_file = std::ifstream{ targetTempFilePath, std::ios::binary };
-        auto dst_file = std::ofstream{ filePath, std::ios::binary | std::ios::trunc };
-        dst_file << src_file.rdbuf();
-        src_file.close();
-        dst_file.close();
-
-        std::filesystem::remove(targetTempFilePath);
-        std::filesystem::remove(sourceTempFilePath);
-        if (baseTempFile != "/dev/null")
-        {
-            std::filesystem::remove(baseTempFilePath);
-        }
-    }
+    threeWayMergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);
 }
 
 auto Merge::unpackFile(const std::string_view fileBlob) const -> std::string
@@ -313,6 +269,48 @@ auto Merge::removeNoFFMergeFiles() const -> void
     std::filesystem::remove(topLevelPath / ".git/MERGE_HEAD");
     std::filesystem::remove(topLevelPath / ".git/MERGE_MSG");
     std::filesystem::remove(topLevelPath / ".git/MERGE_MODE");
+}
+
+auto Merge::threeWayMergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void
+{
+    const auto unmergedFiles = parseUnmergedFiles(unmergedFilesEntries);
+
+    auto repoRootPath = repo.getTopLevelPath();
+
+    for (const auto& [file, unmergedFile] : unmergedFiles)
+    {
+        auto baseTempFile = unpackFile(unmergedFile.baseBlob);
+        auto targetTempFile = unpackFile(unmergedFile.targetBlob);
+        auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
+
+        if (baseTempFile.empty())
+        {
+            baseTempFile = "/dev/null";
+        }
+
+        auto mergeFileOutput = repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
+
+        auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
+
+        auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
+
+        auto targetTempFilePath = std::filesystem::path{ repoRootPath / targetTempFile };
+        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / sourceTempFile };
+        auto filePath = std::filesystem::path{ repoRootPath / file };
+
+        auto src_file = std::ifstream{ targetTempFilePath, std::ios::binary };
+        auto dst_file = std::ofstream{ filePath, std::ios::binary | std::ios::trunc };
+        dst_file << src_file.rdbuf();
+        src_file.close();
+        dst_file.close();
+
+        std::filesystem::remove(targetTempFilePath);
+        std::filesystem::remove(sourceTempFilePath);
+        if (baseTempFile != "/dev/null")
+        {
+            std::filesystem::remove(baseTempFilePath);
+        }
+    }
 }
 
 auto Merge::abortMerge() const -> void
