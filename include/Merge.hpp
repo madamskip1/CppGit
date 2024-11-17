@@ -40,8 +40,6 @@ private:
 
     std::string mergeInProgress_sourceBranchRef;
     std::string mergeInProgress_targetBranchRef;
-    std::string mergeInProgress_message;
-    std::string mergeInProgress_description;
 
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;

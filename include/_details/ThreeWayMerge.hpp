@@ -27,6 +27,7 @@ public:
 
     auto createMergeMsgFile(const std::string_view msg, const std::string_view description = "") const -> void;
     auto removeMergeMsgFile() const -> void;
+    auto getMergeMsg() const -> std::string;
 
 private:
     const Repository& repo;

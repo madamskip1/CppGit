@@ -180,8 +180,6 @@ auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntri
     createNoFFMergeFiles(sourceBranchRef, message, description);
     mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef.cbegin(), sourceBranchRef.cend() };
     mergeInProgress_targetBranchRef = std::string{ targetBranchRef };
-    mergeInProgress_message = std::string{ message };
-    mergeInProgress_description = std::string{ description };
 
     _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);
 }
@@ -231,7 +229,9 @@ auto Merge::continueMerge() const -> std::string
         throw std::runtime_error("Cannot continue merge with conflicts");
     }
 
-    auto mergeCommitHash = createMergeCommit(mergeInProgress_sourceBranchRef, mergeInProgress_targetBranchRef, mergeInProgress_message, mergeInProgress_description);
+    auto mergeMsg = _threeWayMerge.getMergeMsg();
+
+    auto mergeCommitHash = createMergeCommit(mergeInProgress_sourceBranchRef, mergeInProgress_targetBranchRef, mergeMsg, "");
 
     removeNoFFMergeFiles();
 

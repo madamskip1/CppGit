@@ -70,6 +70,18 @@ auto ThreeWayMerge::removeMergeMsgFile() const -> void
     std::filesystem::remove(path);
 }
 
+
+auto ThreeWayMerge::getMergeMsg() const -> std::string
+{
+    auto path = repo.getGitDirectoryPath() / "MERGE_MSG";
+    auto file = std::ifstream{ path };
+    auto msg = std::string{};
+    std::getline(file, msg, '\0');
+    file.close();
+
+    return msg;
+}
+
 auto ThreeWayMerge::unpackFile(const std::string_view fileBlob) const -> std::string
 {
     if (fileBlob.empty())
