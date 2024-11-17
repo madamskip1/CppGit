@@ -47,6 +47,11 @@ auto Repository::Merge() const -> CppGit::Merge
     return CppGit::Merge(*this);
 }
 
+auto Repository::CherryPick() const -> CppGit::CherryPick
+{
+    return CppGit::CherryPick(*this);
+}
+
 auto Repository::getPathAsString() const -> std::string
 {
     return path.string();
