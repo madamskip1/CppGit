@@ -12,4 +12,6 @@ protected:
 
     std::filesystem::path repositoryPath = std::filesystem::current_path() / "integration-tests-repo";
     std::unique_ptr<CppGit::Repository> repository;
+
+    static auto getFileContent(const std::filesystem::path& filePath) -> std::string;
 };

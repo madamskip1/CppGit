@@ -100,10 +100,8 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 
-    std::ifstream fileRead(repositoryPath / "file.txt");
-    std::ostringstream fileContentStream;
-    fileContentStream << fileRead.rdbuf();
-    EXPECT_EQ(fileContentStream.str(), "Hello, World! Modified");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World! Modified");
 }
 
 TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
@@ -133,10 +131,8 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 
-    std::ifstream file2Read(repositoryPath / "file2.txt");
-    std::ostringstream file2ContentStream;
-    file2ContentStream << file2Read.rdbuf();
-    EXPECT_EQ(file2ContentStream.str(), "Second file");
+    auto file2Content = getFileContent(repositoryPath / "file2.txt");
+    EXPECT_EQ(file2Content, "Second file");
 }
 
 TEST_F(CommitsTests, amendCommit_noCommits)

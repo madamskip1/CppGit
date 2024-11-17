@@ -93,10 +93,8 @@ TEST_F(CherryPickTests, simpleCherryPick)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
-    std::ifstream fileRead(repositoryPath / "file.txt");
-    std::ostringstream fileContentStream;
-    fileContentStream << fileRead.rdbuf();
-    EXPECT_EQ(fileContentStream.str(), "Hello, World! Modified");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World! Modified");
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
@@ -144,10 +142,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
-    auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
-    std::ostringstream content;
-    content << fileRead.rdbuf();
-    EXPECT_EQ(content.str(), "Hello, World!");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World!");
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
@@ -190,10 +186,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
 
     EXPECT_EQ(cherryPickedHash, std::string(40, '0'));
 
-    auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
-    std::ostringstream content;
-    content << fileRead.rdbuf();
-    EXPECT_EQ(content.str(), "Hello, World!");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World!");
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
@@ -236,11 +230,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 
-    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
-    std::ostringstream cherryPickHeadFileContent;
-    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
-
-    EXPECT_EQ(cherryPickHeadFileContent.str(), firstCommitHash);
+    auto cherrypickHeadFileContent = getFileContent(repositoryPath / ".git" / "CHERRY_PICK_HEAD");
+    EXPECT_EQ(cherrypickHeadFileContent, firstCommitHash);
 
     auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
 
@@ -253,10 +244,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
-    auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
-    std::ostringstream content;
-    content << fileRead.rdbuf();
-    EXPECT_EQ(content.str(), "Hello, World!");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World!");
 }
 
 TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
@@ -311,11 +300,8 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 
-    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
-    std::ostringstream cherryPickHeadFileContent;
-    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
-
-    EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
+    auto cherrypickHeadFileContent = getFileContent(repositoryPath / ".git" / "CHERRY_PICK_HEAD");
+    EXPECT_EQ(cherrypickHeadFileContent, secondCommitHash);
 }
 
 TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
@@ -376,16 +362,11 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 
-    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
-    std::ostringstream cherryPickHeadFileContent;
-    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
+    auto cherrypickHeadFileContent = getFileContent(repositoryPath / ".git" / "CHERRY_PICK_HEAD");
+    EXPECT_EQ(cherrypickHeadFileContent, secondCommitHash);
 
-    EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
-
-    std::ifstream fileRead(repositoryPath / "file.txt");
-    std::ostringstream content;
-    content << fileRead.rdbuf();
-    EXPECT_EQ(content.str(), "<<<<<<< HEAD\nHello, World! Modified 2\n=======\nHello, World! Modified\n>>>>>>> " + secondCommitHash + "\n");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2\n=======\nHello, World! Modified\n>>>>>>> " + secondCommitHash + "\n");
 }
 
 TEST_F(CherryPickTests, cherryPick_conflict_resolve)
@@ -439,11 +420,8 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 
-    auto cherryPickHeadFile = std::ifstream{ repositoryPath / ".git" / "CHERRY_PICK_HEAD" };
-    std::ostringstream cherryPickHeadFileContent;
-    cherryPickHeadFileContent << cherryPickHeadFile.rdbuf();
-
-    EXPECT_EQ(cherryPickHeadFileContent.str(), secondCommitHash);
+    auto cherrypickHeadFileContent = getFileContent(repositoryPath / ".git" / "CHERRY_PICK_HEAD");
+    EXPECT_EQ(cherrypickHeadFileContent, secondCommitHash);
 
     file.open(repositoryPath / "file.txt");
     file << "Hello, World! Conflict resolved";
@@ -462,8 +440,6 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
-    auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
-    std::ostringstream content;
-    content << fileRead.rdbuf();
-    EXPECT_EQ(content.str(), "Hello, World! Conflict resolved");
+    auto fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(fileContent, "Hello, World! Conflict resolved");
 }

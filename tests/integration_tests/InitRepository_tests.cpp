@@ -8,6 +8,16 @@ class InitRepositoryTests : public BaseRepositoryFixture
 {
 protected:
     void SetUp() override { }
+
+    void checkGitFilesExistence(const std::filesystem::path& gitDir)
+    {
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "objects"));
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "refs"));
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "refs" / "heads"));
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "refs" / "tags"));
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "HEAD"));
+        EXPECT_TRUE(std::filesystem::exists(gitDir / "config"));
+    }
 };
 
 TEST_F(InitRepositoryTests, BareRepository)
@@ -17,24 +27,14 @@ TEST_F(InitRepositoryTests, BareRepository)
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "objects"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs" / "heads"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs" / "tags"));
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "HEAD"));
-    std::ifstream headFile(repositoryPath / "HEAD");
-    std::stringstream headContent;
-    headContent << headFile.rdbuf();
-    EXPECT_EQ(headContent.str(), "ref: refs/heads/main");
-    headFile.close();
+    checkGitFilesExistence(repositoryPath);
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "config"));
-    std::ifstream config(repositoryPath / "config");
-    std::stringstream configContent;
-    configContent << config.rdbuf();
-    EXPECT_EQ(configContent.str(), "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = true");
-    config.close();
+    auto headFileContent = getFileContent(repositoryPath / "HEAD");
+    EXPECT_EQ(headFileContent, "ref: refs/heads/main");
+
+    auto configFileContent = getFileContent(repositoryPath / "config");
+    EXPECT_EQ(configFileContent, "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = true");
 }
 
 TEST_F(InitRepositoryTests, NonBareRepository)
@@ -46,23 +46,14 @@ TEST_F(InitRepositoryTests, NonBareRepository)
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git"));
 
     auto gitDir = repositoryPath / ".git";
-    EXPECT_TRUE(std::filesystem::exists(gitDir / "objects"));
-    EXPECT_TRUE(std::filesystem::exists(gitDir / "refs"));
-    EXPECT_TRUE(std::filesystem::exists(gitDir / "refs" / "heads"));
-    EXPECT_TRUE(std::filesystem::exists(gitDir / "refs" / "tags"));
 
-    ASSERT_TRUE(std::filesystem::exists(gitDir / "HEAD"));
-    std::ifstream headFile(gitDir / "HEAD");
-    std::stringstream headContent;
-    headContent << headFile.rdbuf();
-    EXPECT_EQ(headContent.str(), "ref: refs/heads/main");
-    headFile.close();
+    checkGitFilesExistence(gitDir);
 
-    ASSERT_TRUE(std::filesystem::exists(gitDir / "config"));
-    std::ifstream config(gitDir / "config");
-    std::stringstream configContent;
-    configContent << config.rdbuf();
-    EXPECT_EQ(configContent.str(), "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n");
+    auto headFileContent = getFileContent(gitDir / "HEAD");
+    EXPECT_EQ(headFileContent, "ref: refs/heads/main");
+
+    auto configFileContent = getFileContent(gitDir / "config");
+    EXPECT_EQ(configFileContent, "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n");
 }
 
 TEST_F(InitRepositoryTests, BareRepository_NonDefaultMainBranchName)
@@ -74,12 +65,11 @@ TEST_F(InitRepositoryTests, BareRepository_NonDefaultMainBranchName)
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git"));
 
     auto gitDir = repositoryPath / ".git";
-    ASSERT_TRUE(std::filesystem::exists(gitDir / "HEAD"));
-    std::ifstream headFile(gitDir / "HEAD");
-    std::stringstream headContent;
-    headContent << headFile.rdbuf();
-    EXPECT_EQ(headContent.str(), "ref: refs/heads/master");
-    headFile.close();
+
+    checkGitFilesExistence(gitDir);
+
+    auto headFileContent = getFileContent(gitDir / "HEAD");
+    EXPECT_EQ(headFileContent, "ref: refs/heads/master");
 }
 
 TEST_F(InitRepositoryTests, NonBareRepository_NonDefaultMainBranchName)
@@ -89,15 +79,9 @@ TEST_F(InitRepositoryTests, NonBareRepository_NonDefaultMainBranchName)
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "objects"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs" / "heads"));
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "refs" / "tags"));
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "HEAD"));
-    std::ifstream headFile(repositoryPath / "HEAD");
-    std::stringstream headContent;
-    headContent << headFile.rdbuf();
-    EXPECT_EQ(headContent.str(), "ref: refs/heads/master");
-    headFile.close();
+    checkGitFilesExistence(repositoryPath);
+
+    auto headFileContent = getFileContent(repositoryPath / "HEAD");
+    EXPECT_EQ(headFileContent, "ref: refs/heads/master");
 }

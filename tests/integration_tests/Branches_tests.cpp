@@ -387,19 +387,14 @@ TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
     index.add("new_file.txt");
     commits.createCommit("Changed file content");
 
-    std::ifstream fileNewBranch = std::ifstream(repositoryPath / "new_file.txt");
-    std::ostringstream contentNewBranch;
-    contentNewBranch << fileNewBranch.rdbuf();
-    ASSERT_EQ(contentNewBranch.str(), "Changed content");
+    auto new_fileContent = getFileContent(repositoryPath / "new_file.txt");
+    ASSERT_EQ(new_fileContent, "Changed content");
 
     branches.changeCurrentBranch("main");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
 
-    std::ifstream fileMain = std::ifstream(repositoryPath / "new_file.txt");
-    std::ostringstream contentMain;
-    contentMain << fileMain.rdbuf();
-
-    ASSERT_EQ(contentMain.str(), "Initial content");
+    new_fileContent = getFileContent(repositoryPath / "new_file.txt");
+    EXPECT_EQ(new_fileContent, "Initial content");
 }
 
 TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
