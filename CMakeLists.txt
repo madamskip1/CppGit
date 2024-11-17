@@ -29,6 +29,8 @@ target_sources(${PROJECT_NAME}
         src/_details/Parser/DiffParser.cpp
 
         src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
+
+        src/_details/CreateCommit.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

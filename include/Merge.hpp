@@ -2,6 +2,7 @@
 
 #include "Index.hpp"
 #include "Repository.hpp"
+#include "_details/CreateCommit.hpp"
 
 #include <string>
 #include <string_view>
@@ -14,9 +15,7 @@ class Merge
     friend class CherryPick; // for threeWayMergeConflictedFiles
 
 public:
-    explicit Merge(const Repository& repo)
-        : repo(repo)
-    { }
+    explicit Merge(const Repository& repo);
 
     auto mergeFastForward(const std::string_view sourceBranch) const -> std::string;
     auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
@@ -44,6 +43,7 @@ private:
     };
 
     const Repository& repo;
+    const _details::CreateCommit _createCommit;
 
     std::string mergeInProgress_sourceBranchRef;
     std::string mergeInProgress_targetBranchRef;

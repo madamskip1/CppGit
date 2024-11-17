@@ -9,7 +9,8 @@
 namespace CppGit {
 
 CherryPick::CherryPick(const Repository& repo)
-    : repo(repo)
+    : repo(repo),
+      _createCommit(repo)
 {
 }
 
@@ -115,7 +116,7 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
 
     auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
 
-    return commits.createCommitImpl(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    return _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
 }
 
 auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) const -> void

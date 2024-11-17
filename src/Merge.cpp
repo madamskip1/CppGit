@@ -9,6 +9,12 @@
 #include <fstream>
 
 namespace CppGit {
+Merge::Merge(const Repository& repo)
+    : repo(repo),
+      _createCommit(repo)
+{
+}
+
 
 auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::string
 {
@@ -165,37 +171,9 @@ auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_v
 
 auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string
 {
-    auto writeTreeOutput = repo.executeGitCommand("write-tree");
-    if (writeTreeOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to write tree");
-    }
+    auto parents = std::vector<std::string>{ std::string{ targetBranchRef }, std::string{ sourceBranchRef } };
 
-
-    auto& treeHash = writeTreeOutput.stdout;
-
-    auto commitOutput = repo.executeGitCommand("commit-tree", std::move(treeHash), "-p", targetBranchRef, "-p", sourceBranchRef, "-m", message, (description.empty() ? "" : "-m"), description);
-
-    if (commitOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to create commit222");
-    }
-
-    const auto& commitHash = commitOutput.stdout;
-
-    auto branches = repo.Branches();
-    branches.changeBranchRef("HEAD", commitHash);
-
-    auto x = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet");
-
-    if (x.return_code != 0)
-    {
-        throw std::runtime_error("Failed to read tree333");
-    }
-
-    return commitHash;
-
-    return std::string();
+    return _createCommit.createCommit(message, description, parents, {});
 }
 
 auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void

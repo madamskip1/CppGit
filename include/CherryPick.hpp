@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Repository.hpp"
+#include "_details/CreateCommit.hpp"
 
 #include <string_view>
 
@@ -26,6 +27,7 @@ public:
 
 private:
     const Repository& repo;
+    const _details::CreateCommit _createCommit;
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;
     auto createCherryPickHeadFile(const std::string_view commitHash) const -> void;
