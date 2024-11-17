@@ -2,7 +2,7 @@
 
 #include "Commit.hpp"
 #include "Commits.hpp"
-#include "Parser/IndexParser.hpp"
+#include "_details/Parser/IndexParser.hpp"
 
 #include <algorithm>
 

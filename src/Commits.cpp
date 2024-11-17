@@ -1,8 +1,8 @@
 #include "Commits.hpp"
 
 #include "Branches.hpp"
-#include "GitCommandExecutor/GitCommandOutput.hpp"
-#include "Parser/CommitParser.hpp"
+#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "_details/Parser/CommitParser.hpp"
 
 namespace CppGit {
 

@@ -4,13 +4,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(CppGit)
 
+add_library(${PROJECT_NAME})
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-add_library(CppGit)
-add_library(CppGit::CppGit ALIAS CppGit)
-
-target_sources(CppGit
+target_sources(${PROJECT_NAME}
     PRIVATE
-        src/GitCommandExecutor/GitCommandExecutorUnix.cpp
         src/Repository.cpp
         src/Commit.cpp
         src/Branch.cpp
@@ -22,13 +20,18 @@ target_sources(CppGit
         src/Merge.cpp
         src/CherryPick.cpp
 
-        src/Parser/CommitParser.cpp
-        src/Parser/BranchesParser.cpp
-        src/Parser/IndexParser.cpp
-        src/Parser/DiffParser.cpp
+
+        # _details (internal)
+
+        src/_details/Parser/CommitParser.cpp
+        src/_details/Parser/BranchesParser.cpp
+        src/_details/Parser/IndexParser.cpp
+        src/_details/Parser/DiffParser.cpp
+
+        src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
 )
 
-target_include_directories(CppGit
+target_include_directories(${PROJECT_NAME}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
 )

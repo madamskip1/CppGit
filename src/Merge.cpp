@@ -2,8 +2,8 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
-#include "GitCommandExecutor/GitCommandOutput.hpp"
 #include "Repository.hpp"
+#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 
 #include <filesystem>
 #include <fstream>

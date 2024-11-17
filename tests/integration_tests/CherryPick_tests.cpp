@@ -3,8 +3,8 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
-#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "Index.hpp"
+#include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 
 #include <filesystem>
 #include <fstream>

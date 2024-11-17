@@ -1,6 +1,6 @@
 #include "Diff.hpp"
 
-#include "Parser/DiffParser.hpp"
+#include "_details/Parser/DiffParser.hpp"
 
 namespace CppGit {
 auto Diff::getDiff() const -> std::vector<DiffFile>

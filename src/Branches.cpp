@@ -1,7 +1,7 @@
 #include "Branches.hpp"
 
 #include "Index.hpp"
-#include "Parser/BranchesParser.hpp"
+#include "_details/Parser/BranchesParser.hpp"
 
 namespace CppGit {
 

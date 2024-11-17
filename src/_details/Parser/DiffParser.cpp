@@ -1,4 +1,4 @@
-#include "Parser/DiffParser.hpp"
+#include "_details/Parser/DiffParser.hpp"
 
 #include <charconv>
 #include <regex>
