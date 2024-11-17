@@ -3,6 +3,7 @@
 #include "Index.hpp"
 #include "Repository.hpp"
 #include "_details/CreateCommit.hpp"
+#include "_details/ThreeWayMerge.hpp"
 
 #include <string>
 #include <string_view>
@@ -12,8 +13,6 @@ namespace CppGit {
 
 class Merge
 {
-    friend class CherryPick; // for threeWayMergeConflictedFiles
-
 public:
     explicit Merge(const Repository& repo);
 
@@ -35,15 +34,9 @@ public:
     auto continueMerge() const -> std::string;
 
 private:
-    struct UnmergedFileBlobs
-    {
-        std::string baseBlob;   // merge-base
-        std::string targetBlob; // ours
-        std::string sourceBlob; // their
-    };
-
     const Repository& repo;
     const _details::CreateCommit _createCommit;
+    const _details::ThreeWayMerge _threeWayMerge;
 
     std::string mergeInProgress_sourceBranchRef;
     std::string mergeInProgress_targetBranchRef;
@@ -53,12 +46,9 @@ private:
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;
     auto startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void;
-    auto unpackFile(const std::string_view fileBlob) const -> std::string;
-    auto parseUnmergedFiles(const std::vector<CppGit::IndexEntry>& indexEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>;
+
     auto createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void;
     auto removeNoFFMergeFiles() const -> void;
-
-    auto threeWayMergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void;
 };
 
 } // namespace CppGit

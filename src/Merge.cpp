@@ -11,7 +11,8 @@
 namespace CppGit {
 Merge::Merge(const Repository& repo)
     : repo(repo),
-      _createCommit(repo)
+      _createCommit(repo),
+      _threeWayMerge(repo)
 {
 }
 
@@ -23,9 +24,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::
 
 auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
 {
-    auto index = repo.Index();
-
-    if (index.isDirty())
+    if (auto index = repo.Index(); index.isDirty())
     {
         throw std::runtime_error("Cannot merge with dirty worktree");
     }
@@ -184,40 +183,7 @@ auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntri
     mergeInProgress_message = std::string{ message };
     mergeInProgress_description = std::string{ description };
 
-    threeWayMergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);
-}
-
-auto Merge::unpackFile(const std::string_view fileBlob) const -> std::string
-{
-    auto output = repo.executeGitCommand("unpack-file", fileBlob);
-
-    return std::move(output.stdout);
-}
-
-auto Merge::parseUnmergedFiles(const std::vector<CppGit::IndexEntry>& indexEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>
-{
-    std::unordered_map<std::string, UnmergedFileBlobs> unmergedFiles;
-
-    for (const auto& indexEntry : indexEntries)
-    {
-        auto& unmergedFile = unmergedFiles[indexEntry.path];
-        const auto& fileBlob = indexEntry.objectHash;
-
-        if (indexEntry.stageNumber == 1)
-        {
-            unmergedFile.baseBlob = fileBlob;
-        }
-        else if (indexEntry.stageNumber == 2)
-        {
-            unmergedFile.targetBlob = fileBlob;
-        }
-        else if (indexEntry.stageNumber == 3)
-        {
-            unmergedFile.sourceBlob = fileBlob;
-        }
-    }
-
-    return unmergedFiles;
+    _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);
 }
 
 auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void
@@ -227,14 +193,7 @@ auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const s
     MERGE_HEAD << sourceBranchRef;
     MERGE_HEAD.close();
 
-    std::ofstream MERGE_MSG{ topLevelPath / ".git/MERGE_MSG" };
-    MERGE_MSG << message;
-    if (!description.empty())
-    {
-        MERGE_MSG << "\n\n"
-                  << description;
-    }
-    MERGE_MSG.close();
+    _threeWayMerge.createMergeMsgFile(message, description);
 
     std::ofstream MERGE_MODE{ topLevelPath / ".git/MERGE_MODE" };
     MERGE_MODE << "no-ff";
@@ -245,50 +204,8 @@ auto Merge::removeNoFFMergeFiles() const -> void
 {
     auto topLevelPath = repo.getTopLevelPath();
     std::filesystem::remove(topLevelPath / ".git/MERGE_HEAD");
-    std::filesystem::remove(topLevelPath / ".git/MERGE_MSG");
     std::filesystem::remove(topLevelPath / ".git/MERGE_MODE");
-}
-
-auto Merge::threeWayMergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void
-{
-    const auto unmergedFiles = parseUnmergedFiles(unmergedFilesEntries);
-
-    auto repoRootPath = repo.getTopLevelPath();
-
-    for (const auto& [file, unmergedFile] : unmergedFiles)
-    {
-        auto baseTempFile = unpackFile(unmergedFile.baseBlob);
-        auto targetTempFile = unpackFile(unmergedFile.targetBlob);
-        auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
-
-        if (baseTempFile.empty())
-        {
-            baseTempFile = "/dev/null";
-        }
-
-        auto mergeFileOutput = repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
-
-        auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
-
-        auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
-
-        auto targetTempFilePath = std::filesystem::path{ repoRootPath / targetTempFile };
-        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / sourceTempFile };
-        auto filePath = std::filesystem::path{ repoRootPath / file };
-
-        auto src_file = std::ifstream{ targetTempFilePath, std::ios::binary };
-        auto dst_file = std::ofstream{ filePath, std::ios::binary | std::ios::trunc };
-        dst_file << src_file.rdbuf();
-        src_file.close();
-        dst_file.close();
-
-        std::filesystem::remove(targetTempFilePath);
-        std::filesystem::remove(sourceTempFilePath);
-        if (baseTempFile != "/dev/null")
-        {
-            std::filesystem::remove(baseTempFilePath);
-        }
-    }
+    _threeWayMerge.removeMergeMsgFile();
 }
 
 auto Merge::abortMerge() const -> void

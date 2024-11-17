@@ -31,6 +31,7 @@ target_sources(${PROJECT_NAME}
         src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
 
         src/_details/CreateCommit.cpp
+        src/_details/ThreeWayMerge.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
