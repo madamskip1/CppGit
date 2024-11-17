@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Index.hpp"
+#include "Index.hpp"
 #include "Parser.hpp"
 
 #include <string_view>

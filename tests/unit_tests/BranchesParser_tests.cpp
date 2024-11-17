@@ -1,4 +1,4 @@
-#include "Parser/BranchesParser.hpp"
+#include "_details/Parser/BranchesParser.hpp"
 
 #include <gtest/gtest.h>
 

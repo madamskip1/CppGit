@@ -2,14 +2,15 @@
 
 #include "Commits.hpp"
 #include "Index.hpp"
-#include "Merge.hpp"
 
 #include <fstream>
 
 namespace CppGit {
 
 CherryPick::CherryPick(const Repository& repo)
-    : repo(repo)
+    : repo(repo),
+      _createCommit(repo),
+      _threeWayMerge(repo)
 {
 }
 
@@ -41,9 +42,10 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
 
         if (!unmergedFilesEntries.empty())
         {
-            auto merge = Merge{ repo };
-            merge.threeWayMergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+            _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+
             createCherryPickHeadFile(commitHash);
+
             throw std::runtime_error("Conflicts detected");
         }
 
@@ -115,7 +117,7 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
 
     auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
 
-    return commits.createCommitImpl(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    return _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
 }
 
 auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) const -> void
@@ -127,18 +129,15 @@ auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) con
 
 auto CherryPick::createConflictMsgFiles(const std::string_view message, const std::string_view description) const -> void
 {
-    auto messageAndDescription = std::string{ message };
-    if (!description.empty())
-    {
-        messageAndDescription += "\n\n" + std::string{ description };
-    }
-
-    auto mergeMsgFile = std::ofstream(repo.getGitDirectoryPath() / "MERGE_MSG");
-    mergeMsgFile << messageAndDescription;
-    mergeMsgFile.close();
+    _threeWayMerge.createMergeMsgFile(message, description);
 
     auto commitEditMsgFile = std::ofstream(repo.getGitDirectoryPath() / "COMMIT_EDITMSG");
-    commitEditMsgFile << messageAndDescription;
+    commitEditMsgFile << message;
+    if (!description.empty())
+    {
+        commitEditMsgFile << "\n\n"
+                          << description;
+    }
     commitEditMsgFile.close();
 }
 

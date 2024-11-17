@@ -2,8 +2,8 @@
 
 
 #include "ErrorCodes.hpp"
-#include "GitCommandExecutor/GitCommandExecutorUnix.hpp"
-#include "GitCommandExecutor/GitCommandOutput.hpp"
+#include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
+#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 
 #include <filesystem>
 #include <string>

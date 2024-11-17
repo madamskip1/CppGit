@@ -1,6 +1,7 @@
 #include "Repository.hpp"
 
 #include "Branches.hpp"
+#include "CherryPick.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Diff.hpp"

@@ -1,21 +1,16 @@
 #pragma once
 
-#include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Repository.hpp"
+#include "_details/CreateCommit.hpp"
 
 #include <string>
 #include <string_view>
 
 namespace CppGit {
 
-class CherryPick; // Forward declaration
-
 class Commits
 {
-
-    friend CherryPick; // for createCommitImpl method
-
 public:
     explicit Commits(const Repository& repo);
 
@@ -29,8 +24,7 @@ public:
 
 private:
     const Repository& repo;
-
-    auto createCommitImpl(const std::string_view message, const std::string_view description, const std::vector<std::string>& parents, const std::vector<std::string>& envp = {}) const -> std::string;
+    const _details::CreateCommit _createCommit;
 };
 
 } // namespace CppGit
