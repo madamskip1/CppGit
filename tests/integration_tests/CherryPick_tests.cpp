@@ -12,6 +12,38 @@
 
 class CherryPickTests : public BaseRepositoryFixture
 {
+protected:
+    static constexpr auto* const AUTHOR_NAME = "TestAuthor";
+    static constexpr auto* const AUTHOR_EMAIL = "test@email.com";
+    static constexpr auto* const AUTHOR_DATE = "1730738278 +0100";
+
+    static auto prepareCommitAuthorCommiterTestEnvp() -> std::vector<std::string>
+    {
+        auto envp = std::vector<std::string>{ std::string{ "GIT_AUTHOR_NAME=" } + AUTHOR_NAME, std::string{ "GIT_AUTHOR_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_AUTHOR_DATE=" } + AUTHOR_DATE, std::string{ "GIT_COMMITTER_NAME=" } + AUTHOR_NAME, std::string{ "GIT_COMMITTER_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_COMMITTER_DATE=" } + AUTHOR_DATE };
+
+        return envp;
+    }
+
+    static auto checkCommitAuthorEqualTest(const CppGit::Commit& commit) -> void
+    {
+        EXPECT_EQ(commit.getAuthor().name, AUTHOR_NAME);
+        EXPECT_EQ(commit.getAuthor().email, AUTHOR_EMAIL);
+        EXPECT_EQ(commit.getAuthorDate(), AUTHOR_DATE);
+    }
+
+    static auto checkCommitCommiterEqualTest(const CppGit::Commit& commit) -> void
+    {
+        EXPECT_EQ(commit.getCommitter().name, AUTHOR_NAME);
+        EXPECT_EQ(commit.getCommitter().email, AUTHOR_EMAIL);
+        EXPECT_EQ(commit.getCommitterDate(), AUTHOR_DATE);
+    }
+
+    static auto checkCommitCommiterNotEqualTest(const CppGit::Commit& commit) -> void
+    {
+        EXPECT_NE(commit.getCommitter().name, AUTHOR_NAME);
+        EXPECT_NE(commit.getCommitter().email, AUTHOR_EMAIL);
+        EXPECT_NE(commit.getCommitterDate(), AUTHOR_DATE);
+    }
 };
 
 TEST_F(CherryPickTests, simpleCherryPick)
@@ -37,19 +69,16 @@ TEST_F(CherryPickTests, simpleCherryPick)
     file.close();
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
 
     auto mainBranchCommitHash = commits.getHeadCommitHash();
     auto mainBranchCommitInfo = commits.getCommitInfo(mainBranchCommitHash);
 
     EXPECT_EQ(mainBranchCommitInfo.getMessage(), "Second commit");
-    EXPECT_EQ(mainBranchCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(mainBranchCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(mainBranchCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(mainBranchCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(mainBranchCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(mainBranchCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(mainBranchCommitInfo);
+    checkCommitCommiterEqualTest(mainBranchCommitInfo);
 
     branches.changeCurrentBranch("second-branch");
 
@@ -61,12 +90,8 @@ TEST_F(CherryPickTests, simpleCherryPick)
     ASSERT_EQ(cherryPickedHash, headCommitHash);
     ASSERT_NE(mainBranchCommitHash, cherryPickedHash);
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Second commit");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(cherryPickedInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(cherryPickedInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(cherryPickedInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(cherryPickedInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(cherryPickedInfo);
+    checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
     std::ifstream fileRead(repositoryPath / "file.txt");
     std::ostringstream fileContentStream;
@@ -87,19 +112,16 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
 
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
 
     EXPECT_EQ(firstCommitInfo.getMessage(), "Initial commit");
-    EXPECT_EQ(firstCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(firstCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(firstCommitInfo);
+    checkCommitCommiterEqualTest(firstCommitInfo);
 
     std::ofstream file2(repositoryPath / "file2.txt");
     file2 << "Hello, World!";
@@ -119,12 +141,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     ASSERT_NE(firstCommitHash, cherryPickedHash);
     ASSERT_NE(secondCommitHash, cherryPickedHash);
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Initial commit");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(cherryPickedInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(cherryPickedInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(cherryPickedInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(cherryPickedInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(cherryPickedInfo);
+    checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
     auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
     std::ostringstream content;
@@ -145,19 +163,16 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
 
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
 
     EXPECT_EQ(firstCommitInfo.getMessage(), "Initial commit");
-    EXPECT_EQ(firstCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(firstCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(firstCommitInfo);
+    checkCommitCommiterEqualTest(firstCommitInfo);
 
     std::ofstream file2(repositoryPath / "file2.txt");
     file2 << "Hello, World!";
@@ -194,19 +209,16 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
 
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
 
     EXPECT_EQ(firstCommitInfo.getMessage(), "Initial commit");
-    EXPECT_EQ(firstCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(firstCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(firstCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(firstCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(firstCommitInfo);
+    checkCommitCommiterEqualTest(firstCommitInfo);
 
     std::ofstream file2(repositoryPath / "file2.txt");
     file2 << "Hello, World!";
@@ -238,13 +250,8 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     ASSERT_EQ(cherryPickedHash, headCommitHash);
     ASSERT_NE(firstCommitHash, cherryPickedHash);
     ASSERT_NE(secondCommitHash, cherryPickedHash);
-    EXPECT_EQ(cherryPickedInfo.getMessage(), "Initial commit");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(cherryPickedInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(cherryPickedInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(cherryPickedInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(cherryPickedInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(cherryPickedInfo);
+    checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
     auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
     std::ostringstream content;
@@ -275,19 +282,16 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
     file.close();
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
 
     EXPECT_EQ(secondCommitInfo.getMessage(), "Second commit");
-    EXPECT_EQ(secondCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(secondCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(secondCommitInfo);
+    checkCommitCommiterEqualTest(secondCommitInfo);
 
     branches.changeCurrentBranch("second-branch");
 
@@ -337,19 +341,16 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     file.close();
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
 
     EXPECT_EQ(secondCommitInfo.getMessage(), "Second commit");
-    EXPECT_EQ(secondCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(secondCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(secondCommitInfo);
+    checkCommitCommiterEqualTest(secondCommitInfo);
 
     branches.changeCurrentBranch("second-branch");
 
@@ -410,19 +411,16 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     file.close();
     index.add("file.txt");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
-    auto output = commandExecutor.execute(env, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+
+    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
 
     EXPECT_EQ(secondCommitInfo.getMessage(), "Second commit");
-    EXPECT_EQ(secondCommitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_EQ(secondCommitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_EQ(secondCommitInfo.getCommitter().email, "test@email.com");
-    EXPECT_EQ(secondCommitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(secondCommitInfo);
+    checkCommitCommiterEqualTest(secondCommitInfo);
 
     branches.changeCurrentBranch("second-branch");
 
@@ -461,12 +459,8 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     ASSERT_NE(secondCommitHash, cherryPickResolvedHash);
     ASSERT_NE(thirdCommitHash, cherryPickResolvedHash);
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Second commit");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(cherryPickedInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(cherryPickedInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(cherryPickedInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(cherryPickedInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(cherryPickedInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(cherryPickedInfo);
+    checkCommitCommiterNotEqualTest(cherryPickedInfo);
 
     auto fileRead = std::ifstream{ repositoryPath / "file.txt" };
     std::ostringstream content;
