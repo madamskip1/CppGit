@@ -20,11 +20,13 @@ TEST_F(DiffTests, emptyRepo)
 TEST_F(DiffTests, singleEmptyCommit)
 {
     auto commits = repository->Commits();
+    auto diff = repository->Diff();
+
+
     commits.createCommit("Initial commit");
 
-    auto diff = repository->Diff();
-    auto diffFiles = diff.getDiff();
 
+    auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
@@ -32,16 +34,17 @@ TEST_F(DiffTests, singleCommit)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file(repositoryPath / "test.txt");
+
+    auto file = std::ofstream{ repositoryPath / "test.txt" };
     file << "Hello, World!";
     file.close();
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    auto diff = repository->Diff();
-    auto diffFiles = diff.getDiff();
 
+    auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 0); // cant compare as we dont have any previous commit, so no diff
 }
 
@@ -49,25 +52,24 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file(repositoryPath / "test.txt");
+
+    auto file = std::ofstream{ repositoryPath / "test.txt" };
     file.close();
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2 << "Hello, World!";
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff();
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -92,24 +94,23 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file(repositoryPath / "test.txt");
+
+    auto file = std::ofstream{ repositoryPath / "test.txt" };
     file.close();
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff();
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -123,26 +124,25 @@ TEST_F(DiffTests, fileModdified)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file(repositoryPath / "test.txt");
+
+    auto file = std::ofstream{ repositoryPath / "test.txt" };
     file << "Hello, World!";
     file.close();
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test.txt" };
     file2 << "Hello, World! Modified";
     file2.close();
     index.add("test.txt");
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff();
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile.fileA, "test.txt");
@@ -172,26 +172,27 @@ TEST_F(DiffTests, multipleFile)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file1Modified(repositoryPath / "test1.txt");
+    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
     file1Modified << "Hello, World!";
     file1Modified.close();
     index.add("test1.txt");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
 
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
-    auto diffFiles = diff.getDiff();
 
+    auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -242,30 +243,29 @@ TEST_F(DiffTests, getGivenFileDiff)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file1Modified(repositoryPath / "test1.txt");
+    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
     file1Modified << "Hello, World!";
     file1Modified.close();
     index.add("test1.txt");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
 
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiffFile("test2.txt");
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -280,21 +280,22 @@ TEST_F(DiffTests, getGivenFileDiffNoFile)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file(repositoryPath / "test.txt");
+
+    auto file = std::ofstream{ repositoryPath / "test.txt" };
     file.close();
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test.txt" };
     file2 << "Hello, World! Modified";
     file2.close();
     index.add("test.txt");
     commits.createCommit("Second commit");
 
-    auto diff = repository->Diff();
-    auto diffFiles = diff.getDiffFile("test2.txt");
 
+    auto diffFiles = diff.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
@@ -302,29 +303,28 @@ TEST_F(DiffTests, givenCommitDiff)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
-    std::ofstream file3(repositoryPath / "test3.txt");
+    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
     file3.close();
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff(secondCommitHash);
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -336,29 +336,28 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    std::ofstream file3(repositoryPath / "test3.txt");
+    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
     file3.close();
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff("HEAD~1");
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -370,29 +369,28 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    std::ofstream file3(repositoryPath / "test3.txt");
+    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
     file3.close();
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiff("HEAD^");
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -404,26 +402,27 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    std::ofstream file1Modified(repositoryPath / "test1.txt");
+    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
     file1Modified << "Hello, World!";
     file1Modified.close();
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto diff = repository->Diff();
-    auto diffFiles = diff.getDiff(firstCommithash, thirdCommitHash);
 
+    auto diffFiles = diff.getDiff(firstCommithash, thirdCommitHash);
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -474,30 +473,29 @@ TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto diff = repository->Diff();
 
-    std::ofstream file1(repositoryPath / "test1.txt");
+
+    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
     file1.close();
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    std::ofstream file2(repositoryPath / "test2.txt");
+    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
     file2.close();
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    std::ofstream file1Modified(repositoryPath / "test1.txt");
+    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
     file1Modified << "Hello, World!";
     file1Modified.close();
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto diff = repository->Diff();
+
     auto diffFiles = diff.getDiffFile(firstCommithash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
-
     ASSERT_EQ(diffFiles.size(), 1);
-
     auto diffFile = diffFiles[0];
-
     EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
