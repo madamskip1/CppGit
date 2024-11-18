@@ -23,51 +23,43 @@ TEST_F(InitRepositoryTests, BareRepository)
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
     repository->initRepository(true);
 
+
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git"));
-
     checkGitFilesExistence(repositoryPath);
-
-    auto headFileContent = getFileContent(repositoryPath / "HEAD");
-    EXPECT_EQ(headFileContent, "ref: refs/heads/main");
-
-    auto configFileContent = getFileContent(repositoryPath / "config");
-    EXPECT_EQ(configFileContent, "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = true");
+    EXPECT_EQ(getFileContent(repositoryPath / "HEAD"), "ref: refs/heads/main");
+    EXPECT_EQ(getFileContent(repositoryPath / "config"), "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = true");
 }
 
 TEST_F(InitRepositoryTests, NonBareRepository)
 {
+    auto gitDir = repositoryPath / ".git";
+
+
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
     repository->initRepository();
 
+
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git"));
-
-    auto gitDir = repositoryPath / ".git";
-
     checkGitFilesExistence(gitDir);
-
-    auto headFileContent = getFileContent(gitDir / "HEAD");
-    EXPECT_EQ(headFileContent, "ref: refs/heads/main");
-
-    auto configFileContent = getFileContent(gitDir / "config");
-    EXPECT_EQ(configFileContent, "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n");
+    EXPECT_EQ(getFileContent(gitDir / "HEAD"), "ref: refs/heads/main");
+    EXPECT_EQ(getFileContent(gitDir / "config"), "[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n\tbare = false\n\tlogallrefupdates = true\n");
 }
 
 TEST_F(InitRepositoryTests, BareRepository_NonDefaultMainBranchName)
 {
+    auto gitDir = repositoryPath / ".git";
+
+
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
     repository->initRepository(false, "master");
 
+
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git"));
-
-    auto gitDir = repositoryPath / ".git";
-
     checkGitFilesExistence(gitDir);
-
-    auto headFileContent = getFileContent(gitDir / "HEAD");
-    EXPECT_EQ(headFileContent, "ref: refs/heads/master");
+    EXPECT_EQ(getFileContent(gitDir / "HEAD"), "ref: refs/heads/master");
 }
 
 TEST_F(InitRepositoryTests, NonBareRepository_NonDefaultMainBranchName)
@@ -75,11 +67,9 @@ TEST_F(InitRepositoryTests, NonBareRepository_NonDefaultMainBranchName)
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
     repository->initRepository(true, "master");
 
+
     ASSERT_TRUE(std::filesystem::exists(repositoryPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git"));
-
     checkGitFilesExistence(repositoryPath);
-
-    auto headFileContent = getFileContent(repositoryPath / "HEAD");
-    EXPECT_EQ(headFileContent, "ref: refs/heads/master");
+    EXPECT_EQ(getFileContent(repositoryPath / "HEAD"), "ref: refs/heads/master");
 }
