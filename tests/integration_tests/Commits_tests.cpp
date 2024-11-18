@@ -146,9 +146,9 @@ TEST_F(CommitsTests, amendCommit_noChanges)
 {
     auto commits = repository->Commits();
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit();
@@ -159,21 +159,17 @@ TEST_F(CommitsTests, amendCommit_noChanges)
     EXPECT_EQ(commitInfo.getMessage(), "Initial commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsg)
 {
     auto commits = repository->Commits();
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit");
@@ -184,21 +180,17 @@ TEST_F(CommitsTests, amendCommit_changeMsg)
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
 {
     auto commits = repository->Commits();
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit");
@@ -209,21 +201,17 @@ TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
 {
     auto commits = repository->Commits();
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit", "Amended description");
@@ -234,12 +222,8 @@ TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "Amended description");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }
 
 TEST_F(CommitsTests, amendCommit_addFile)
@@ -247,9 +231,9 @@ TEST_F(CommitsTests, amendCommit_addFile)
     auto commits = repository->Commits();
     auto index = repository->Index();
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     EXPECT_EQ(index.getFilesInIndexList().size(), 0);
@@ -273,12 +257,8 @@ TEST_F(CommitsTests, amendCommit_addFile)
     EXPECT_EQ(commitInfo.getMessage(), "Initial commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }
 
 TEST_F(CommitsTests, amendCommit_withOneParent)
@@ -287,9 +267,9 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
 
     auto initialCommitHash = commits.createCommit("Initial commit");
 
-    auto env = std::vector<std::string>{ "GIT_AUTHOR_NAME=TestAuthor", "GIT_AUTHOR_EMAIL=test@email.com", "GIT_AUTHOR_DATE=1730738278 +0100", "GIT_COMMITTER_NAME=TestAuthor", "GIT_COMMITTER_EMAIL=test@email.com", "GIT_COMMITTER_DATE=1730738278 +0100" };
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
 
-    repository->executeGitCommand(env, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Second commit");
+    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Second commit");
     auto secondCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit();
@@ -302,10 +282,6 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 1);
     EXPECT_EQ(commitInfo.getParents()[0], initialCommitHash);
-    EXPECT_EQ(commitInfo.getAuthor().name, "TestAuthor");
-    EXPECT_EQ(commitInfo.getAuthor().email, "test@email.com");
-    EXPECT_EQ(commitInfo.getAuthorDate(), "1730738278 +0100");
-    EXPECT_NE(commitInfo.getCommitter().name, "TestAuthor");
-    EXPECT_NE(commitInfo.getCommitter().email, "test@email.com");
-    EXPECT_NE(commitInfo.getCommitterDate(), "1730738278 +0100");
+    checkCommitAuthorEqualTest(commitInfo);
+    checkCommitCommiterNotEqualTest(commitInfo);
 }

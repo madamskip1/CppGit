@@ -1,3 +1,4 @@
+#include "Commit.hpp"
 #include "Repository.hpp"
 
 #include <filesystem>
@@ -14,4 +15,15 @@ protected:
     std::unique_ptr<CppGit::Repository> repository;
 
     static auto getFileContent(const std::filesystem::path& filePath) -> std::string;
+
+
+    static constexpr auto* const AUTHOR_NAME = "TestAuthor";
+    static constexpr auto* const AUTHOR_EMAIL = "test@email.com";
+    static constexpr auto* const AUTHOR_DATE = "1730738278 +0100";
+
+    static auto prepareCommitAuthorCommiterTestEnvp() -> std::vector<std::string>;
+
+    static auto checkCommitAuthorEqualTest(const CppGit::Commit& commit) -> void;
+    static auto checkCommitCommiterEqualTest(const CppGit::Commit& commit) -> void;
+    static auto checkCommitCommiterNotEqualTest(const CppGit::Commit& commit) -> void;
 };
