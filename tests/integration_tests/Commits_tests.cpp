@@ -2,6 +2,7 @@
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "Index.hpp"
+#include "_details/CreateCommit.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -147,8 +148,8 @@ TEST_F(CommitsTests, amendCommit_noChanges)
     auto commits = repository->Commits();
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit();
@@ -168,8 +169,8 @@ TEST_F(CommitsTests, amendCommit_changeMsg)
     auto commits = repository->Commits();
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit");
@@ -189,8 +190,8 @@ TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
     auto commits = repository->Commits();
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit");
@@ -210,8 +211,8 @@ TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
     auto commits = repository->Commits();
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit", "-m", "Initial description");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit("Amended commit", "Amended description");
@@ -232,8 +233,8 @@ TEST_F(CommitsTests, amendCommit_addFile)
     auto index = repository->Index();
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Initial commit");
     const auto& initialCommitHash = commits.getHeadCommitHash();
 
     EXPECT_EQ(index.getFilesInIndexList().size(), 0);
@@ -268,8 +269,8 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
     auto initialCommitHash = commits.createCommit("Initial commit");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
 
-    repository->executeGitCommand(envp, "commit", "--allow-empty", "--no-gpg-sign", "-m", "Second commit");
     auto secondCommitHash = commits.getHeadCommitHash();
 
     auto amendedCommitHash = commits.amendCommit();

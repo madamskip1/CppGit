@@ -28,7 +28,7 @@ TEST_F(CherryPickTests, simpleCherryPick)
 
     index.add("file.txt");
 
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     branches.createBranch("second-branch");
 
@@ -38,8 +38,7 @@ TEST_F(CherryPickTests, simpleCherryPick)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
 
     auto mainBranchCommitHash = commits.getHeadCommitHash();
     auto mainBranchCommitInfo = commits.getCommitInfo(mainBranchCommitHash);
@@ -79,8 +78,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
@@ -128,8 +126,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
@@ -172,8 +169,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Initial commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
     auto firstCommitHash = commits.getHeadCommitHash();
     auto firstCommitInfo = commits.getCommitInfo(firstCommitHash);
@@ -230,7 +226,7 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 
     index.add("file.txt");
 
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     branches.createBranch("second-branch");
 
@@ -240,8 +236,7 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
@@ -286,7 +281,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
 
     index.add("file.txt");
 
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     branches.createBranch("second-branch");
 
@@ -296,8 +291,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
@@ -351,7 +345,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
 
     index.add("file.txt");
 
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     branches.createBranch("second-branch");
 
@@ -361,8 +355,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     index.add("file.txt");
 
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-
-    auto output = commandExecutor.execute(envp, repositoryPath.string(), "commit", "-m", "Second commit", "--no-gpg-sign");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
 
     auto secondCommitHash = commits.getHeadCommitHash();
     auto secondCommitInfo = commits.getCommitInfo(secondCommitHash);
