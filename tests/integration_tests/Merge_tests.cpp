@@ -3,7 +3,6 @@
 #include "Commits.hpp"
 #include "Merge.hpp"
 
-#include <fstream>
 #include <gtest/gtest.h>
 
 class MergeTests : public BaseRepositoryFixture
@@ -308,9 +307,7 @@ TEST_F(MergeTests, mergeFastForward_dirtyRepo)
     auto index = repository->Index();
     auto initialCommitHash = commits.createCommit("Initial commit");
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Second commit");
 
@@ -322,9 +319,7 @@ TEST_F(MergeTests, mergeFastForward_dirtyRepo)
 
     branches.changeCurrentBranch("main");
 
-    file.open(repositoryPath / "file.txt", std::ios::app);
-    file << "Hello, World! Modified.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
     ASSERT_TRUE(index.isDirty());
 
@@ -370,9 +365,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearBehind)
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file.close();
-
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
     auto index = repository->Index();
     index.add("file.txt");
 
@@ -403,8 +396,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
     branches.createBranch("second_branch");
     branches.changeCurrentBranch("second_branch");
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
 
     auto index = repository->Index();
     index.add("file.txt");
@@ -422,9 +414,7 @@ TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
     auto index = repository->Index();
     auto initialCommitHash = commits.createCommit("Initial commit");
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Second commit");
 
@@ -436,9 +426,7 @@ TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
 
     branches.changeCurrentBranch("main");
 
-    file.open(repositoryPath / "file.txt", std::ios::app);
-    file << "Hello, World! Modified.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
     ASSERT_TRUE(index.isDirty());
 
@@ -454,8 +442,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
 
     auto index = repository->Index();
     index.add("file.txt");
@@ -464,8 +451,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
 
     branches.changeCurrentBranch("second_branch");
 
-    std::ofstream file2(repositoryPath / "file2.txt");
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
 
     auto thirdCommitHash = commits.createCommit("Third commit");
@@ -490,26 +476,20 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     auto commits = repository->Commits();
     auto index = repository->Index();
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
-    file << "Hello, World! Modified 1.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
-    file << "Hello, World! Modified 2.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto thirdCommithash = commits.createCommit("Third commit");
 
@@ -535,9 +515,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     auto fileContent = getFileContent(repositoryPath / "file.txt");
     EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 
-    file.open(repositoryPath / "file.txt", std::ios::out);
-    file << "Hello, World! Merge resolved.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
     index.add("file.txt");
 
     auto mergeCommitHash = merge.continueMerge();
@@ -564,26 +542,20 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     auto commits = repository->Commits();
     auto index = repository->Index();
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
-    file << "Hello, World! Modified 1.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::out | std::ios::trunc);
-    file << "Hello, World! Modified 2.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     commits.createCommit("Third commit");
 
@@ -627,17 +599,13 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
-    std::ofstream file(repositoryPath / "file.txt", std::ios::out);
-    file << "Hello, World! Modified 1.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    file.open(repositoryPath / "file.txt", std::ios::out);
-    file << "Hello, World! Modified 2.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto thirdCommithash = commits.createCommit("Third commit");
 
@@ -663,9 +631,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     auto fileContent = getFileContent(repositoryPath / "file.txt");
     EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 
-    file.open(repositoryPath / "file.txt", std::ios::out);
-    file << "Hello, World! Merge resolved.";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
     index.add("file.txt");
 
     auto mergeCommitHash = merge.continueMerge();

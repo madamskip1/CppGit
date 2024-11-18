@@ -5,7 +5,6 @@
 #include "_details/CreateCommit.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <gtest/gtest.h>
 
 class CommitsTests : public BaseRepositoryFixture
@@ -75,19 +74,12 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
     auto index = repository->Index();
 
 
-    auto file = std::ofstream{ repositoryPath / "file.txt" };
-    file << "Hello, World!";
-    file.close();
-
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    file.open(repositoryPath / "file.txt");
-    file << "Hello, World! Modified";
-    file.close();
-    auto secondFile = std::ofstream{ repositoryPath / "file2.txt" };
-    secondFile << "Second file";
-    secondFile.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
     index.add("file2.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
@@ -104,20 +96,12 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     auto index = repository->Index();
 
 
-    auto file = std::ofstream{ repositoryPath / "file.txt" };
-    file << "Hello, World!";
-    file.close();
-
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    auto secondFile = std::ofstream{ repositoryPath / "file2.txt" };
-    secondFile << "Second file";
-    secondFile.close();
-
-    file.open(repositoryPath / "file.txt");
-    file << "Hello, World! Modified";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! file2");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
@@ -125,7 +109,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     auto commit = commits.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_EQ(getFileContent(repositoryPath / "file2.txt"), "Second file");
+    EXPECT_EQ(getFileContent(repositoryPath / "file2.txt"), "Hello, World! file2");
 }
 
 TEST_F(CommitsTests, amendCommit_noCommits)
@@ -220,8 +204,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    std::ofstream file(repositoryPath / "file.txt");
-    file.close();
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
 
     auto amendedCommitHash = commits.amendCommit();

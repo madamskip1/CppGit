@@ -5,7 +5,6 @@
 #include "Index.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <gtest/gtest.h>
 
 class BranchesTests : public BaseRepositoryFixture
@@ -325,17 +324,16 @@ TEST_F(BranchesTests, changeBranch_shouldDeleteFile)
 
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
 
-    std::ofstream file(repositoryPath / "new_file.txt");
-    file.close();
-    index.add("new_file.txt");
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
     commits.createCommit("Added new file");
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 
     branches.changeCurrentBranch("main");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
 
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 
 TEST_F(BranchesTests, changeBranch_shouldCreateFile)
@@ -345,22 +343,22 @@ TEST_F(BranchesTests, changeBranch_shouldCreateFile)
     const auto& index = repository->Index();
     branches.createBranch("new_branch");
 
-    std::ofstream file(repositoryPath / "new_file.txt");
-    file.close();
-    index.add("new_file.txt");
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
     commits.createCommit("Added new file");
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 
     branches.changeCurrentBranch("new_branch");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
 
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 
     branches.changeCurrentBranch("main");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
 
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 
 TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
@@ -370,31 +368,27 @@ TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
     const auto& index = repository->Index();
     branches.createBranch("new_branch");
 
-    std::ofstream file(repositoryPath / "new_file.txt");
-    file << "Initial content";
-    file.close();
-    index.add("new_file.txt");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    index.add("file.txt");
     commits.createCommit("Added new file");
 
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "new_file.txt"));
+    ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 
     branches.changeCurrentBranch("new_branch");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
 
-    std::ofstream file2(repositoryPath / "new_file.txt");
-    file2 << "Changed content";
-    file2.close();
-    index.add("new_file.txt");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    index.add("file.txt");
     commits.createCommit("Changed file content");
 
-    auto new_fileContent = getFileContent(repositoryPath / "new_file.txt");
-    ASSERT_EQ(new_fileContent, "Changed content");
+    auto new_fileContent = getFileContent(repositoryPath / "file.txt");
+    ASSERT_EQ(new_fileContent, "Hello, World! Modified");
 
     branches.changeCurrentBranch("main");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
 
-    new_fileContent = getFileContent(repositoryPath / "new_file.txt");
-    EXPECT_EQ(new_fileContent, "Initial content");
+    new_fileContent = getFileContent(repositoryPath / "file.txt");
+    EXPECT_EQ(new_fileContent, "Hello, World!");
 }
 
 TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
@@ -407,17 +401,13 @@ TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
     branches.changeCurrentBranch("new_branch");
     ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
 
-    std::ofstream tracked(repositoryPath / "tracked.txt");
-    tracked << "Initial content";
-    tracked.close();
+    createOrOverwriteFile(repositoryPath / "tracked.txt", "");
     index.add("tracked.txt");
     commits.createCommit("Added tracked file");
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "tracked.txt"));
 
-    std::ofstream untracked(repositoryPath / "untracked.txt");
-    untracked << "New file";
-    untracked.close();
+    createOrOverwriteFile(repositoryPath / "untracked.txt", "");
 
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "untracked.txt"));
 
@@ -435,15 +425,11 @@ TEST_F(BranchesTests, changeBranch_shouldFailIfWorktreeDirty)
     const auto& index = repository->Index();
     branches.createBranch("new_branch");
 
-    std::ofstream file(repositoryPath / "new_file.txt");
-    file.close();
-    index.add("new_file.txt");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     commits.createCommit("Added new file");
 
-    std::ofstream file2(repositoryPath / "new_file.txt");
-    file2 << "Changed content";
-    file2.close();
-    index.add("new_file.txt");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    index.add("file.txt");
 
     ASSERT_THROW(branches.changeCurrentBranch("new_branch"), std::runtime_error);
 }

@@ -16,6 +16,13 @@ void BaseRepositoryFixture::TearDown()
     ASSERT_FALSE(repository->isValidGitRepository());
 }
 
+auto BaseRepositoryFixture::createOrOverwriteFile(const std::filesystem::path& filePath, const std::string_view content) -> void
+{
+    auto file = std::ofstream{ filePath };
+    file << content;
+    file.close();
+}
+
 auto BaseRepositoryFixture::getFileContent(const std::filesystem::path& filePath) -> std::string
 {
     auto file = std::ifstream{ filePath };

@@ -4,7 +4,6 @@
 #include "Index.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <gtest/gtest.h>
 
 class DiffTests : public BaseRepositoryFixture
@@ -37,9 +36,7 @@ TEST_F(DiffTests, singleCommit)
     auto diff = repository->Diff();
 
 
-    auto file = std::ofstream{ repositoryPath / "test.txt" };
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
@@ -55,14 +52,10 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
     auto diff = repository->Diff();
 
 
-    auto file = std::ofstream{ repositoryPath / "test.txt" };
-    file.close();
-    index.add("test.txt");
+    createOrOverwriteFile(repositoryPath / "test.txt", "");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2 << "Hello, World!";
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "Hello, World!");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
@@ -97,13 +90,11 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
     auto diff = repository->Diff();
 
 
-    auto file = std::ofstream{ repositoryPath / "test.txt" };
-    file.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
@@ -127,15 +118,11 @@ TEST_F(DiffTests, fileModdified)
     auto diff = repository->Diff();
 
 
-    auto file = std::ofstream{ repositoryPath / "test.txt" };
-    file << "Hello, World!";
-    file.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test.txt" };
-    file2 << "Hello, World! Modified";
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
     index.add("test.txt");
     commits.createCommit("Second commit");
 
@@ -175,20 +162,14 @@ TEST_F(DiffTests, multipleFile)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
-    file1Modified << "Hello, World!";
-    file1Modified.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test1.txt");
-
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
     index.add("test2.txt");
-
     commits.createCommit("Second commit");
 
 
@@ -246,20 +227,14 @@ TEST_F(DiffTests, getGivenFileDiff)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
-    file1Modified << "Hello, World!";
-    file1Modified.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test1.txt");
-
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
     index.add("test2.txt");
-
     commits.createCommit("Second commit");
 
 
@@ -283,14 +258,11 @@ TEST_F(DiffTests, getGivenFileDiffNoFile)
     auto diff = repository->Diff();
 
 
-    auto file = std::ofstream{ repositoryPath / "test.txt" };
-    file.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test.txt" };
-    file2 << "Hello, World! Modified";
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
     index.add("test.txt");
     commits.createCommit("Second commit");
 
@@ -306,18 +278,15 @@ TEST_F(DiffTests, givenCommitDiff)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
-    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
-    file3.close();
+    createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -339,18 +308,15 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
-    file3.close();
+    createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -372,18 +338,15 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto file3 = std::ofstream{ repositoryPath / "test3.txt" };
-    file3.close();
+    createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -405,19 +368,15 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
-    file1Modified << "Hello, World!";
-    file1Modified.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
@@ -476,19 +435,15 @@ TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
     auto diff = repository->Diff();
 
 
-    auto file1 = std::ofstream{ repositoryPath / "test1.txt" };
-    file1.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    auto file2 = std::ofstream{ repositoryPath / "test2.txt" };
-    file2.close();
+    createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    auto file1Modified = std::ofstream{ repositoryPath / "test1.txt" };
-    file1Modified << "Hello, World!";
-    file1Modified.close();
+    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
