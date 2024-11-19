@@ -47,13 +47,6 @@ auto BaseRepositoryFixture::checkCommitAuthorEqualTest(const CppGit::Commit& com
     EXPECT_EQ(commit.getAuthorDate(), AUTHOR_DATE);
 }
 
-auto BaseRepositoryFixture::checkCommitCommiterEqualTest(const CppGit::Commit& commit) -> void
-{
-    EXPECT_EQ(commit.getCommitter().name, AUTHOR_NAME);
-    EXPECT_EQ(commit.getCommitter().email, AUTHOR_EMAIL);
-    EXPECT_EQ(commit.getCommitterDate(), AUTHOR_DATE);
-}
-
 auto BaseRepositoryFixture::checkCommitCommiterNotEqualTest(const CppGit::Commit& commit) -> void
 {
     EXPECT_NE(commit.getCommitter().name, AUTHOR_NAME);

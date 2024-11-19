@@ -27,6 +27,5 @@ protected:
     static auto prepareCommitAuthorCommiterTestEnvp() -> std::vector<std::string>;
 
     static auto checkCommitAuthorEqualTest(const CppGit::Commit& commit) -> void;
-    static auto checkCommitCommiterEqualTest(const CppGit::Commit& commit) -> void;
     static auto checkCommitCommiterNotEqualTest(const CppGit::Commit& commit) -> void;
 };
