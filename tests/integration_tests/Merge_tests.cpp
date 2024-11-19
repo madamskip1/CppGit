@@ -26,9 +26,9 @@ TEST_F(MergeTests, canFastForward_emptyRepo_head)
 TEST_F(MergeTests, canFastForward_sameBranch)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+    commits.createCommit("Initial commit");
 
     EXPECT_TRUE(merge.canFastForward("main"));
 }
@@ -36,9 +36,9 @@ TEST_F(MergeTests, canFastForward_sameBranch)
 TEST_F(MergeTests, canFastForward_head)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+    commits.createCommit("Initial commit");
 
     EXPECT_TRUE(merge.canFastForward("HEAD"));
 }
@@ -46,12 +46,13 @@ TEST_F(MergeTests, canFastForward_head)
 TEST_F(MergeTests, canFastForward_bothBranchesSameCommit)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
-    auto merge = repository->Merge();
 
     EXPECT_TRUE(merge.canFastForward("second_branch"));
 }
@@ -59,32 +60,30 @@ TEST_F(MergeTests, canFastForward_bothBranchesSameCommit)
 TEST_F(MergeTests, canFastForward_linearBehind)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-    branches.changeCurrentBranch("second_branch");
-
-    commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("main");
-
     auto merge = repository->Merge();
 
-    EXPECT_TRUE(merge.canFastForward("second_branch"));
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    commits.createCommit("Second commit");
+    branches.changeCurrentBranch("second_branch");
+
+
+    EXPECT_TRUE(merge.canFastForward("main"));
 }
 
 TEST_F(MergeTests, canFastForward_linearAhead)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
+    auto merge = repository->Merge();
 
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
     commits.createCommit("Second commit");
 
-    auto merge = repository->Merge();
 
     EXPECT_FALSE(merge.canFastForward("second_branch"));
 }
@@ -92,22 +91,19 @@ TEST_F(MergeTests, canFastForward_linearAhead)
 TEST_F(MergeTests, canFastForward_changesInBothBranches)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
+    auto merge = repository->Merge();
 
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
     commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
-
     commits.createCommit("Third commit");
 
-    branches.changeCurrentBranch("main");
 
-    auto merge = repository->Merge();
-
-    EXPECT_FALSE(merge.canFastForward("second_branch"));
+    EXPECT_FALSE(merge.canFastForward("main"));
 }
 
 TEST_F(MergeTests, anythingToMerge_emptyRepo_sameBranch)
@@ -127,9 +123,9 @@ TEST_F(MergeTests, anythingToMerge_emptyRepo_head)
 TEST_F(MergeTests, anythingToMerge_sameBranch)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+    commits.createCommit("Initial commit");
 
     EXPECT_FALSE(merge.isAnythingToMerge("main"));
 }
@@ -137,9 +133,9 @@ TEST_F(MergeTests, anythingToMerge_sameBranch)
 TEST_F(MergeTests, anythingToMerge_head)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+    commits.createCommit("Initial commit");
 
     EXPECT_FALSE(merge.isAnythingToMerge("HEAD"));
 }
@@ -147,12 +143,13 @@ TEST_F(MergeTests, anythingToMerge_head)
 TEST_F(MergeTests, anythingToMerge_bothBranchesSameCommit)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
-    auto merge = repository->Merge();
 
     EXPECT_FALSE(merge.isAnythingToMerge("second_branch"));
 }
@@ -160,32 +157,30 @@ TEST_F(MergeTests, anythingToMerge_bothBranchesSameCommit)
 TEST_F(MergeTests, anythingToMerge_linearBehind)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-    branches.changeCurrentBranch("second_branch");
-
-    commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("main");
-
     auto merge = repository->Merge();
 
-    EXPECT_TRUE(merge.isAnythingToMerge("second_branch"));
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    commits.createCommit("Second commit");
+    branches.changeCurrentBranch("second_branch");
+
+
+    EXPECT_TRUE(merge.isAnythingToMerge("main"));
 }
 
 TEST_F(MergeTests, anythingToMerge_linearAhead)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
+    auto merge = repository->Merge();
 
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
     commits.createCommit("Second commit");
 
-    auto merge = repository->Merge();
 
     EXPECT_FALSE(merge.isAnythingToMerge("second_branch"));
 }
@@ -193,21 +188,18 @@ TEST_F(MergeTests, anythingToMerge_linearAhead)
 TEST_F(MergeTests, anythingToMerge_changesInBothBranches)
 {
     auto commits = repository->Commits();
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
-
     commits.createCommit("Second commit");
-
     branches.changeCurrentBranch("second_branch");
     commits.createCommit("Third commit");
 
-    branches.changeCurrentBranch("main");
 
-    auto merge = repository->Merge();
-
-    EXPECT_TRUE(merge.isAnythingToMerge("second_branch"));
+    EXPECT_TRUE(merge.isAnythingToMerge("main"));
 }
 
 TEST_F(MergeTests, mergeFastForward_emptyRepo_sameBranch)
@@ -220,10 +212,12 @@ TEST_F(MergeTests, mergeFastForward_emptyRepo_sameBranch)
 TEST_F(MergeTests, mergeFastForward_sameBranch)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
     auto mergeCommitHash = merge.mergeFastForward("main");
+
 
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(mergeCommitHash, initialCommitHash);
@@ -232,13 +226,14 @@ TEST_F(MergeTests, mergeFastForward_sameBranch)
 TEST_F(MergeTests, mergeFastForward_bothBranchesSameCommit)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-
     auto merge = repository->Merge();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
     auto mergeCommitHash = merge.mergeFastForward("second_branch");
+
 
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(mergeCommitHash, initialCommitHash);
@@ -247,18 +242,16 @@ TEST_F(MergeTests, mergeFastForward_bothBranchesSameCommit)
 TEST_F(MergeTests, mergeFastForward_linearBehind)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-    branches.changeCurrentBranch("second_branch");
-
-    auto secondCommitHash = commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("main");
-
     auto merge = repository->Merge();
-    auto mergeCommitHash = merge.mergeFastForward("second_branch");
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    auto secondCommitHash = commits.createCommit("Second commit");
+    branches.changeCurrentBranch("second_branch");
+    auto mergeCommitHash = merge.mergeFastForward("main");
+
 
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
     EXPECT_EQ(mergeCommitHash, secondCommitHash);
@@ -267,15 +260,15 @@ TEST_F(MergeTests, mergeFastForward_linearBehind)
 TEST_F(MergeTests, mergeFastForward_linearAhead)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-
-    auto secondCommitHash = commits.createCommit("Second commit");
-
     auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    auto secondCommitHash = commits.createCommit("Second commit");
     auto mergeCommitHash = merge.mergeFastForward("second_branch");
+
 
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
     EXPECT_EQ(mergeCommitHash, secondCommitHash);
@@ -284,47 +277,58 @@ TEST_F(MergeTests, mergeFastForward_linearAhead)
 TEST_F(MergeTests, mergeFastForward_changesInBothBranches)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-
-    auto secondCommitHash = commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("second_branch");
-    auto thirdCommitHash = commits.createCommit("Third commit");
-
-    branches.changeCurrentBranch("main");
-
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.mergeFastForward("second_branch"), std::runtime_error);
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    commits.createCommit("Second commit");
+    branches.changeCurrentBranch("second_branch");
+    commits.createCommit("Third commit");
+
+
+    EXPECT_THROW(merge.mergeFastForward("main"), std::runtime_error);
 }
 
 TEST_F(MergeTests, mergeFastForward_dirtyRepo)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
     auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    commits.createCommit("Second commit");
+    branches.changeCurrentBranch("second_branch");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    commits.createCommit("Second commit");
 
+
+    EXPECT_THROW(merge.mergeFastForward("main"), std::runtime_error);
+}
+
+TEST_F(MergeTests, mergeFastForward_untrackedFile)
+{
+    auto commits = repository->Commits();
     auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
+    auto secondCommitHash = commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
 
-    auto secondCommitHash = commits.createCommit("Second commit");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    auto mergeCommitHash = merge.mergeFastForward("main");
 
-    branches.changeCurrentBranch("main");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-
-    ASSERT_TRUE(index.isDirty());
-
-    auto merge = repository->Merge();
-    EXPECT_THROW(merge.mergeFastForward("second_branch"), std::runtime_error);
+    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
+    EXPECT_EQ(mergeCommitHash, secondCommitHash);
 }
 
 TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
@@ -337,9 +341,9 @@ TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
 TEST_F(MergeTests, mergeNoFastForward_sameBranch)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto merge = repository->Merge();
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     EXPECT_THROW(merge.mergeNoFastForward("main", "merge commit"), std::runtime_error);
 }
@@ -347,12 +351,13 @@ TEST_F(MergeTests, mergeNoFastForward_sameBranch)
 TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
+    auto merge = repository->Merge();
     auto branches = repository->Branches();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
-    auto merge = repository->Merge();
 
     EXPECT_THROW(merge.mergeNoFastForward("second_branch", "merge commit"), std::runtime_error);
 }
@@ -360,50 +365,48 @@ TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
 TEST_F(MergeTests, mergeNoFastForward_linearBehind)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
+    auto index = repository->Index();
+    auto merge = repository->Merge();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "");
-    auto index = repository->Index();
     index.add("file.txt");
-
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    auto merge = repository->Merge();
     auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
 
+
     ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
-
-    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
-
-    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
-    ASSERT_EQ(mergeCommit.getParents().size(), 2);
-    EXPECT_EQ(mergeCommit.getParents()[0], initialCommitHash);
-    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash);
+    EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
+    EXPECT_EQ(mergeCommitInfo.getParents()[0], initialCommitHash);
+    EXPECT_EQ(mergeCommitInfo.getParents()[1], secondCommitHash);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 
 TEST_F(MergeTests, mergeNoFastForward_linearAhead)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
+    auto index = repository->Index();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
     branches.changeCurrentBranch("second_branch");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "");
-
-    auto index = repository->Index();
     index.add("file.txt");
+    commits.createCommit("Second commit");
 
-    auto secondCommitHash = commits.createCommit("Second commit");
-
-    auto merge = repository->Merge();
 
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
 }
@@ -411,142 +414,65 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
 TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
 {
     auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
-
     auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
+    commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
 
-    auto secondCommitHash = commits.createCommit("Second commit");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
-    branches.changeCurrentBranch("main");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-
-    ASSERT_TRUE(index.isDirty());
-
-    auto merge = repository->Merge();
     EXPECT_THROW(merge.mergeNoFastForward("second_branch", "merge commit"), std::runtime_error);
 }
 
 TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
 {
     auto commits = repository->Commits();
-    auto initialCommitHash = commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
-
     auto index = repository->Index();
-    index.add("file.txt");
+    auto merge = repository->Merge();
 
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
-
     createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
-
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto merge = repository->Merge();
     auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
 
+
     ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
-
-    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
-
-    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
-    ASSERT_EQ(mergeCommit.getParents().size(), 2);
-    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommitHash);
-    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
+    auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash);
+    EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
+    EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommitHash);
+    EXPECT_EQ(mergeCommitInfo.getParents()[1], secondCommitHash);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 }
 
-TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName)
+TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
-
     auto branches = repository->Branches();
-    branches.createBranch("second_branch");
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("second_branch");
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    auto thirdCommithash = commits.createCommit("Third commit");
-
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
-
-    EXPECT_TRUE(merge.isThereAnyConflict());
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
-
-    ASSERT_TRUE(merge.isMergeInProgress());
-
-    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
-
-    auto fileContent = getFileContent(repositoryPath / "file.txt");
-    EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
-
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
-    index.add("file.txt");
-
-    auto mergeCommitHash = merge.continueMerge();
-
-    EXPECT_FALSE(merge.isMergeInProgress());
-    EXPECT_FALSE(merge.isThereAnyConflict());
-
-    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
-
-    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
-
-    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
-    ASSERT_EQ(mergeCommit.getParents().size(), 2);
-    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommithash);
-    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
-
-    auto fileContentAfterMerge = getFileContent(repositoryPath / "file.txt");
-    EXPECT_EQ(fileContentAfterMerge, "Hello, World! Merge resolved.");
-}
-
-TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName_abort)
-{
-    auto commits = repository->Commits();
-    auto index = repository->Index();
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
@@ -559,44 +485,29 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     index.add("file.txt");
     commits.createCommit("Third commit");
 
-    auto merge = repository->Merge();
 
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
-
+    EXPECT_TRUE(merge.isMergeInProgress());
     EXPECT_TRUE(merge.isThereAnyConflict());
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
     EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
     EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
-
-    ASSERT_TRUE(merge.isMergeInProgress());
-
-    merge.abortMerge();
-
-    EXPECT_FALSE(merge.isMergeInProgress());
-    EXPECT_FALSE(index.isDirty());
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
-
-    auto fileContent = getFileContent(repositoryPath / "file.txt");
-
-    EXPECT_EQ(fileContent, "Hello, World! Modified 2.");
+    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 }
 
-TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileName_notExistsInAncestorYet)
+TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
 {
     auto commits = repository->Commits();
     auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto merge = repository->Merge();
 
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    auto branches = repository->Branches();
     branches.createBranch("second_branch");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
@@ -608,47 +519,91 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_conflict_sameFileNam
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto thirdCommithash = commits.createCommit("Third commit");
-
-    auto merge = repository->Merge();
-
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
-
-    EXPECT_TRUE(merge.isThereAnyConflict());
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
-
-    ASSERT_TRUE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
-
-    ASSERT_TRUE(merge.isMergeInProgress());
-
-    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
-
-    auto fileContent = getFileContent(repositoryPath / "file.txt");
-    EXPECT_EQ(fileContent, "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
     index.add("file.txt");
 
     auto mergeCommitHash = merge.continueMerge();
 
+
     EXPECT_FALSE(merge.isMergeInProgress());
     EXPECT_FALSE(merge.isThereAnyConflict());
+    EXPECT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
+    auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash);
+    EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
+    ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
+    EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommithash);
+    EXPECT_EQ(mergeCommitInfo.getParents()[1], secondCommitHash);
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Merge resolved.");
+}
 
-    ASSERT_EQ(commits.getHeadCommitHash(), mergeCommitHash);
 
-    auto mergeCommit = commits.getCommitInfo(mergeCommitHash);
+TEST_F(MergeTests, mergeNoFastForward_abort)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto merge = repository->Merge();
 
-    EXPECT_EQ(mergeCommit.getMessage(), "Merge commit");
-    ASSERT_EQ(mergeCommit.getParents().size(), 2);
-    EXPECT_EQ(mergeCommit.getParents()[0], thirdCommithash);
-    EXPECT_EQ(mergeCommit.getParents()[1], secondCommitHash);
-    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
 
-    auto fileContentAfterMerge = getFileContent(repositoryPath / "file.txt");
-    EXPECT_EQ(fileContentAfterMerge, "Hello, World! Merge resolved.");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    index.add("file.txt");
+    commits.createCommit("Initial commit");
+
+    branches.createBranch("second_branch");
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    index.add("file.txt");
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    index.add("file.txt");
+    commits.createCommit("Third commit");
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+
+    merge.abortMerge();
+
+
+    EXPECT_FALSE(merge.isMergeInProgress());
+    EXPECT_FALSE(index.isDirty());
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Modified 2.");
+}
+
+TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto merge = repository->Merge();
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    index.add("file.txt");
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    index.add("file.txt");
+    commits.createCommit("Third commit");
+
+
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+
+    EXPECT_TRUE(merge.isThereAnyConflict());
+    EXPECT_TRUE(merge.isMergeInProgress());
+    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+    ASSERT_THROW(merge.continueMerge(), std::runtime_error);
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 }
