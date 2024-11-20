@@ -1,7 +1,8 @@
 #include "_details/Parser/CommitParser.hpp"
 
-#include <iostream>
 #include <regex>
+#include <string>
+#include <vector>
 
 namespace CppGit {
 

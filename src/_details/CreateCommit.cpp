@@ -2,6 +2,8 @@
 
 #include "Branches.hpp"
 
+#include <utility>
+
 namespace CppGit::_details {
 
 CreateCommit::CreateCommit(const Repository& repo)

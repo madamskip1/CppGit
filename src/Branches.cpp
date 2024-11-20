@@ -3,6 +3,8 @@
 #include "Index.hpp"
 #include "_details/Parser/BranchesParser.hpp"
 
+#include <utility>
+
 namespace CppGit {
 
 Branches::Branches(const Repository& repo)

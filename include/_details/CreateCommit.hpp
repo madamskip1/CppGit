@@ -1,6 +1,10 @@
 #pragma once
 #include "Repository.hpp"
 
+#include <string>
+#include <string_view>
+#include <vector>
+
 namespace CppGit::_details {
 
 class CreateCommit

@@ -4,7 +4,7 @@
 #include "Commits.hpp"
 #include "_details/Parser/IndexParser.hpp"
 
-#include <algorithm>
+#include <utility>
 
 namespace CppGit {
 

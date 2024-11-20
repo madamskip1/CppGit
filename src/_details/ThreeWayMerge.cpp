@@ -1,5 +1,6 @@
 #include "_details/ThreeWayMerge.hpp"
 
+#include <filesystem>
 #include <fstream>
 
 namespace CppGit::_details {

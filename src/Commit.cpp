@@ -1,8 +1,5 @@
 #include "Commit.hpp"
 
-#include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
-#include "_details/Parser/CommitParser.hpp"
-
 namespace CppGit {
 
 Commit::Commit(const std::string& hash, const std::vector<std::string>& parents, const Signature& author, const std::string& authorDate, const Signature& committer, const std::string& committerDate, const std::string& message, const std::string& description, const std::string& treeHash)

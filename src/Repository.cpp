@@ -9,7 +9,6 @@
 #include "Merge.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <sstream>
 
 namespace CppGit {

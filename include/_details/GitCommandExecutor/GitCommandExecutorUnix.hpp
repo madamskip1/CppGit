@@ -4,6 +4,8 @@
 #include "GitCommandOutput.hpp"
 
 #include <array>
+#include <string_view>
+#include <vector>
 
 namespace CppGit {
 class GitCommandExecutorUnix : public GitCommandExecutor

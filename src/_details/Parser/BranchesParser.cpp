@@ -1,6 +1,6 @@
 #include "_details/Parser/BranchesParser.hpp"
 
-#include <iostream>
+#include <string>
 namespace CppGit {
 
 auto BranchesParser::parseBranch(std::string_view line) -> Branch

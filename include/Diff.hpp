@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <string_view>
+#include <vector>
 
 namespace CppGit {
 

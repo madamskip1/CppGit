@@ -3,6 +3,7 @@
 #include "Commits.hpp"
 #include "Index.hpp"
 
+#include <filesystem>
 #include <fstream>
 
 namespace CppGit {

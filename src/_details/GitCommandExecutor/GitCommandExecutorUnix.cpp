@@ -1,7 +1,5 @@
 #include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 
-#include "_details/GitCommandExecutor/GitCommandExecutor.hpp"
-
 #include <fcntl.h>
 #include <stdexcept>
 #include <sys/wait.h>

@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <vector>
 
 namespace CppGit {
 Merge::Merge(const Repository& repo)

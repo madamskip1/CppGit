@@ -1,6 +1,7 @@
 #include "_details/Parser/IndexParser.hpp"
 
 #include <regex>
+#include <string>
 
 namespace CppGit {
 

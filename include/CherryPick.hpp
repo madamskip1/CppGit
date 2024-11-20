@@ -4,6 +4,7 @@
 #include "_details/CreateCommit.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace CppGit {
