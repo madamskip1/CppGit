@@ -180,7 +180,7 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
 
 auto Index::getStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--");
+    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
 
     if (output.return_code != 0)
     {

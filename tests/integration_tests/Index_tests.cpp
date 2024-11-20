@@ -872,6 +872,24 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
     EXPECT_EQ(stagedFiles[0].status, CppGit::DiffIndexStatus::ADDED);
 }
 
+TEST_F(IndexTests, getStagedFilesList_stagedFile_pattern)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    createOrOverwriteFile(repositoryPath / "another_file.txt", "");
+    index.add("file.txt");
+    index.add("another_file.txt");
+
+
+    auto stagedFiles = index.getStagedFilesList("file*");
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file.txt");
+}
+
 TEST_F(IndexTests, isFileStaged_noCommitsYet)
 {
     auto index = repository->Index();
