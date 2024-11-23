@@ -21,6 +21,7 @@ class CommitsHistory; // forward-declaration
 class Diff;           // forward-declaration
 class Merge;          // forward-declaration
 class CherryPick;     // forward-declaration
+class Rebase;         // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 class Repository
@@ -50,6 +51,7 @@ public:
     auto Diff() const -> CppGit::Diff;
     auto Merge() const -> CppGit::Merge;
     auto CherryPick() const -> CppGit::CherryPick;
+    auto Rebase() const -> CppGit::Rebase;
 
     auto getPathAsString() const -> std::string;
     auto getPath() const -> std::filesystem::path;
