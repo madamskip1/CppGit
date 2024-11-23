@@ -377,3 +377,32 @@ TEST_F(BranchesTests, changeBranch_shouldFailIfWorktreeDirty)
 
     ASSERT_THROW(branches.changeCurrentBranch("new_branch"), std::runtime_error);
 }
+
+TEST_F(BranchesTests, detachHead)
+{
+    const auto& branches = repository->Branches();
+    const auto& commits = repository->Commits();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
+    branches.detachHead(initialCommitHash);
+
+
+    EXPECT_EQ(getFileContent(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
+}
+
+TEST_F(BranchesTests, createBranchFromDetachedHead)
+{
+    const auto& branches = repository->Branches();
+    const auto& commits = repository->Commits();
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
+    branches.detachHead(initialCommitHash);
+    branches.createBranch("new_branch");
+
+
+    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
+}

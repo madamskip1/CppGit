@@ -3,6 +3,7 @@
 #include "Index.hpp"
 #include "_details/Parser/BranchesParser.hpp"
 
+#include <fstream>
 #include <utility>
 
 namespace CppGit {
@@ -54,41 +55,19 @@ auto Branches::getCurrentBranchRef() const -> std::string
 
 auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
 {
-    auto index = repo.Index();
-
-    if (index.isDirty())
-    {
-        throw std::runtime_error("Worktree is dirty");
-    }
-
     auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto hash = getHashBranchRefersTo(branchNameWithPrefix, false);
 
-    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", std::move(hash));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change current branch");
-    }
-
-    output = repo.executeGitCommand("checkout-index", "-a", "-f");
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change current branch");
-    }
-
-    output = repo.executeGitCommand("symbolic-ref", "HEAD", std::move(branchNameWithPrefix));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change current branch");
-    }
+    changeHEAD(branchNameWithPrefix);
 }
 
 auto Branches::changeCurrentBranch(const Branch& branch) const -> void
 {
     return changeCurrentBranch(branch.getRefName());
+}
+
+auto Branches::detachHead(std::string_view commitHash) const -> void
+{
+    changeHEAD(commitHash);
 }
 
 auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
@@ -265,6 +244,48 @@ auto Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const
     }
 
     return std::string{ branchName };
+}
+
+auto Branches::changeHEAD(const std::string_view target) const -> void
+{
+    auto index = repo.Index();
+
+    if (index.isDirty())
+    {
+        throw std::runtime_error("Worktree is dirty");
+    }
+
+    auto HEADFileContent = std::string{};
+    auto hash = std::string{};
+
+    if (target.substr(0, 5) == "refs/")
+    {
+        HEADFileContent = "ref: " + std::string{ target };
+        hash = getHashBranchRefersTo(target);
+    }
+    else
+    {
+        HEADFileContent = target;
+        hash = target;
+    }
+
+    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", std::move(hash));
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+
+    output = repo.executeGitCommand("checkout-index", "-a", "-f");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to change current branch");
+    }
+
+    auto HEADFile = std::ofstream{ repo.getGitDirectoryPath() / "HEAD" };
+    HEADFile << HEADFileContent;
+    HEADFile.close();
 }
 
 } // namespace CppGit

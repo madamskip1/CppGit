@@ -28,6 +28,8 @@ public:
     auto changeCurrentBranch(std::string_view branchName) const -> void;
     auto changeCurrentBranch(const Branch& branch) const -> void;
 
+    auto detachHead(std::string_view commitHash) const -> void;
+
     auto branchExists(std::string_view branchName, bool remote = false) const -> bool;
     auto branchExists(const Branch& branch) const -> bool;
 
@@ -52,6 +54,8 @@ private:
     auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;
     auto createBranchImpl(std::string_view branchName, std::string_view source) const -> void;
     auto addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string;
+
+    auto changeHEAD(const std::string_view target) const -> void;
 
     const Repository& repo;
 };
