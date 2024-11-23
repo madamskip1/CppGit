@@ -30,8 +30,12 @@ public:
 
     explicit CommitsHistory(const Repository& repo);
 
-    auto getCommitsLogHashesOnly() const -> std::vector<std::string>;
-    auto getCommitsLogDetailed() const -> std::vector<Commit>;
+    auto getCommitsLogHashesOnly(const std::string_view ref = "HEAD") const -> std::vector<std::string>;
+    auto getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>;
+
+    auto getCommitsLogDetailed(const std::string_view ref = "HEAD") const -> std::vector<Commit>;
+    auto getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>;
+
 
     auto setAllBranches(bool allBranches) -> CommitsHistory&;
     auto resetAllBranches() -> CommitsHistory&;
@@ -61,7 +65,10 @@ private:
     std::string committerPattern_;
     std::string messagePattern_;
 
-    auto prepareCommandsArgument() const -> std::vector<std::string>;
+    auto prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>;
+
+    auto getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>;
+    auto getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>;
 };
 
 } // namespace CppGit

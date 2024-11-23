@@ -17,7 +17,7 @@ public:
         auto commit41Hash = commits.createCommit("Commit41", "Description41");
         auto commit42Hash = commits.createCommit("Commit42", "Description42");
 
-        commitsHashes = { commit1Hash, commit2Hash, commit3Hash, commit41Hash, commit42Hash };
+        commitsHashes = { std::move(commit1Hash), std::move(commit2Hash), std::move(commit3Hash), std::move(commit41Hash), std::move(commit42Hash) };
     }
 
 protected:
@@ -136,4 +136,60 @@ TEST_F(CommitsHistoryTests, getCommitsDetailed_NoFilters)
     EXPECT_EQ(commitsDetailed[4].getMessage(), "Commit1");
     EXPECT_EQ(commitsDetailed[4].getDescription(), "");
     EXPECT_EQ(commitsDetailed[4].getParents(), std::vector<std::string>{});
+}
+
+TEST_F(CommitsHistoryTests, getCommitsDetailed_ToRef)
+{
+    const auto& commitsHistory = repository->CommitsHistory();
+    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[2]);
+
+    ASSERT_EQ(commitsDetailed.size(), 3);
+
+    EXPECT_EQ(commitsDetailed[0].getHash(), commitsHashes[2]);
+    EXPECT_EQ(commitsDetailed[0].getMessage(), "Commit3");
+    EXPECT_EQ(commitsDetailed[0].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[0].getParents(), std::vector<std::string>{ commitsHashes[1] });
+
+    EXPECT_EQ(commitsDetailed[1].getHash(), commitsHashes[1]);
+    EXPECT_EQ(commitsDetailed[1].getMessage(), "Commit2");
+    EXPECT_EQ(commitsDetailed[1].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[1].getParents(), std::vector<std::string>{ commitsHashes[0] });
+
+    EXPECT_EQ(commitsDetailed[2].getHash(), commitsHashes[0]);
+    EXPECT_EQ(commitsDetailed[2].getMessage(), "Commit1");
+    EXPECT_EQ(commitsDetailed[2].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[2].getParents(), std::vector<std::string>{});
+}
+
+TEST_F(CommitsHistoryTests, getCommitsDetailed_FromRefToRef)
+{
+    const auto& commitsHistory = repository->CommitsHistory();
+    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[1], commitsHashes[2]);
+
+    ASSERT_EQ(commitsDetailed.size(), 1);
+
+    EXPECT_EQ(commitsDetailed[0].getHash(), commitsHashes[2]);
+    EXPECT_EQ(commitsDetailed[0].getMessage(), "Commit3");
+    EXPECT_EQ(commitsDetailed[0].getDescription(), "");
+    EXPECT_EQ(commitsDetailed[0].getParents(), std::vector<std::string>{ commitsHashes[1] });
+}
+
+TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_ToRef)
+{
+    const auto& commitsHistory = repository->CommitsHistory();
+    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[2]);
+
+    ASSERT_EQ(commitsLogHashesOnly.size(), 3);
+    EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[2]);
+    EXPECT_EQ(commitsLogHashesOnly[1], commitsHashes[1]);
+    EXPECT_EQ(commitsLogHashesOnly[2], commitsHashes[0]);
+}
+
+TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_FromRefToRef)
+{
+    const auto& commitsHistory = repository->CommitsHistory();
+    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[1], commitsHashes[2]);
+
+    ASSERT_EQ(commitsLogHashesOnly.size(), 1);
+    EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[2]);
 }
