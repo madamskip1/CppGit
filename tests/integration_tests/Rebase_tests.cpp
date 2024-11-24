@@ -47,3 +47,36 @@ TEST_F(RebaseTests, SimpleRebase)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 }
+
+TEST_F(RebaseTests, rebaseConflict)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Main");
+    index.add("file.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Second");
+    index.add("file.txt");
+    commits.createCommit("Third commit");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Second2");
+    index.add("file.txt");
+    auto fourthCommit = commits.createCommit("Fourth commit");
+
+    ASSERT_THROW(rebase.rebase("main"), std::runtime_error);
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_EQ(getFileContent(gitRebaseDir / "onto"), secondCommit);
+    EXPECT_EQ(getFileContent(gitRebaseDir / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(getFileContent(gitRebaseDir / "orig-head"), fourthCommit);
+    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
+}
