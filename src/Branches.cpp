@@ -48,12 +48,7 @@ auto Branches::getCurrentBranch() const -> std::string
     return refs.getSymbolicRef("HEAD");
 }
 
-auto Branches::getCurrentBranchRef() const -> std::string
-{
-    return refs.getRefHash("HEAD");
-}
-
-auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
+auto Branches::changeCurrentBranch(const std::string_view branchName) const -> void
 {
     auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
 
@@ -65,12 +60,12 @@ auto Branches::changeCurrentBranch(const Branch& branch) const -> void
     return changeCurrentBranch(branch.getRefName());
 }
 
-auto Branches::detachHead(std::string_view commitHash) const -> void
+auto Branches::detachHead(const std::string_view commitHash) const -> void
 {
     changeHEAD(commitHash);
 }
 
-auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
+auto Branches::branchExists(const std::string_view branchName, bool remote) const -> bool
 {
     auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
 
@@ -83,7 +78,7 @@ auto Branches::branchExists(const Branch& branch) const -> bool
     return branchExists(branch.getRefName(), false);
 }
 
-auto Branches::deleteBranch(std::string_view branchName) const -> void
+auto Branches::deleteBranch(const std::string_view branchName) const -> void
 {
     auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
 
@@ -95,7 +90,7 @@ auto Branches::deleteBranch(const Branch& branch) const -> void
     return deleteBranch(branch.getRefName());
 }
 
-auto Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const -> std::string
+auto Branches::getHashBranchRefersTo(const std::string_view branchName, bool remote) const -> std::string
 {
     auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
 
@@ -108,54 +103,15 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
     return getHashBranchRefersTo(branch.getRefName(), false);
 }
 
-auto Branches::createBranch(std::string_view branchName) const -> void
+auto Branches::createBranch(const std::string_view branchName, const std::string_view startRef) const -> void
 {
     auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
-    createBranchImpl(newBranchNameWithPrefix, "HEAD");
+    refs.createRef(newBranchNameWithPrefix, startRef);
 }
 
-auto Branches::createBranch(const Branch& branch) const -> void
+auto Branches::createBranch(const Branch& branch, const std::string_view startRef) const -> void
 {
-    createBranch(branch.getRefName());
-}
-
-auto Branches::createBranchFromBranch(std::string_view newBranchName, std::string_view sourceBranch) const -> void
-{
-    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(newBranchName, false);
-    auto sourceBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(sourceBranch, false);
-    createBranchImpl(newBranchNameWithPrefix, sourceBranchNameWithPrefix);
-}
-
-auto Branches::createBranchFromBranch(std::string_view newBranchName, const Branch& branch) const -> void
-{
-    createBranchFromBranch(newBranchName, branch.getRefName());
-}
-
-auto Branches::createBranchFromCommit(std::string_view newBranchName, std::string_view commitHash) const -> void
-{
-    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(newBranchName, false);
-    createBranchImpl(newBranchNameWithPrefix, commitHash);
-}
-
-auto Branches::createBranchFromCommit(std::string_view newBranchName, const Commit& commit) const -> void
-{
-    createBranchFromCommit(newBranchName, commit.getHash());
-}
-
-auto Branches::changeCurrentBranchRef(std::string_view newHash) const -> void
-{
-    changeBranchRef("HEAD", newHash);
-}
-
-auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
-{
-    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
-    refs.updateRefHash(branchName, newHash);
-}
-
-auto Branches::changeBranchRef(const Branch& branch, std::string_view newHash) const -> void
-{
-    changeBranchRef(branch.getRefName(), newHash);
+    createBranch(branch.getRefName(), startRef);
 }
 
 auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>
@@ -191,11 +147,6 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
     }
 
     return branches;
-}
-
-auto Branches::createBranchImpl(std::string_view branchName, std::string_view source) const -> void
-{
-    refs.createRef(branchName, source);
 }
 
 auto Branches::changeHEAD(const std::string_view target) const -> void
