@@ -9,7 +9,8 @@
 namespace CppGit {
 
 Branches::Branches(const Repository& repo)
-    : repo(repo)
+    : repo(repo),
+      refs(_details::Refs{ repo })
 {
 }
 
@@ -28,10 +29,10 @@ auto Branches::getLocalBranches() const -> std::vector<Branch>
     return getBranchesImpl(true, false);
 }
 
-auto Branches::getCurrentBranch() const -> Branch
+auto Branches::getCurrentBranchInfo() const -> Branch
 {
-    auto currentBranchRef = getCurrentBranchRef();
-    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchRef));
+    auto currentBranch = getCurrentBranch();
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranch));
 
     if (output.return_code != 0)
     {
@@ -42,20 +43,19 @@ auto Branches::getCurrentBranch() const -> Branch
     return branch;
 }
 
+auto Branches::getCurrentBranch() const -> std::string
+{
+    return refs.getSymbolicRef("HEAD");
+}
+
 auto Branches::getCurrentBranchRef() const -> std::string
 {
-    auto output = repo.executeGitCommand("symbolic-ref", "HEAD");
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get current branch ref");
-    }
-
-    return output.stdout;
+    return refs.getRefHash("HEAD");
 }
 
 auto Branches::changeCurrentBranch(std::string_view branchName) const -> void
 {
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
 
     changeHEAD(branchNameWithPrefix);
 }
@@ -72,9 +72,9 @@ auto Branches::detachHead(std::string_view commitHash) const -> void
 
 auto Branches::branchExists(std::string_view branchName, bool remote) const -> bool
 {
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
-    auto output = repo.executeGitCommand("show-ref", "--verify", "--quiet", std::move(branchNameWithPrefix));
-    return output.return_code == 0;
+    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
+
+    return refs.refExists(branchNameWithPrefix);
 }
 
 auto Branches::branchExists(const Branch& branch) const -> bool
@@ -85,15 +85,9 @@ auto Branches::branchExists(const Branch& branch) const -> bool
 
 auto Branches::deleteBranch(std::string_view branchName) const -> void
 {
-    // TODO: delete remote
+    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
 
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("update-ref", "-d", std::move(branchNameWithPrefix));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to delete branch");
-    }
+    refs.deleteRef(branchNameWithPrefix);
 }
 
 auto Branches::deleteBranch(const Branch& branch) const -> void
@@ -103,15 +97,9 @@ auto Branches::deleteBranch(const Branch& branch) const -> void
 
 auto Branches::getHashBranchRefersTo(std::string_view branchName, bool remote) const -> std::string
 {
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, remote);
-    auto output = repo.executeGitCommand("rev-parse", std::move(branchNameWithPrefix));
+    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get hash");
-    }
-
-    return output.stdout;
+    return refs.getRefHash(branchNameWithPrefix);
 }
 
 auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
@@ -122,7 +110,7 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
 
 auto Branches::createBranch(std::string_view branchName) const -> void
 {
-    auto newBranchNameWithPrefix = addPrefixIfNeeded(branchName, false);
+    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
     createBranchImpl(newBranchNameWithPrefix, "HEAD");
 }
 
@@ -133,8 +121,8 @@ auto Branches::createBranch(const Branch& branch) const -> void
 
 auto Branches::createBranchFromBranch(std::string_view newBranchName, std::string_view sourceBranch) const -> void
 {
-    auto newBranchNameWithPrefix = addPrefixIfNeeded(newBranchName, false);
-    auto sourceBranchNameWithPrefix = addPrefixIfNeeded(sourceBranch, false);
+    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(newBranchName, false);
+    auto sourceBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(sourceBranch, false);
     createBranchImpl(newBranchNameWithPrefix, sourceBranchNameWithPrefix);
 }
 
@@ -145,7 +133,7 @@ auto Branches::createBranchFromBranch(std::string_view newBranchName, const Bran
 
 auto Branches::createBranchFromCommit(std::string_view newBranchName, std::string_view commitHash) const -> void
 {
-    auto newBranchNameWithPrefix = addPrefixIfNeeded(newBranchName, false);
+    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(newBranchName, false);
     createBranchImpl(newBranchNameWithPrefix, commitHash);
 }
 
@@ -161,13 +149,8 @@ auto Branches::changeCurrentBranchRef(std::string_view newHash) const -> void
 
 auto Branches::changeBranchRef(std::string_view branchName, std::string_view newHash) const -> void
 {
-    auto branchNameWithPrefix = addPrefixIfNeeded(branchName, false);
-    auto output = repo.executeGitCommand("update-ref", std::move(branchNameWithPrefix), std::string{ newHash });
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change branch ref");
-    }
+    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
+    refs.updateRefHash(branchName, newHash);
 }
 
 auto Branches::changeBranchRef(const Branch& branch, std::string_view newHash) const -> void
@@ -177,8 +160,8 @@ auto Branches::changeBranchRef(const Branch& branch, std::string_view newHash) c
 
 auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>
 {
-    const auto* argLocal = local ? "refs/heads" : "";
-    const auto* argRemote = remote ? "refs/remotes" : "";
+    const auto* argLocal = local ? refs.LOCAL_BRANCH_PREFIX : "";
+    const auto* argRemote = remote ? refs.REMOTE_BRANCH_PREFIX : "";
 
     auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
 
@@ -212,38 +195,7 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
 
 auto Branches::createBranchImpl(std::string_view branchName, std::string_view source) const -> void
 {
-    // TODO: can we create remote branches this way?
-    auto output = repo.executeGitCommand("update-ref", branchName, source);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to create branch");
-    }
-}
-
-auto Branches::addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string
-{
-    if (branchName == "HEAD")
-    {
-        return std::string{ "HEAD" };
-    }
-
-    if (remote)
-    {
-        if (branchName.find("refs/remotes/") == std::string::npos)
-        {
-            return REMOTE_BRANCH_PREFIX + std::string{ branchName };
-        }
-    }
-    else
-    {
-        if (branchName.find("refs/heads/") == std::string::npos)
-        {
-            return LOCAL_BRANCH_PREFIX + std::string{ branchName };
-        }
-    }
-
-    return std::string{ branchName };
+    refs.createRef(branchName, source);
 }
 
 auto Branches::changeHEAD(const std::string_view target) const -> void
@@ -260,13 +212,13 @@ auto Branches::changeHEAD(const std::string_view target) const -> void
 
     if (target.substr(0, 5) == "refs/")
     {
-        HEADFileContent = "ref: " + std::string{ target };
         hash = getHashBranchRefersTo(target);
+        refs.updateSymbolicRef("HEAD", target);
     }
     else
     {
-        HEADFileContent = target;
         hash = target;
+        refs.detachHead(hash);
     }
 
     auto output = repo.executeGitCommand("read-tree", "--reset", "-u", std::move(hash));
@@ -282,10 +234,6 @@ auto Branches::changeHEAD(const std::string_view target) const -> void
     {
         throw std::runtime_error("Failed to change current branch");
     }
-
-    auto HEADFile = std::ofstream{ repo.getGitDirectoryPath() / "HEAD" };
-    HEADFile << HEADFileContent;
-    HEADFile.close();
 }
 
 } // namespace CppGit

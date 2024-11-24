@@ -3,6 +3,7 @@
 #include "Branch.hpp"
 #include "Commit.hpp"
 #include "Repository.hpp"
+#include "_details/Refs.hpp"
 
 #include <string>
 #include <string_view>
@@ -13,16 +14,14 @@ namespace CppGit {
 class Branches
 {
 public:
-    static constexpr const char* const LOCAL_BRANCH_PREFIX = "refs/heads/";
-    static constexpr const char* const REMOTE_BRANCH_PREFIX = "refs/remotes/";
-
     explicit Branches(const Repository& repo);
     Branches() = delete;
 
     auto getAllBranches() const -> std::vector<Branch>;
     auto getRemoteBranches() const -> std::vector<Branch>;
     auto getLocalBranches() const -> std::vector<Branch>;
-    auto getCurrentBranch() const -> Branch;
+    auto getCurrentBranchInfo() const -> Branch;
+    auto getCurrentBranch() const -> std::string;
     auto getCurrentBranchRef() const -> std::string;
 
     auto changeCurrentBranch(std::string_view branchName) const -> void;
@@ -53,11 +52,11 @@ public:
 private:
     auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;
     auto createBranchImpl(std::string_view branchName, std::string_view source) const -> void;
-    auto addPrefixIfNeeded(std::string_view branchName, bool remote) const -> std::string;
 
     auto changeHEAD(const std::string_view target) const -> void;
 
     const Repository& repo;
+    const _details::Refs refs;
 };
 
 } // namespace CppGit

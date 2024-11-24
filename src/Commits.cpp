@@ -1,8 +1,8 @@
 #include "Commits.hpp"
 
-#include "Branches.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Parser/CommitParser.hpp"
+#include "_details/Refs.hpp"
 
 namespace CppGit {
 
@@ -53,8 +53,8 @@ auto Commits::hasAnyCommits() const -> bool
 
 auto Commits::getHeadCommitHash() const -> std::string
 {
-    auto branches = repo.Branches();
-    return branches.getHashBranchRefersTo("HEAD");
+    auto refs = _details::Refs{ repo };
+    return refs.getRefHash("HEAD");
 }
 
 auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit

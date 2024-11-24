@@ -34,7 +34,8 @@ TEST_F(BranchesTests, branchesAfterInitialCommit_getCurrentBranchRef)
 {
     const auto& branches = repository->Branches();
 
-    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
 }
 
 TEST_F(BranchesTests, branchesAfterInitialCommit_getLocalBranches)
@@ -66,7 +67,8 @@ TEST_F(BranchesTests, createLocalBranch_fullName)
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
-    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     const auto hashBranchRefersTo = branches.getHashBranchRefersTo("refs/heads/new_branch");
     EXPECT_EQ(hashBranchRefersTo, initialCommitHash);
 }
@@ -83,7 +85,8 @@ TEST_F(BranchesTests, createLocalBranch_shortName)
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
-    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     const auto hashBranchRefersTo = branches.getHashBranchRefersTo("new_branch");
     EXPECT_EQ(hashBranchRefersTo, initialCommitHash);
 }
@@ -225,7 +228,7 @@ TEST_F(BranchesTests, currentBranchInfo)
     const auto& branches = repository->Branches();
 
 
-    const auto currentBranch = branches.getCurrentBranch();
+    const auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     EXPECT_EQ(currentBranch.getUpstreamPull(), "");
     EXPECT_EQ(currentBranch.getUpstreamPush(), "");
@@ -241,7 +244,8 @@ TEST_F(BranchesTests, changeBranch_shortName)
     branches.changeCurrentBranch("new_branch");
 
 
-    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
 
 TEST_F(BranchesTests, changeBranch_fullName)
@@ -252,8 +256,8 @@ TEST_F(BranchesTests, changeBranch_fullName)
     branches.createBranch("new_branch");
     branches.changeCurrentBranch("refs/heads/new_branch");
 
-
-    EXPECT_EQ(branches.getCurrentBranchRef(), "refs/heads/new_branch");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
 
 TEST_F(BranchesTests, changeCurrentBranchRef)
@@ -287,7 +291,8 @@ TEST_F(BranchesTests, changeBranch_shouldDeleteFile)
     branches.changeCurrentBranch("main");
 
 
-    ASSERT_EQ(branches.getCurrentBranchRef(), "refs/heads/main");
+    auto currentBranch = branches.getCurrentBranchInfo();
+    EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 

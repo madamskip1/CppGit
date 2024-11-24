@@ -1,6 +1,6 @@
 #include "_details/CreateCommit.hpp"
 
-#include "Branches.hpp"
+#include "_details/Refs.hpp"
 
 #include <utility>
 
@@ -16,8 +16,8 @@ auto CreateCommit::createCommit(const std::string_view message, const std::strin
     auto treeHash = writeTree();
     auto commitHash = commitTree(std::move(treeHash), message, description, parents, envp);
 
-    const auto branches = repo.Branches();
-    branches.changeCurrentBranchRef(commitHash);
+    auto refs = _details::Refs{ repo };
+    refs.updateRefHash("HEAD", commitHash);
 
     if (auto updateIndexOutput = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
     {

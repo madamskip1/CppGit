@@ -4,6 +4,7 @@
 #include "Commits.hpp"
 #include "Repository.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "_details/Refs.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -48,7 +49,8 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
         throw std::runtime_error("Cannot fast-forward");
     }
 
-    branches.changeCurrentBranchRef(sourceBranchRef);
+    auto refs = _details::Refs{ repo };
+    refs.updateRefHash("HEAD", sourceBranchRef);
 
     return sourceBranchRef;
 }

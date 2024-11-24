@@ -32,6 +32,7 @@ target_sources(${PROJECT_NAME}
 
         src/_details/CreateCommit.cpp
         src/_details/ThreeWayMerge.cpp
+        src/_details/Refs.cpp
 )
 
 target_include_directories(${PROJECT_NAME}
