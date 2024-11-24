@@ -32,18 +32,20 @@ TEST_F(RebaseTests, SimpleRebase)
     createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommit = commits.createCommit("Third commit");
+    auto fourthCommit = commits.createCommit("Fourth commit");
 
     rebase.rebase("main");
 
 
     EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 3);
+    ASSERT_EQ(commitsLog.size(), 4);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 }

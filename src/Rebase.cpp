@@ -26,6 +26,7 @@ auto Rebase::rebase(const std::string_view upstream) const -> void
 
     const auto& mergeBaseSha = mergeBase.stdout;
     auto commitsHistory = repo.CommitsHistory();
+    commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
     auto commitsToRebase = commitsHistory.getCommitsLogDetailed(mergeBaseSha, "HEAD");
 
     auto upstreamCommithash = refs.getRefHash(upstream);
