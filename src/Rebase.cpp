@@ -7,6 +7,7 @@
 #include "CommitsHistory.hpp"
 #include "Exceptions.hpp"
 #include "_details/CreateCommit.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -107,63 +108,41 @@ auto Rebase::deleteAllRebaseFiles() const -> void
 auto Rebase::createHeadNameFile(const std::string_view branchName) const -> void
 {
     // Indicates the branch that was checked out before the rebase started
-    auto file = std::ofstream(repo.getGitDirectoryPath() / "rebase-merge" / "head-name");
-    file << branchName;
-    file.close();
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/head-name", branchName);
 }
 
 auto Rebase::getHeadName() const -> std::string
 {
-    auto file = std::ifstream(repo.getGitDirectoryPath() / "rebase-merge" / "head-name");
-    std::string headName;
-    file >> headName;
-    file.close();
-    return headName;
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "head-name");
 }
 
 auto Rebase::createOntoFile(const std::string_view onto) const -> void
 {
     // Contains the commit hash of the branch or commit onto which the current branch is being rebased
-    auto file = std::ofstream(repo.getGitDirectoryPath() / "rebase-merge" / "onto");
-    file << onto;
-    file.close();
+
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/onto", onto);
 }
 
 auto Rebase::createOrigHeadFiles(const std::string_view origHead) const -> void
 {
     // Contains the commit hash of the branch that was checked out before the rebase started
-    auto file = std::ofstream(repo.getGitDirectoryPath() / "rebase-merge" / "orig-head");
-    file << origHead;
-    file.close();
-
-    file = std::ofstream(repo.getGitDirectoryPath() / "ORIG_HEAD");
-    file << origHead;
-    file.close();
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/orig-head", origHead);
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "ORIG_HEAD", origHead);
 }
 
 auto Rebase::getOrigHead() const -> std::string
 {
-    auto file = std::ifstream(repo.getGitDirectoryPath() / "rebase-merge" / "orig-head");
-    std::string origHead;
-    file >> origHead;
-    file.close();
-    return origHead;
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge/orig-head");
 }
 
 auto Rebase::createStoppedShaFile(const std::string_view hash) const -> void
 {
-    auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha" };
-    file << hash;
-    file.close();
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/stopped-sha", hash);
 }
 
 auto Rebase::getStoppedShaFile() const -> std::string
 {
-    auto file = std::ifstream(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
-    std::string stoppedSha;
-    file >> stoppedSha;
-    file.close();
-    return stoppedSha;
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge/stopped-sha");
 }
 
 auto Rebase::generateTodoFile(const std::vector<Commit>& commits) const -> void
@@ -208,9 +187,8 @@ auto Rebase::nextTodo() const -> TodoLine
     std::filesystem::rename(tempFilePath, todoFilePath);
 
     auto todo = parseTodoLine(todoLine);
-    auto messageFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "message" };
-    messageFile << todo.message;
-    messageFile.close();
+
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/message", todo.message);
 
     return todo;
 }
@@ -253,16 +231,12 @@ auto Rebase::processPick(const TodoLine& todoLine) const -> void
 
 auto Rebase::todoDone(const TodoLine& todoLine) const -> void
 {
-    auto doneFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::app };
-    doneFile << todoLine.command << " " << todoLine.commitHash << " " << todoLine.message << "\n";
-    doneFile.close();
+    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", todoLine.command, " ", todoLine.commitHash, " ", todoLine.message, "\n");
 }
 
 auto Rebase::startConflict(const TodoLine& todoLine) const -> void
 {
-    auto conflictFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha" };
-    conflictFile << todoLine.commitHash;
-    conflictFile.close();
+    createStoppedShaFile(todoLine.commitHash);
 
     todoDone(todoLine);
 

@@ -1,6 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 #include "Commits.hpp"
 #include "Index.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
 #include <vector>
@@ -19,7 +20,7 @@ TEST_F(IndexTests, addRegularFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -53,7 +54,7 @@ TEST_F(IndexTests, addRegularFileInDir)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -79,7 +80,7 @@ TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -104,7 +105,7 @@ TEST_F(IndexTests, addExecutableFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.sh", "echo Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.sh", "echo Hello, World!");
     std::filesystem::permissions(repositoryPath / "file.sh", std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
 
@@ -131,7 +132,7 @@ TEST_F(IndexTests, addSymlink)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     std::filesystem::create_symlink(repositoryPath / "file.txt", repositoryPath / "file-symlink.txt");
 
 
@@ -157,7 +158,7 @@ TEST_F(IndexTests, addOnDeletedFile)
     auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Second commit");
 
@@ -183,8 +184,8 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -212,9 +213,9 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir1");
-    createOrOverwriteFile(repositoryPath / "dir1" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir1" / "file.txt", "Hello, World!");
     std::filesystem::create_directory(repositoryPath / "dir2");
-    createOrOverwriteFile(repositoryPath / "dir2" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir2" / "file.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -251,7 +252,7 @@ TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -272,7 +273,7 @@ TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -294,7 +295,7 @@ TEST_F(IndexTests, removeRegularFile_force)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -315,7 +316,7 @@ TEST_F(IndexTests, removeRegularFile_notInIndex)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     auto indexFiles = index.getFilesInIndexList();
@@ -329,7 +330,7 @@ TEST_F(IndexTests, removeRegularFile_notInIndex_force)
     auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     auto indexFiles = index.getFilesInIndexList();
@@ -355,7 +356,7 @@ TEST_F(IndexTests, removeRegularFileInDir)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -377,7 +378,7 @@ TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -399,7 +400,7 @@ TEST_F(IndexTests, removeRegularFileInDir_force)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -421,7 +422,7 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
     auto indexFiles = index.getFilesInIndexList();
@@ -438,7 +439,7 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
     auto indexFiles = index.getFilesInIndexList();
@@ -455,7 +456,7 @@ TEST_F(IndexTests, removeRegularFileInDir_removedFile)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -477,7 +478,7 @@ TEST_F(IndexTests, restoreAllStaged_noChanges)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
@@ -497,10 +498,10 @@ TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -519,7 +520,7 @@ TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -538,10 +539,10 @@ TEST_F(IndexTests, restoreAllStaged_stagedChanges)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
 
 
@@ -562,7 +563,7 @@ TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -582,9 +583,9 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! 1");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! 1");
     index.add("file1.txt");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 2");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 2");
     index.add("file2.txt");
 
 
@@ -605,9 +606,9 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
 
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
     index.add("file1.txt");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
 
 
     auto stagedFiles = index.getStagedFilesList();
@@ -631,7 +632,7 @@ TEST_F(IndexTests, dirty_noCommitsYet)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
     EXPECT_THROW(index.isDirty(), std::runtime_error);
 }
@@ -640,7 +641,7 @@ TEST_F(IndexTests, dirty_noCommitsYet_FileAddedToIndex)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
     EXPECT_THROW(index.isDirty(), std::runtime_error);
@@ -652,7 +653,7 @@ TEST_F(IndexTests, notDirty)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
@@ -667,10 +668,10 @@ TEST_F(IndexTests, dirty_changesInCachedNotAdded)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
     EXPECT_TRUE(index.isDirty());
@@ -682,10 +683,10 @@ TEST_F(IndexTests, dirty_changesInCachedAdded)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
 
 
@@ -699,7 +700,7 @@ TEST_F(IndexTests, notdirty_untrackedFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
 
 
     EXPECT_FALSE(index.isDirty());
@@ -712,7 +713,7 @@ TEST_F(IndexTests, dirty_untrackedFileAdded)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
     index.add("file2.txt");
 
 
@@ -732,7 +733,7 @@ TEST_F(IndexTests, getUntrackedFileList_notStagedFile)
     auto index = repository->Index();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     auto untrackedFiles = index.getUntrackedFilesList();
@@ -745,7 +746,7 @@ TEST_F(IndexTests, getUntrackedFileList_stagedFile)
     auto index = repository->Index();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -759,7 +760,7 @@ TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDir)
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
     auto untrackedFiles = index.getUntrackedFilesList();
@@ -773,7 +774,7 @@ TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDirStaged)
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
-    createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
 
 
@@ -787,10 +788,10 @@ TEST_F(IndexTests, getUntrackedFileList_trackedModified)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
     auto untrackedFiles = index.getUntrackedFilesList();
@@ -803,7 +804,7 @@ TEST_F(IndexTests, getUntrackedFileList_trackedDeleted)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
     std::filesystem::remove(repositoryPath / "file.txt");
@@ -825,7 +826,7 @@ TEST_F(IndexTests, getStagedFilesList_notStagedFile_noCommitsYet)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
     EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
 }
@@ -834,7 +835,7 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile_noCommitsYet)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
     EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
@@ -846,7 +847,7 @@ TEST_F(IndexTests, getStagedFilesList_commitedFile)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
@@ -862,7 +863,7 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -879,8 +880,8 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile_pattern)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
-    createOrOverwriteFile(repositoryPath / "another_file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "another_file.txt", "");
     index.add("file.txt");
     index.add("another_file.txt");
 
@@ -894,7 +895,7 @@ TEST_F(IndexTests, isFileStaged_noCommitsYet)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
     EXPECT_THROW(index.isFileStaged("file.txt"), std::runtime_error);
 }
@@ -903,7 +904,7 @@ TEST_F(IndexTests, isFileStaged_fileStaged_noCommitsYet)
 {
     auto index = repository->Index();
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
     EXPECT_THROW(index.isFileStaged("file.txt"), std::runtime_error);
@@ -916,7 +917,7 @@ TEST_F(IndexTests, isFileStaged_fileNotStaged)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     EXPECT_FALSE(index.isFileStaged("file.txt"));
@@ -929,7 +930,7 @@ TEST_F(IndexTests, isFileStaged_fileStaged)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -966,7 +967,7 @@ TEST_F(IndexTests, getNotStagedFiles_untrackedNotStagedFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     auto notStagedFiles = index.getNotStagedFilesList();
@@ -981,7 +982,7 @@ TEST_F(IndexTests, getNotStagedFiles_untrackedStagedFile)
 
 
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -995,7 +996,7 @@ TEST_F(IndexTests, getNotStagedFiles_trackedNotModified)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
@@ -1010,10 +1011,10 @@ TEST_F(IndexTests, getNotStagedFiles_trackedModifiedNotStaged)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
     auto notStagedFiles = index.getNotStagedFilesList();
@@ -1027,10 +1028,10 @@ TEST_F(IndexTests, getNotStagedFiles_trackedModifiedStaged)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
 
 
@@ -1045,7 +1046,7 @@ TEST_F(IndexTests, getNotStagedFiles_trackedDeletedNotStaged)
     auto commits = repository->Commits();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
     std::filesystem::remove(repositoryPath / "file.txt");

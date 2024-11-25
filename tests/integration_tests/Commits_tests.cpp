@@ -3,6 +3,7 @@
 #include "Commits.hpp"
 #include "Index.hpp"
 #include "_details/CreateCommit.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -74,12 +75,12 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
     auto index = repository->Index();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
     index.add("file2.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
@@ -87,7 +88,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
     auto commit = commits.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Modified");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified");
 }
 
 TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
@@ -96,12 +97,12 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     auto index = repository->Index();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! file2");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! file2");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
@@ -109,7 +110,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     auto commit = commits.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_EQ(getFileContent(repositoryPath / "file2.txt"), "Hello, World! file2");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! file2");
 }
 
 TEST_F(CommitsTests, amendCommit_noCommits)
@@ -204,7 +205,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
 
     auto amendedCommitHash = commits.amendCommit();

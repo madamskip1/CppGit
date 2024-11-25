@@ -2,6 +2,7 @@
 #include "Commits.hpp"
 #include "Diff.hpp"
 #include "Index.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -36,7 +37,7 @@ TEST_F(DiffTests, singleCommit)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
@@ -52,10 +53,10 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "Hello, World!");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
@@ -90,11 +91,11 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
@@ -118,11 +119,11 @@ TEST_F(DiffTests, fileModdified)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
     index.add("test.txt");
     commits.createCommit("Second commit");
 
@@ -162,12 +163,12 @@ TEST_F(DiffTests, multipleFile)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test1.txt");
     index.add("test2.txt");
     commits.createCommit("Second commit");
@@ -227,12 +228,12 @@ TEST_F(DiffTests, getGivenFileDiff)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test1.txt");
     index.add("test2.txt");
     commits.createCommit("Second commit");
@@ -258,11 +259,11 @@ TEST_F(DiffTests, getGivenFileDiffNoFile)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
     index.add("test.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
     index.add("test.txt");
     commits.createCommit("Second commit");
 
@@ -278,15 +279,15 @@ TEST_F(DiffTests, givenCommitDiff)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
-    createOrOverwriteFile(repositoryPath / "test3.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -308,15 +309,15 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    createOrOverwriteFile(repositoryPath / "test3.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -338,15 +339,15 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    createOrOverwriteFile(repositoryPath / "test3.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
@@ -368,15 +369,15 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
@@ -435,15 +436,15 @@ TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
     auto diff = repository->Diff();
 
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
     auto firstCommithash = commits.createCommit("Initial commit");
 
-    createOrOverwriteFile(repositoryPath / "test2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
     commits.createCommit("Second commit");
 
-    createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 

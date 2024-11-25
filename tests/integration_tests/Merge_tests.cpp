@@ -3,6 +3,7 @@
 #include "Commits.hpp"
 #include "Exceptions.hpp"
 #include "Merge.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
 
@@ -305,7 +306,7 @@ TEST_F(MergeTests, mergeFastForward_dirtyRepo)
     commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
@@ -324,7 +325,7 @@ TEST_F(MergeTests, mergeFastForward_untrackedFile)
     auto secondCommitHash = commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     auto mergeCommitHash = merge.mergeFastForward("main");
 
 
@@ -374,7 +375,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearBehind)
     auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
@@ -404,7 +405,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
     branches.createBranch("second_branch");
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
     commits.createCommit("Second commit");
 
@@ -424,7 +425,7 @@ TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
     commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
     EXPECT_THROW(merge.mergeNoFastForward("second_branch", "merge commit"), std::runtime_error);
@@ -440,12 +441,12 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
 
     commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
-    createOrOverwriteFile(repositoryPath / "file2.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
@@ -470,19 +471,19 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
     auto merge = repository->Merge();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
     branches.createBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     commits.createCommit("Third commit");
 
@@ -490,11 +491,11 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
     EXPECT_TRUE(merge.isMergeInProgress());
     EXPECT_TRUE(merge.isThereAnyConflict());
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
     ASSERT_THROW(merge.continueMerge(), std::runtime_error);
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 }
 
 TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
@@ -505,24 +506,24 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
     auto merge = repository->Merge();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
     branches.createBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto thirdCommithash = commits.createCommit("Third commit");
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
     index.add("file.txt");
 
     auto mergeCommitHash = merge.continueMerge();
@@ -536,7 +537,7 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
     ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
     EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommithash);
     EXPECT_EQ(mergeCommitInfo.getParents()[1], secondCommitHash);
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Merge resolved.");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Merge resolved.");
 }
 
 
@@ -548,19 +549,19 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
     auto merge = repository->Merge();
 
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
 
     branches.createBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     commits.createCommit("Third commit");
 
@@ -574,7 +575,7 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MODE"));
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Modified 2.");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified 2.");
 }
 
 TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
@@ -588,12 +589,12 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
     commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
     index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     commits.createCommit("Third commit");
 
@@ -602,9 +603,9 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
 
     EXPECT_TRUE(merge.isThereAnyConflict());
     EXPECT_TRUE(merge.isMergeInProgress());
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
-    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MODE"), "no-ff");
     ASSERT_THROW(merge.continueMerge(), std::runtime_error);
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified 1.\n>>>>>>> main\n");
 }

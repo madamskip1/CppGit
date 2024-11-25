@@ -4,6 +4,7 @@
 #include "Commits.hpp"
 #include "Exceptions.hpp"
 #include "Repository.hpp"
+#include "_details/FileUtility.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Refs.hpp"
 
@@ -187,15 +188,9 @@ auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntri
 auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void
 {
     auto topLevelPath = repo.getTopLevelPath();
-    std::ofstream MERGE_HEAD{ topLevelPath / ".git/MERGE_HEAD" };
-    MERGE_HEAD << sourceBranchRef;
-    MERGE_HEAD.close();
-
+    _details::FileUtility::createOrOverwriteFile(topLevelPath / ".git/MERGE_HEAD", sourceBranchRef);
+    _details::FileUtility::createOrOverwriteFile(topLevelPath / ".git/MERGE_MODE", "no-ff");
     _threeWayMerge.createMergeMsgFile(message, description);
-
-    std::ofstream MERGE_MODE{ topLevelPath / ".git/MERGE_MODE" };
-    MERGE_MODE << "no-ff";
-    MERGE_MODE.close();
 }
 
 auto Merge::removeNoFFMergeFiles() const -> void
