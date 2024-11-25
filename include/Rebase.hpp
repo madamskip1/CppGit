@@ -3,6 +3,7 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Repository.hpp"
+#include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
 
@@ -15,7 +16,8 @@ public:
     explicit Rebase(const Repository& repo);
 
     auto rebase(const std::string_view upstream) const -> void;
-    auto abort() const -> void;
+    auto abortRebase() const -> void;
+    auto continueRebase() const -> void;
 
 private:
     struct TodoLine
@@ -35,6 +37,8 @@ private:
     auto createOntoFile(const std::string_view onto) const -> void;
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
     auto getOrigHead() const -> std::string;
+    auto createStoppedShaFile(const std::string_view hash) const -> void;
+    auto getStoppedShaFile() const -> std::string;
 
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
     auto nextTodo() const -> TodoLine;
@@ -49,6 +53,7 @@ private:
 
     const Repository& repo;
     const _details::Refs refs;
+    const _details::IndexWorktree indexWorktree;
     const CherryPick cherryPick;
 };
 

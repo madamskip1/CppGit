@@ -13,7 +13,7 @@ class RebaseTests : public BaseRepositoryFixture
 };
 
 
-TEST_F(RebaseTests, SimpleRebase)
+TEST_F(RebaseTests, simpleRebase)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -32,8 +32,9 @@ TEST_F(RebaseTests, SimpleRebase)
     branches.changeCurrentBranch("second_branch");
     createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
-    auto thirdCommit = commits.createCommit("Third commit");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
     rebase.rebase("main");
 
@@ -47,8 +48,12 @@ TEST_F(RebaseTests, SimpleRebase)
     EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
+    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
+    checkCommitAuthorEqualTest(headCommitInfo);
+    checkCommitCommiterNotEqualTest(headCommitInfo);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+    EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
 }
 
 TEST_F(RebaseTests, rebaseConflict_firstCommit)
@@ -139,4 +144,80 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+}
+
+
+TEST_F(RebaseTests, rebaseConflict_abort)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Main");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Second");
+    index.add("file.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    rebase.abortRebase();
+
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), thirdCommitHash);
+    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Second");
+}
+
+TEST_F(RebaseTests, rebaseConflict_resolveContinue)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Main");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Second");
+    index.add("file.txt");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
+
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+
+    createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
+    index.add("file.txt");
+
+    rebase.continueRebase();
+
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 3);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Resolved");
+    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
+    checkCommitAuthorEqualTest(headCommitInfo);
+    checkCommitCommiterNotEqualTest(headCommitInfo);
 }
