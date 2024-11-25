@@ -50,7 +50,7 @@ TEST_F(RebaseTests, SimpleRebase)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 }
 
-TEST_F(RebaseTests, rebaseConflict)
+TEST_F(RebaseTests, rebaseConflict_firstCommit)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -81,4 +81,50 @@ TEST_F(RebaseTests, rebaseConflict)
     EXPECT_EQ(getFileContent(gitRebaseDir / "head-name"), "refs/heads/second_branch");
     EXPECT_EQ(getFileContent(gitRebaseDir / "orig-head"), fourthCommit);
     EXPECT_EQ(getFileContent(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
+    // At that point we should only have commits from main branch (Initial commit and Second commit)
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    auto todoFileContent = getFileContent(gitRebaseDir / "git-rebase-todo");
+    EXPECT_EQ(todoFileContent, "pick " + fourthCommit + " Fourth commit\n");
+}
+
+TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Main");
+    index.add("file.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    commits.createCommit("Third commit");
+    createOrOverwriteFile(repositoryPath / "file.txt", "Second");
+    index.add("file.txt");
+    auto fourthCommit = commits.createCommit("Fourth commit");
+
+    ASSERT_THROW(rebase.rebase("main"), std::runtime_error);
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_EQ(getFileContent(gitRebaseDir / "onto"), secondCommit);
+    EXPECT_EQ(getFileContent(gitRebaseDir / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(getFileContent(gitRebaseDir / "orig-head"), fourthCommit);
+    EXPECT_EQ(getFileContent(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
+    // At that point we should have commits from main branch and few from second branch
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 3);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    auto todoFileContent = getFileContent(gitRebaseDir / "git-rebase-todo");
+    EXPECT_EQ(todoFileContent, "");
 }

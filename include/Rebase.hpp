@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Commit.hpp"
 #include "Repository.hpp"
 #include "_details/Refs.hpp"
 
@@ -24,6 +25,9 @@ private:
     auto getHeadName() const -> std::string;
     auto createOntoFile(const std::string_view onto) const -> void;
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
+
+    auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
+    auto processNextCommitTodoList() const -> void;
 
     const Repository& repo;
     const _details::Refs refs;
