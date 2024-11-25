@@ -12,13 +12,19 @@
 namespace CppGit {
 Rebase::Rebase(const Repository& repo)
     : repo(repo),
-      refs(_details::Refs(repo))
+      refs(_details::Refs(repo)),
+      cherryPick(CherryPick(repo))
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> void
 {
     startRebase(upstream);
+    processTodoList();
+    endRebase();
+}
 
+auto Rebase::startRebase(const std::string_view upstream) const -> void
+{
     auto mergeBase = repo.executeGitCommand("merge-base", "HEAD", upstream);
 
     if (mergeBase.return_code != 0)
@@ -27,33 +33,19 @@ auto Rebase::rebase(const std::string_view upstream) const -> void
     }
 
     const auto& mergeBaseSha = mergeBase.stdout;
+    auto branches = repo.Branches();
     auto commitsHistory = repo.CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
     auto commitsToRebase = commitsHistory.getCommitsLogDetailed(mergeBaseSha, "HEAD");
-    generateTodoFile(commitsToRebase);
-
-    auto upstreamCommithash = refs.getRefHash(upstream);
-    auto branches = repo.Branches();
-    branches.detachHead(upstreamCommithash);
-
-    auto cherryPick = repo.CherryPick();
-    for (const auto& commit : commitsToRebase)
-    {
-        processNextCommitRebaseFiles();
-        cherryPick.cherryPickCommit(commit.getHash(), CherryPickEmptyCommitStrategy::KEEP);
-    }
-
-    endRebase();
-}
-
-auto Rebase::startRebase(const std::string_view upstream) const -> void
-{
-    auto currentBranchName = repo.Branches().getCurrentBranch();
-    createRebaseDir();
-    createHeadNameFile(currentBranchName);
     auto upstreamHash = refs.getRefHash(upstream);
+
+    createRebaseDir();
+    createHeadNameFile(branches.getCurrentBranch());
     createOntoFile(upstreamHash);
     createOrigHeadFiles(refs.getRefHash("HEAD"));
+    generateTodoFile(commitsToRebase);
+
+    branches.detachHead(upstreamHash);
 }
 
 auto Rebase::endRebase() const -> void
@@ -125,7 +117,7 @@ auto Rebase::generateTodoFile(const std::vector<Commit>& commits) const -> void
     std::filesystem::copy(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo", repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.backup");
 }
 
-auto Rebase::processNextCommitRebaseFiles() const -> void
+auto Rebase::nextTodo() const -> TodoLine
 {
     auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
     auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
@@ -154,28 +146,64 @@ auto Rebase::processNextCommitRebaseFiles() const -> void
     std::filesystem::remove(todoFilePath);
     std::filesystem::rename(tempFilePath, todoFilePath);
 
-    auto doneFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::app };
-    doneFile << todoLine << "\n";
-    doneFile.close();
-
-    auto message = getMessageFromTodoLine(todoLine);
+    auto todo = parseTodoLine(todoLine);
     auto messageFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "message" };
-    messageFile << message;
+    messageFile << todo.message;
     messageFile.close();
+
+    return todo;
 }
 
-auto Rebase::getMessageFromTodoLine(const std::string_view line) -> std::string
+auto Rebase::processTodoList() const -> void
 {
-    std::size_t messagePos = 0;
-    int spaceCount = 0;
-
-    while (spaceCount < 2)
+    auto todo = nextTodo();
+    while (!todo.command.empty())
     {
-        messagePos = line.find(' ', messagePos) + 1;
-        ++spaceCount;
+        processTodo(todo);
+        todoDone(todo);
+        todo = nextTodo();
     }
+}
 
-    return std::string{ line.substr(messagePos) };
+auto Rebase::processTodo(const TodoLine& todoLine) const -> void
+{
+    if (todoLine.command == "pick")
+    {
+        processPick(todoLine);
+    }
+    else
+    {
+        throw std::runtime_error("Todo command not yet implemented");
+    }
+}
+
+auto Rebase::processPick(const TodoLine& todoLine) const -> void
+{
+    cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP);
+}
+
+auto Rebase::todoDone(const TodoLine& todoLine) const -> void
+{
+    auto doneFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::app };
+    doneFile << todoLine.command << " " << todoLine.commitHash << " " << todoLine.message << "\n";
+    doneFile.close();
+}
+
+auto Rebase::parseTodoLine(const std::string_view line) -> TodoLine
+{
+    std::size_t startPos = 0;
+    std::size_t endPos = 0;
+
+    endPos = line.find(' ', startPos);
+    auto command = std::string{ line.substr(startPos, endPos - startPos) };
+
+    startPos = endPos + 1;
+    endPos = line.find(' ', startPos);
+    auto commitHash = std::string{ line.substr(startPos, endPos - startPos) };
+
+    auto message = std::string{ line.substr(endPos + 1) };
+
+    return TodoLine{ command, commitHash, message };
 }
 
 } // namespace CppGit

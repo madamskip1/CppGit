@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Repository.hpp"
 #include "_details/Refs.hpp"
@@ -16,6 +17,13 @@ public:
     auto rebase(const std::string_view upstream) const -> void;
 
 private:
+    struct TodoLine
+    {
+        std::string command;
+        std::string commitHash;
+        std::string message;
+    };
+
     auto startRebase(const std::string_view upstream) const -> void;
     auto endRebase() const -> void;
 
@@ -27,12 +35,18 @@ private:
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
 
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
-    auto processNextCommitRebaseFiles() const -> void;
+    auto nextTodo() const -> TodoLine;
 
-    static auto getMessageFromTodoLine(const std::string_view line) -> std::string;
+    auto processTodoList() const -> void;
+    auto processTodo(const TodoLine& todoLine) const -> void;
+    auto processPick(const TodoLine& todoLine) const -> void;
+    auto todoDone(const TodoLine& todoLine) const -> void;
+
+    static auto parseTodoLine(const std::string_view line) -> TodoLine;
 
     const Repository& repo;
     const _details::Refs refs;
+    const CherryPick cherryPick;
 };
 
 } // namespace CppGit
