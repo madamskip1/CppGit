@@ -2,6 +2,7 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
+#include "Exceptions.hpp"
 #include "Repository.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Refs.hpp"
@@ -105,7 +106,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
     if (!unmergedFilesEntries.empty())
     {
         startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
-        throw std::runtime_error("Conflicts detected");
+        throw CppGit::MergeConflict{};
     }
 
 

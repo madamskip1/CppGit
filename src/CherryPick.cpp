@@ -1,6 +1,7 @@
 #include "CherryPick.hpp"
 
 #include "Commits.hpp"
+#include "Exceptions.hpp"
 #include "Index.hpp"
 
 #include <filesystem>
@@ -47,7 +48,7 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
 
             createCherryPickHeadFile(commitHash);
 
-            throw std::runtime_error("Conflicts detected");
+            throw CppGit::MergeConflict{};
         }
 
         throw std::runtime_error("Failed to apply diff");

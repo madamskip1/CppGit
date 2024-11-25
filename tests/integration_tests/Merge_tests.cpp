@@ -1,6 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 #include "Branches.hpp"
 #include "Commits.hpp"
+#include "Exceptions.hpp"
 #include "Merge.hpp"
 
 #include <gtest/gtest.h>
@@ -486,7 +487,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
     commits.createCommit("Third commit");
 
 
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
     EXPECT_TRUE(merge.isMergeInProgress());
     EXPECT_TRUE(merge.isThereAnyConflict());
     EXPECT_EQ(getFileContent(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
@@ -519,7 +520,7 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto thirdCommithash = commits.createCommit("Third commit");
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
     index.add("file.txt");
@@ -563,7 +564,7 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
     index.add("file.txt");
     commits.createCommit("Third commit");
 
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
 
     merge.abortMerge();
 
@@ -597,7 +598,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
     commits.createCommit("Third commit");
 
 
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
+    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), CppGit::MergeConflict);
 
     EXPECT_TRUE(merge.isThereAnyConflict());
     EXPECT_TRUE(merge.isMergeInProgress());

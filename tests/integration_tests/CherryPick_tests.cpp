@@ -3,6 +3,7 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
+#include "Exceptions.hpp"
 #include "Index.hpp"
 
 #include <filesystem>
@@ -178,7 +179,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     index.add("file.txt");
     auto fourthCommitHash = commits.createCommit("Fourth commit");
 
-    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), std::runtime_error);
+    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), CppGit::MergeConflict);
 
 
     ASSERT_EQ(fourthCommitHash, commits.getHeadCommitHash());
@@ -209,7 +210,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     index.add("file.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), std::runtime_error);
+    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), CppGit::MergeConflict);
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
 
     createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Conflict resolved");
