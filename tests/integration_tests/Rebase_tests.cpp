@@ -2,6 +2,7 @@
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
+#include "Exceptions.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
 
@@ -74,7 +75,7 @@ TEST_F(RebaseTests, rebaseConflict_firstCommit)
     index.add("file.txt");
     auto fourthCommit = commits.createCommit("Fourth commit");
 
-    ASSERT_THROW(rebase.rebase("main"), std::runtime_error);
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
 
 
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
@@ -87,6 +88,7 @@ TEST_F(RebaseTests, rebaseConflict_firstCommit)
     EXPECT_EQ(getFileContent(gitRebaseDir / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
     EXPECT_EQ(getFileContent(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(getFileContent(gitRebaseDir / "stopped-sha"), thirdCommitHash);
 
     // At that point we should only have commits from main branch (Initial commit and Second commit)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -117,7 +119,7 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     index.add("file.txt");
     auto fourthCommit = commits.createCommit("Fourth commit");
 
-    ASSERT_THROW(rebase.rebase("main"), std::runtime_error);
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
 
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(getFileContent(gitRebaseDir / "onto"), secondCommit);
@@ -129,6 +131,7 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n"
                           + "pick " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(getFileContent(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(getFileContent(gitRebaseDir / "stopped-sha"), fourthCommit);
 
     // At that point we should have commits from main branch and few from second branch
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -136,6 +139,4 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
-    auto todoFileContent = getFileContent(gitRebaseDir / "git-rebase-todo");
-    EXPECT_EQ(todoFileContent, "");
 }

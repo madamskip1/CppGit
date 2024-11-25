@@ -4,6 +4,7 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "CommitsHistory.hpp"
+#include "Exceptions.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -21,6 +22,10 @@ auto Rebase::rebase(const std::string_view upstream) const -> void
     startRebase(upstream);
     processTodoList();
     endRebase();
+}
+
+auto Rebase::abort() const -> void
+{
 }
 
 auto Rebase::startRebase(const std::string_view upstream) const -> void
@@ -105,6 +110,15 @@ auto Rebase::createOrigHeadFiles(const std::string_view origHead) const -> void
     file.close();
 }
 
+auto Rebase::getOrigHead() const -> std::string
+{
+    auto file = std::ifstream(repo.getGitDirectoryPath() / "rebase-merge" / "orig-head");
+    std::string origHead;
+    file >> origHead;
+    file.close();
+    return origHead;
+}
+
 auto Rebase::generateTodoFile(const std::vector<Commit>& commits) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
@@ -159,7 +173,15 @@ auto Rebase::processTodoList() const -> void
     auto todo = nextTodo();
     while (!todo.command.empty())
     {
-        processTodo(todo);
+        try
+        {
+            processTodo(todo);
+        }
+        catch (MergeConflict& e)
+        {
+            startConflict(todo);
+        }
+
         todoDone(todo);
         todo = nextTodo();
     }
@@ -187,6 +209,17 @@ auto Rebase::todoDone(const TodoLine& todoLine) const -> void
     auto doneFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::app };
     doneFile << todoLine.command << " " << todoLine.commitHash << " " << todoLine.message << "\n";
     doneFile.close();
+}
+
+auto Rebase::startConflict(const TodoLine& todoLine) const -> void
+{
+    auto conflictFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha" };
+    conflictFile << todoLine.commitHash;
+    conflictFile.close();
+
+    todoDone(todoLine);
+
+    throw CppGit::MergeConflict{};
 }
 
 auto Rebase::parseTodoLine(const std::string_view line) -> TodoLine

@@ -15,6 +15,7 @@ public:
     explicit Rebase(const Repository& repo);
 
     auto rebase(const std::string_view upstream) const -> void;
+    auto abort() const -> void;
 
 private:
     struct TodoLine
@@ -33,6 +34,7 @@ private:
     auto getHeadName() const -> std::string;
     auto createOntoFile(const std::string_view onto) const -> void;
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
+    auto getOrigHead() const -> std::string;
 
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
     auto nextTodo() const -> TodoLine;
@@ -41,6 +43,7 @@ private:
     auto processTodo(const TodoLine& todoLine) const -> void;
     auto processPick(const TodoLine& todoLine) const -> void;
     auto todoDone(const TodoLine& todoLine) const -> void;
+    auto startConflict(const TodoLine& todoLine) const -> void;
 
     static auto parseTodoLine(const std::string_view line) -> TodoLine;
 
