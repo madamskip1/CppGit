@@ -27,7 +27,9 @@ private:
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
 
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
-    auto processNextCommitTodoList() const -> void;
+    auto processNextCommitRebaseFiles() const -> void;
+
+    static auto getMessageFromTodoLine(const std::string_view line) -> std::string;
 
     const Repository& repo;
     const _details::Refs refs;

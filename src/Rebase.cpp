@@ -39,7 +39,7 @@ auto Rebase::rebase(const std::string_view upstream) const -> void
     auto cherryPick = repo.CherryPick();
     for (const auto& commit : commitsToRebase)
     {
-        processNextCommitTodoList();
+        processNextCommitRebaseFiles();
         cherryPick.cherryPickCommit(commit.getHash(), CherryPickEmptyCommitStrategy::KEEP);
     }
 
@@ -125,7 +125,7 @@ auto Rebase::generateTodoFile(const std::vector<Commit>& commits) const -> void
     std::filesystem::copy(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo", repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.backup");
 }
 
-auto Rebase::processNextCommitTodoList() const -> void
+auto Rebase::processNextCommitRebaseFiles() const -> void
 {
     auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
     auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
@@ -133,6 +133,7 @@ auto Rebase::processNextCommitTodoList() const -> void
     auto todoFile = std::ifstream{ todoFilePath };
     auto tempFile = std::ofstream{ tempFilePath };
 
+    std::string todoLine;
     std::string line;
     bool firstLine = true;
 
@@ -140,6 +141,7 @@ auto Rebase::processNextCommitTodoList() const -> void
     {
         if (firstLine)
         {
+            todoLine = line;
             firstLine = false;
             continue;
         }
@@ -151,6 +153,29 @@ auto Rebase::processNextCommitTodoList() const -> void
 
     std::filesystem::remove(todoFilePath);
     std::filesystem::rename(tempFilePath, todoFilePath);
+
+    auto doneFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::app };
+    doneFile << todoLine << "\n";
+    doneFile.close();
+
+    auto message = getMessageFromTodoLine(todoLine);
+    auto messageFile = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "message" };
+    messageFile << message;
+    messageFile.close();
+}
+
+auto Rebase::getMessageFromTodoLine(const std::string_view line) -> std::string
+{
+    std::size_t messagePos = 0;
+    int spaceCount = 0;
+
+    while (spaceCount < 2)
+    {
+        messagePos = line.find(' ', messagePos) + 1;
+        ++spaceCount;
+    }
+
+    return std::string{ line.substr(messagePos) };
 }
 
 } // namespace CppGit
