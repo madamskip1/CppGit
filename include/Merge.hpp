@@ -3,6 +3,7 @@
 #include "Index.hpp"
 #include "Repository.hpp"
 #include "_details/CreateCommit.hpp"
+#include "_details/IndexWorktree.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
 #include <string>
@@ -36,6 +37,7 @@ private:
     const Repository& repo;
     const _details::CreateCommit _createCommit;
     const _details::ThreeWayMerge _threeWayMerge;
+    const _details::IndexWorktree _indexWorktree;
 
     std::string mergeInProgress_sourceBranchRef;
     std::string mergeInProgress_targetBranchRef;

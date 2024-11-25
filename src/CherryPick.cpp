@@ -12,7 +12,8 @@ namespace CppGit {
 CherryPick::CherryPick(const Repository& repo)
     : repo(repo),
       _createCommit(repo),
-      _threeWayMerge(repo)
+      _threeWayMerge(repo),
+      _indexWorktree(repo)
 {
 }
 
@@ -54,12 +55,7 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
         throw std::runtime_error("Failed to apply diff");
     }
 
-    auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-a", "-f");
-
-    if (checkoutIndexOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to checkout index");
-    }
+    _indexWorktree.copyForceIndexToWorktree();
 
     auto index = repo.Index();
 

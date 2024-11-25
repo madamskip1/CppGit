@@ -10,7 +10,8 @@ namespace CppGit {
 
 Branches::Branches(const Repository& repo)
     : repo(repo),
-      refs(_details::Refs{ repo })
+      refs(repo),
+      indexWorktree(repo)
 {
 }
 
@@ -172,19 +173,8 @@ auto Branches::changeHEAD(const std::string_view target) const -> void
         refs.detachHead(hash);
     }
 
-    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", std::move(hash));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change current branch");
-    }
-
-    output = repo.executeGitCommand("checkout-index", "-a", "-f");
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to change current branch");
-    }
+    indexWorktree.resetIndexToTree(hash);
+    indexWorktree.copyForceIndexToWorktree();
 }
 
 } // namespace CppGit

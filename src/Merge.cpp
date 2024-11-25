@@ -15,7 +15,8 @@ namespace CppGit {
 Merge::Merge(const Repository& repo)
     : repo(repo),
       _createCommit(repo),
-      _threeWayMerge(repo)
+      _threeWayMerge(repo),
+      _indexWorktree(repo)
 {
 }
 
@@ -94,12 +95,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         throw std::runtime_error("Failed to read tree");
     }
 
-    auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-a");
-
-    if (checkoutIndexOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to checkout index");
-    }
+    _indexWorktree.copyIndexToWorktree();
 
     auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
 
@@ -212,12 +208,7 @@ auto Merge::removeNoFFMergeFiles() const -> void
 
 auto Merge::abortMerge() const -> void
 {
-    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", "HEAD");
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to reset tree");
-    }
+    _indexWorktree.resetIndexToTree("HEAD");
     removeNoFFMergeFiles();
 }
 

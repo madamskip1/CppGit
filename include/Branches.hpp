@@ -2,6 +2,7 @@
 
 #include "Branch.hpp"
 #include "Repository.hpp"
+#include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
 #include <string>
@@ -47,6 +48,7 @@ private:
 
     const Repository& repo;
     const _details::Refs refs;
+    const _details::IndexWorktree indexWorktree;
 };
 
 } // namespace CppGit
