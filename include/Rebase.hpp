@@ -33,11 +33,11 @@ private:
     auto createRebaseDir() const -> void;
     auto deleteAllRebaseFiles() const -> void;
     auto createHeadNameFile(const std::string_view branchName) const -> void;
-    auto getHeadName() const -> std::string;
     auto createOntoFile(const std::string_view onto) const -> void;
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
-    auto getOrigHead() const -> std::string;
     auto createStoppedShaFile(const std::string_view hash) const -> void;
+    auto getHeadName() const -> std::string;
+    auto getOrigHead() const -> std::string;
     auto getStoppedShaFile() const -> std::string;
 
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
@@ -47,9 +47,9 @@ private:
     auto processTodo(const TodoLine& todoLine) const -> void;
     auto processPick(const TodoLine& todoLine) const -> void;
     auto todoDone(const TodoLine& todoLine) const -> void;
-    auto startConflict(const TodoLine& todoLine) const -> void;
-
     static auto parseTodoLine(const std::string_view line) -> TodoLine;
+
+    auto startConflict(const TodoLine& todoLine) const -> void;
 
     const Repository& repo;
     const _details::Refs refs;
