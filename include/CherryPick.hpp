@@ -2,7 +2,6 @@
 
 #include "Repository.hpp"
 #include "_details/CreateCommit.hpp"
-#include "_details/IndexWorktree.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
 #include <string>
@@ -32,7 +31,6 @@ private:
     const Repository& repo;
     const _details::CreateCommit _createCommit;
     const _details::ThreeWayMerge _threeWayMerge;
-    const _details::IndexWorktree _indexWorktree;
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;
     auto createCherryPickHeadFile(const std::string_view commitHash) const -> void;
