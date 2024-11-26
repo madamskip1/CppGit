@@ -3,9 +3,9 @@
 #include "Commits.hpp"
 #include "Exceptions.hpp"
 #include "Index.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <filesystem>
-#include <fstream>
 
 namespace CppGit {
 
@@ -30,13 +30,12 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
         return processEmptyDiff(commitHash, emptyCommitStrategy);
     }
 
-    std::ofstream diffFile(repo.getGitDirectoryPath() / "patch.diff");
-    diffFile << diffOutput.stdout;
-    diffFile.close();
+    auto patchDifPath = repo.getGitDirectoryPath() / "patch.diff";
+    _details::FileUtility::createOrOverwriteFile(patchDifPath, diffOutput.stdout);
 
-    auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", repo.getGitDirectoryPath() / "patch.diff");
+    auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", patchDifPath);
 
-    std::filesystem::remove(repo.getGitDirectoryPath() / "patch.diff");
+    std::filesystem::remove(patchDifPath);
 
     if (applyOutput.return_code != 0)
     {
@@ -120,9 +119,7 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
 
 auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) const -> void
 {
-    std::ofstream headFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
-    headFile << commitHash;
-    headFile.close();
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD", commitHash);
 }
 
 auto CherryPick::createConflictMsgFiles(const std::string_view message, const std::string_view description) const -> void
@@ -141,13 +138,7 @@ auto CherryPick::createConflictMsgFiles(const std::string_view message, const st
 
 auto CherryPick::getCherryPickHead() const -> std::string
 {
-    std::ifstream headFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
-
-    std::string head;
-    headFile >> head;
-    headFile.close();
-
-    return head;
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
 }
 
 auto CherryPick::cherryPickContinue() const -> std::string

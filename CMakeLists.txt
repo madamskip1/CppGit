@@ -19,6 +19,7 @@ target_sources(${PROJECT_NAME}
         src/Diff.cpp
         src/Merge.cpp
         src/CherryPick.cpp
+        src/Rebase.cpp
 
 
         # _details (internal)

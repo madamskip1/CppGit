@@ -26,7 +26,8 @@ Diagnostics:
     google-readability-avoid-underscore-in-googletest-name, fuchsia-default-arguments-calls,
     altera-unroll-loops, readability-avoid-const-params-in-decls, fuchsia-trailing-return, 
     fuchsia-default-arguments-declarations, misc-non-private-member-variables-in-classes, 
-    modernize-use-nodiscard, altera-struct-pack-align, modernize-return-braced-init-list ]
+    modernize-use-nodiscard, altera-struct-pack-align, modernize-return-braced-init-list,
+    fuchsia-overloaded-operator ]
 
 InlayHints:
   Enabled: No

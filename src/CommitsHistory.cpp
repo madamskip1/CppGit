@@ -9,50 +9,24 @@ CommitsHistory::CommitsHistory(const Repository& repo)
 {
 }
 
-auto CommitsHistory::getCommitsLogHashesOnly() const -> std::vector<std::string>
+auto CommitsHistory::getCommitsLogHashesOnly(const std::string_view ref) const -> std::vector<std::string>
 {
-    auto arguments = prepareCommandsArgument();
-    auto output = repo_.executeGitCommand("rev-list", arguments);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while getting commits log hashes");
-    }
-
-    auto hashes = std::vector<std::string>();
-    auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
-
-    return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
+    return getCommitsLogHashesOnlyImpl("", ref);
 }
 
-auto CommitsHistory::getCommitsLogDetailed() const -> std::vector<Commit>
+auto CommitsHistory::getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
-    auto arguments = prepareCommandsArgument();
-    auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
-    arguments.push_back(formatString);
-    arguments.emplace_back("--no-commit-header");
+    return getCommitsLogHashesOnlyImpl(fromRef, toRef);
+}
 
-    auto output = repo_.executeGitCommand("rev-list", arguments);
+auto CommitsHistory::getCommitsLogDetailed(const std::string_view ref) const -> std::vector<Commit>
+{
+    return getCommitsLogDetailedImpl("", ref);
+}
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while getting commits log detailed");
-    }
-
-    auto commits = std::vector<Commit>();
-    output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line
-    auto commitsSplitted = Parser::splitToStringViewsVector(output.stdout, "$:>\n");
-
-    for (const auto commitLog : commitsSplitted)
-    {
-        if (commitLog.empty())
-        {
-            continue;
-        }
-        commits.push_back(CommitParser::parseCommit_PrettyFormat(commitLog));
-    }
-
-    return commits;
+auto CommitsHistory::getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+{
+    return getCommitsLogDetailedImpl(fromRef, toRef);
 }
 
 auto CommitsHistory::setAllBranches(bool allBranches) -> CommitsHistory&
@@ -139,7 +113,7 @@ auto CommitsHistory::resetMessagePattern() -> CommitsHistory&
     return *this;
 }
 
-auto CommitsHistory::prepareCommandsArgument() const -> std::vector<std::string>
+auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = std::vector<std::string>();
     if (allBranches_)
@@ -198,8 +172,64 @@ auto CommitsHistory::prepareCommandsArgument() const -> std::vector<std::string>
         arguments.emplace_back("--grep=" + messagePattern_);
     }
 
-    arguments.emplace_back("HEAD");
+    if (fromRef.empty())
+    {
+        arguments.emplace_back(toRef);
+    }
+    else
+    {
+        auto range = std::string{ fromRef } + std::string{ ".." } + std::string{ toRef };
+        arguments.emplace_back(std::move(range));
+    }
+
     return arguments;
+}
+
+auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+{
+    auto arguments = prepareCommandsArgument(fromRef, toRef);
+    auto output = repo_.executeGitCommand("rev-list", arguments);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Error while getting commits log hashes");
+    }
+
+    auto hashes = std::vector<std::string>();
+    auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
+
+    return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
+}
+
+auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+{
+    auto arguments = prepareCommandsArgument(fromRef, toRef);
+    auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
+    arguments.push_back(std::move(formatString));
+    arguments.emplace_back("--no-commit-header");
+
+
+    auto output = repo_.executeGitCommand("rev-list", arguments);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Error while getting commits log detailed");
+    }
+
+    auto commits = std::vector<Commit>();
+    output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line
+    auto commitsSplitted = Parser::splitToStringViewsVector(output.stdout, "$:>\n");
+
+    for (const auto commitLog : commitsSplitted)
+    {
+        if (commitLog.empty())
+        {
+            continue;
+        }
+        commits.push_back(CommitParser::parseCommit_PrettyFormat(commitLog));
+    }
+
+    return commits;
 }
 
 } // namespace CppGit

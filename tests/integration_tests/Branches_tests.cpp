@@ -3,6 +3,7 @@
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "Index.hpp"
+#include "_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -265,7 +266,7 @@ TEST_F(BranchesTests, changeBranch_shouldDeleteFile)
     branches.createBranch("new_branch");
     branches.changeCurrentBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
     commits.createCommit("Added new file");
 
@@ -286,7 +287,7 @@ TEST_F(BranchesTests, changeBranch_shouldCreateFile)
 
     branches.createBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
     commits.createCommit("Added new file");
 
@@ -307,20 +308,20 @@ TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
 
     branches.createBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Main branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Main branch");
     index.add("file.txt");
     commits.createCommit("Added new file");
 
     branches.changeCurrentBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! New branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! New branch");
     index.add("file.txt");
     commits.createCommit("Changed file content");
 
     branches.changeCurrentBranch("main");
 
 
-    EXPECT_EQ(getFileContent(repositoryPath / "file.txt"), "Hello, World! Main branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Main branch");
 }
 
 TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
@@ -332,11 +333,11 @@ TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
 
     branches.createBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "tracked.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "tracked.txt", "");
     index.add("tracked.txt");
     commits.createCommit("Added tracked file");
 
-    createOrOverwriteFile(repositoryPath / "untracked.txt", "");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "untracked.txt", "");
 
     branches.changeCurrentBranch("new_branch");
 
@@ -354,10 +355,10 @@ TEST_F(BranchesTests, changeBranch_shouldFailIfWorktreeDirty)
 
     branches.createBranch("new_branch");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     commits.createCommit("Added new file");
 
-    createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
 
 
@@ -375,7 +376,7 @@ TEST_F(BranchesTests, detachHead)
     branches.detachHead(initialCommitHash);
 
 
-    EXPECT_EQ(getFileContent(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromDetachedHead)
