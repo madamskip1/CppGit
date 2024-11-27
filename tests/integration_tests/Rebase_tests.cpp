@@ -95,6 +95,8 @@ TEST_F(RebaseTests, rebaseConflict_firstCommit)
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + thirdCommitHash + "\n");
+
 
     // At that point we should only have commits from main branch (Initial commit and Second commit)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -138,6 +140,7 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
                           + "pick " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + fourthCommit + "\n");
 
     // At that point we should have commits from main branch and few from second branch
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -147,6 +150,105 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
 }
 
+TEST_F(RebaseTests, rebaseConflict_bothConflictAndNotFiles)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
+    index.add("file1.txt");
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 1!");
+    index.add("file1.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 2!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
+    index.add("file1.txt");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Third commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\nHello, World! Modified 1!\n=======\nHello, World! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World 2!");
+
+    // At that point we should only have commits from main branch (Initial commit and Second commit)
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+}
+
+TEST_F(RebaseTests, rebaseConflict_conflictTwoFiles)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
+    index.add("file1.txt");
+    index.add("file2.txt");
+    commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 1!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 1!");
+    index.add("file1.txt");
+    index.add("file2.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 2!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 2!");
+    index.add("file1.txt");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Third commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\nHello, World! Modified 1!\n=======\nHello, World! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World 2! Modified 1!\n=======\nHello, World 2! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
+
+    // At that point we should only have commits from main branch (Initial commit and Second commit)
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+}
 
 TEST_F(RebaseTests, rebaseConflict_abort)
 {
