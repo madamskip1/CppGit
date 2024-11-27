@@ -35,6 +35,7 @@ target_sources(${PROJECT_NAME}
         src/_details/ThreeWayMerge.cpp
         src/_details/Refs.cpp
         src/_details/IndexWorktree.cpp
+        src/_details/ApplyDiff.cpp
 )
 
 target_include_directories(${PROJECT_NAME}

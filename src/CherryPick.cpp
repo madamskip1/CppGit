@@ -13,60 +13,30 @@ CherryPick::CherryPick(const Repository& repo)
     : repo(repo),
       _createCommit(repo),
       _threeWayMerge(repo),
-      _indexWorktree(repo)
+      _applyDiff(repo)
 {
 }
 
 auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::string
 {
-    auto diffOutput = repo.executeGitCommand("diff-tree", "-p", commitHash);
-    if (diffOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get diff");
-    }
-
-    if (diffOutput.stdout.empty())
-    {
-        return processEmptyDiff(commitHash, emptyCommitStrategy);
-    }
-
-    auto patchDifPath = repo.getGitDirectoryPath() / "patch.diff";
-    _details::FileUtility::createOrOverwriteFile(patchDifPath, diffOutput.stdout);
-
-    auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", patchDifPath);
-
-    std::filesystem::remove(patchDifPath);
-
-    if (applyOutput.return_code != 0)
-    {
-        auto index = repo.Index();
-        auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
-
-        if (!unmergedFilesEntries.empty())
-        {
-            _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
-
-            createCherryPickHeadFile(commitHash);
-
-            throw CppGit::MergeConflict{};
-        }
-
-        throw std::runtime_error("Failed to apply diff");
-    }
-
-    _indexWorktree.copyForceIndexToWorktree();
-
     auto index = repo.Index();
+    if (index.isDirty())
+    {
+        throw std::runtime_error("Cannot cherry-pick with dirty index");
+    }
 
-    // or maybe instead of getStagedFileList check write-tree hash and compare it with head commit tree hash
-    if (index.getStagedFilesList().empty())
+    auto applyDiffResult = _applyDiff.apply(commitHash);
+
+    if (applyDiffResult == _details::ApplyDiffResult::EMPTY_DIFF || applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
         return processEmptyDiff(commitHash, emptyCommitStrategy);
     }
-
-    if (applyOutput.return_code != 0)
+    if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
     {
-        throw std::runtime_error("Failed to apply diff");
+        auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
+        _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+        createCherryPickHeadFile(commitHash);
+        throw MergeConflict();
     }
 
     return commitCherryPicked(commitHash);
