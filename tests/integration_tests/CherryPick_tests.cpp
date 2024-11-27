@@ -262,3 +262,40 @@ TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified.\n>>>>>>> " + secondCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World 2!");
 }
+
+TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto cherryPick = repository->CherryPick();
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    index.add("file.txt");
+    index.add("file2.txt");
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.createBranch("second-branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! Modified!");
+    index.add("file.txt");
+    index.add("file2.txt");
+    auto secondCommitHash = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second-branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! Modified 2!");
+    index.add("file.txt");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    EXPECT_THROW(cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP), CppGit::MergeConflict);
+
+
+    ASSERT_EQ(thirdCommitHash, commits.getHeadCommitHash());
+    ASSERT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
+}
