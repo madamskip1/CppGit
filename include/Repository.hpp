@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "ErrorCodes.hpp"
+#include "Error.hpp"
 #include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 
@@ -67,7 +67,7 @@ public:
     auto isValidGitRepository() const -> bool;
 
     static auto clone(const std::string& url, const std::filesystem::path& path) -> Repository;
-    auto clone(const std::string& url) const -> ErrorCode;
+    auto clone(const std::string& url) const -> Error;
 
     auto initRepository(bool bare = false, std::string_view mainBranchName = "main") const -> bool;
 

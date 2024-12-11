@@ -2,7 +2,6 @@
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
-#include "Exceptions.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
 #include "_details/FileUtility.hpp"
@@ -37,9 +36,10 @@ TEST_F(RebaseTests, simpleRebase)
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
-    rebase.rebase("main");
+    auto rebaseResult = rebase.rebase("main");
 
 
+    ASSERT_TRUE(rebaseResult.has_value());
     EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
@@ -81,9 +81,12 @@ TEST_F(RebaseTests, rebaseConflict_firstCommit)
     index.add("file.txt");
     auto fourthCommit = commits.createCommit("Fourth commit");
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    auto rebaseResult = rebase.rebase("main");
 
 
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
@@ -127,8 +130,12 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
     index.add("file.txt");
     auto fourthCommit = commits.createCommit("Fourth commit");
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    auto rebaseResult = rebase.rebase("main");
 
+
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
@@ -175,9 +182,12 @@ TEST_F(RebaseTests, rebaseConflict_bothConflictAndNotFiles)
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    auto rebaseResult = rebase.rebase("main");
 
 
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
@@ -227,9 +237,12 @@ TEST_F(RebaseTests, rebaseConflict_conflictTwoFiles)
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    auto rebaseResult = rebase.rebase("main");
 
 
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
@@ -269,10 +282,12 @@ TEST_F(RebaseTests, rebaseConflict_abort)
     index.add("file.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
-    rebase.abortRebase();
+    rebase.rebase("main");
+
+    auto rebaseAbortResult = rebase.abortRebase();
 
 
+    ASSERT_TRUE(rebaseAbortResult == CppGit::Error::NO_ERROR);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
     auto currentBranch = branches.getCurrentBranch();
@@ -304,14 +319,15 @@ TEST_F(RebaseTests, rebaseConflict_resolveContinue)
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
 
-    ASSERT_THROW(rebase.rebase("main"), CppGit::MergeConflict);
+    rebase.rebase("main");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
     index.add("file.txt");
 
-    rebase.continueRebase();
+    auto rebaseContinueResult = rebase.continueRebase();
 
 
+    ASSERT_TRUE(rebaseContinueResult.has_value());
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -323,4 +339,31 @@ TEST_F(RebaseTests, rebaseConflict_resolveContinue)
     auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
     checkCommitAuthorEqualTest(headCommitInfo);
     checkCommitCommiterNotEqualTest(headCommitInfo);
+}
+
+TEST_F(RebaseTests, abort_noRebaseInProgress)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+
+
+    commits.createCommit("Initial commit");
+    auto rebaseAbortResult = rebase.abortRebase();
+
+
+    EXPECT_EQ(rebaseAbortResult, CppGit::Error::NO_REBASE_IN_PROGRESS);
+}
+
+TEST_F(RebaseTests, continue_noRebaseInProgress)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+
+
+    commits.createCommit("Initial commit");
+    auto rebaseContinueResult = rebase.continueRebase();
+
+
+    ASSERT_FALSE(rebaseContinueResult.has_value());
+    EXPECT_EQ(rebaseContinueResult.error(), CppGit::Error::NO_REBASE_IN_PROGRESS);
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Error.hpp"
 #include "Repository.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/CreateCommit.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
+#include <expected>
 #include <string>
 #include <string_view>
 
@@ -22,9 +24,9 @@ class CherryPick
 public:
     explicit CherryPick(const Repository& repo);
 
-    auto cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::string;
-    auto commitEmptyCherryPickedCommit() const -> std::string;
-    auto cherryPickContinue() const -> std::string;
+    auto cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::expected<std::string, Error>;
+    auto commitEmptyCherryPickedCommit() const -> std::expected<std::string, Error>;
+    auto cherryPickContinue() const -> std::expected<std::string, Error>;
 
     auto isCherryPickInProgress() const -> bool;
 
@@ -40,7 +42,7 @@ private:
     auto createConflictMsgFiles(const std::string_view message, const std::string_view description) const -> void;
     auto getCherryPickHead() const -> std::string;
 
-    auto processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::string;
+    auto processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;
 };
 
 } // namespace CppGit

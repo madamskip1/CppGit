@@ -5,7 +5,6 @@
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
-#include "Exceptions.hpp"
 #include "_details/CreateCommit.hpp"
 #include "_details/FileUtility.hpp"
 
@@ -21,24 +20,42 @@ Rebase::Rebase(const Repository& repo)
       indexWorktree(repo)
 {
 }
-auto Rebase::rebase(const std::string_view upstream) const -> void
+auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
 {
     startRebase(upstream);
-    processTodoList();
-    endRebase();
+
+    auto todoResult = processTodoList();
+    if (todoResult != Error::NO_ERROR)
+    {
+        return std::unexpected{ todoResult };
+    }
+
+    return endRebase();
 }
 
-auto Rebase::abortRebase() const -> void
+auto Rebase::abortRebase() const -> Error
 {
+    if (!isRebaseInProgress())
+    {
+        return Error::NO_REBASE_IN_PROGRESS;
+    }
+
     indexWorktree.resetIndexToTree(getOrigHead());
     indexWorktree.copyForceIndexToWorktree();
     refs.updateSymbolicRef("HEAD", getHeadName());
 
     deleteAllRebaseFiles();
+
+    return Error::NO_ERROR;
 }
 
-auto Rebase::continueRebase() const -> void
+auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 {
+    if (!isRebaseInProgress())
+    {
+        return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
+    }
+
     auto commitHash = getStoppedShaFile();
     auto commits = Commits{ repo };
     auto _createCommit = _details::CreateCommit{ repo };
@@ -56,7 +73,20 @@ auto Rebase::continueRebase() const -> void
 
     processTodoList();
 
-    endRebase();
+    return endRebase();
+}
+
+auto Rebase::isRebaseInProgress() const -> bool
+{
+    if (std::ifstream headFile(repo.getGitDirectoryPath() / "REBASE_HEAD"); headFile.is_open())
+    {
+        auto isEmpty = headFile.peek() == std::ifstream::traits_type::eof();
+        headFile.close();
+
+        return !isEmpty;
+    }
+
+    return false;
 }
 
 auto Rebase::startRebase(const std::string_view upstream) const -> void
@@ -84,7 +114,7 @@ auto Rebase::startRebase(const std::string_view upstream) const -> void
     branches.detachHead(upstreamHash);
 }
 
-auto Rebase::endRebase() const -> void
+auto Rebase::endRebase() const -> std::string
 {
     auto currentHash = refs.getRefHash("HEAD");
     auto headName = getHeadName();
@@ -92,6 +122,8 @@ auto Rebase::endRebase() const -> void
     refs.updateSymbolicRef("HEAD", headName);
 
     deleteAllRebaseFiles();
+
+    return currentHash;
 }
 
 auto Rebase::createRebaseDir() const -> void
@@ -189,34 +221,36 @@ auto Rebase::nextTodo() const -> TodoLine
     auto todo = parseTodoLine(todoLine);
 
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/message", todo.message);
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", todo.commitHash);
 
     return todo;
 }
 
-auto Rebase::processTodoList() const -> void
+auto Rebase::processTodoList() const -> Error
 {
     auto todo = nextTodo();
     while (!todo.command.empty())
     {
-        try
-        {
-            processTodo(todo);
-        }
-        catch (MergeConflict& e)
+        auto todoResult = processTodo(todo);
+
+        if (todoResult == Error::REBASE_CONFLICT)
         {
             startConflict(todo);
+            return Error::REBASE_CONFLICT;
         }
 
         todoDone(todo);
         todo = nextTodo();
     }
+
+    return Error::NO_ERROR;
 }
 
-auto Rebase::processTodo(const TodoLine& todoLine) const -> void
+auto Rebase::processTodo(const TodoLine& todoLine) const -> Error
 {
     if (todoLine.command == "pick")
     {
-        processPick(todoLine);
+        return processPick(todoLine);
     }
     else
     {
@@ -224,9 +258,22 @@ auto Rebase::processTodo(const TodoLine& todoLine) const -> void
     }
 }
 
-auto Rebase::processPick(const TodoLine& todoLine) const -> void
+auto Rebase::processPick(const TodoLine& todoLine) const -> Error
 {
-    cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP);
+    auto cherryPickResult = cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
+
+    if (cherryPickResult == Error::NO_ERROR)
+    {
+        return Error::NO_ERROR;
+    }
+    else if (cherryPickResult == Error::CHERRY_PICK_CONFLICT)
+    {
+        return Error::REBASE_CONFLICT;
+    }
+    else
+    {
+        throw std::runtime_error("Unexpected error during cherry-pick");
+    }
 }
 
 auto Rebase::todoDone(const TodoLine& todoLine) const -> void
@@ -239,8 +286,6 @@ auto Rebase::startConflict(const TodoLine& todoLine) const -> void
     createStoppedShaFile(todoLine.commitHash);
 
     todoDone(todoLine);
-
-    throw CppGit::MergeConflict{};
 }
 
 auto Rebase::parseTodoLine(const std::string_view line) -> TodoLine

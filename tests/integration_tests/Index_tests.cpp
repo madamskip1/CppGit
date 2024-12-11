@@ -21,29 +21,30 @@ TEST_F(IndexTests, addRegularFile)
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file.txt");
+    auto addResult = index.add("file.txt");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
-
     stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
-TEST_F(IndexTests, addRegularFile_FileDoesNotExist)
+TEST_F(IndexTests, addRegularFile_fileNotExist)
 {
     auto index = repository->Index();
 
-    ASSERT_THROW(index.add("file.txt"), std::runtime_error);
+    auto addResult = index.add("file.txt");
+
+    ASSERT_EQ(addResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, addRegularFileInDir)
@@ -55,19 +56,18 @@ TEST_F(IndexTests, addRegularFileInDir)
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir/file.txt");
+    auto addResult = index.add("dir/file.txt");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
-
     stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "dir/file.txt");
@@ -81,15 +81,15 @@ TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir");
+    auto addResult = index.add("dir");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
@@ -107,15 +107,15 @@ TEST_F(IndexTests, addExecutableFile)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.sh", "echo Hello, World!");
     std::filesystem::permissions(repositoryPath / "file.sh", std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file.sh");
+    auto addResult = index.add("file.sh");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, "100755");
@@ -134,15 +134,15 @@ TEST_F(IndexTests, addSymlink)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     std::filesystem::create_symlink(repositoryPath / "file.txt", repositoryPath / "file-symlink.txt");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file-symlink.txt");
+    auto addResult = index.add("file-symlink.txt");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, "120000");
@@ -161,15 +161,15 @@ TEST_F(IndexTests, addOnDeletedFile)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Second commit");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
-
     std::filesystem::remove(repositoryPath / "file.txt");
-    index.add("file.txt");
 
+    auto addResult = index.add("file.txt");
+
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
     auto stagedFiles = index.getStagedFilesList();
@@ -186,15 +186,15 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("*.txt");
+    auto addResult = index.add("*.txt");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "file1.txt");
@@ -216,15 +216,15 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir1" / "file.txt", "Hello, World!");
     std::filesystem::create_directory(repositoryPath / "dir2");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir2" / "file.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir*/*.txt");
+    auto addResult = index.add("dir*/*.txt");
 
+
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "dir1/file.txt");
@@ -242,7 +242,10 @@ TEST_F(IndexTests, addFile_fileNotExist)
 
     commits.createCommit("Initial commit");
 
-    EXPECT_THROW(index.add("file.txt"), std::runtime_error);
+    auto addResult = index.add("file.txt");
+
+
+    ASSERT_EQ(addResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
@@ -254,14 +257,14 @@ TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    index.remove("file.txt");
+    auto removeResult = index.remove("file.txt");
 
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -275,15 +278,15 @@ TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
-
     std::filesystem::remove(repositoryPath / "file.txt");
-    index.remove("file.txt");
 
+    auto removeResult = index.remove("file.txt");
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -297,14 +300,14 @@ TEST_F(IndexTests, removeRegularFile_force)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    index.remove("file.txt", true);
+    auto removeResult = index.remove("file.txt", true);
 
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -317,11 +320,13 @@ TEST_F(IndexTests, removeRegularFile_notInIndex)
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
-    EXPECT_THROW(index.remove("file.txt"), std::runtime_error);
+
+    auto removeResult = index.remove("file.txt");
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFile_notInIndex_force)
@@ -329,13 +334,16 @@ TEST_F(IndexTests, removeRegularFile_notInIndex_force)
     auto index = repository->Index();
     auto commits = repository->Commits();
 
+
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
-    EXPECT_THROW(index.remove("file.txt", true), std::runtime_error);
+
+    auto removeResult = index.remove("file.txt", true);
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFile_norInIndexNeitherInWorkingDirectory)
@@ -345,7 +353,10 @@ TEST_F(IndexTests, removeRegularFile_norInIndexNeitherInWorkingDirectory)
 
     commits.createCommit("Initial commit");
 
-    EXPECT_THROW(index.remove("file.txt", true), std::runtime_error);
+    auto removeResult = index.remove("file.txt", true);
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFileInDir)
@@ -358,14 +369,14 @@ TEST_F(IndexTests, removeRegularFileInDir)
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir/file.txt");
+    auto removeResult = index.remove("dir/file.txt");
 
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -380,14 +391,14 @@ TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir");
+    auto removeResult = index.remove("dir");
 
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -402,14 +413,14 @@ TEST_F(IndexTests, removeRegularFileInDir_force)
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir", true);
+    auto removeResult = index.remove("dir", true);
 
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -423,12 +434,13 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    EXPECT_THROW(index.remove("dir"), std::runtime_error);
+    auto removeResult = index.remove("dir");
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
@@ -440,12 +452,13 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    EXPECT_THROW(index.remove("dir", true), std::runtime_error);
+    auto removeResult = index.remove("dir", true);
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, removeRegularFileInDir_removedFile)
@@ -458,15 +471,15 @@ TEST_F(IndexTests, removeRegularFileInDir_removedFile)
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
-
-
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
-
     std::filesystem::remove(repositoryPath / "dir" / "file.txt");
-    index.remove("dir/file.txt");
 
+    auto removeResult = index.remove("dir/file.txt");
+
+
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -481,12 +494,11 @@ TEST_F(IndexTests, restoreAllStaged_noChanges)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
     commits.createCommit("Initial commit");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -502,12 +514,11 @@ TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
     index.add("file.txt");
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -522,12 +533,11 @@ TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -544,12 +554,11 @@ TEST_F(IndexTests, restoreAllStaged_stagedChanges)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -565,12 +574,11 @@ TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
     index.add("dir/file.txt");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -587,12 +595,11 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile)
     index.add("file1.txt");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 2");
     index.add("file2.txt");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 2);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
@@ -609,12 +616,11 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
     index.add("file1.txt");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-
-
     auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
     index.restoreAllStaged();
+
 
     stagedFiles = index.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);

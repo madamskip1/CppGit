@@ -236,9 +236,10 @@ TEST_F(BranchesTests, changeBranch_shortName)
 
 
     branches.createBranch("new_branch");
-    branches.changeCurrentBranch("new_branch");
+    auto changeBranchResult = branches.changeCurrentBranch("new_branch");
 
 
+    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -249,8 +250,10 @@ TEST_F(BranchesTests, changeBranch_fullName)
 
 
     branches.createBranch("new_branch");
-    branches.changeCurrentBranch("refs/heads/new_branch");
+    auto changeBranchResult = branches.changeCurrentBranch("refs/heads/new_branch");
 
+
+    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -361,8 +364,10 @@ TEST_F(BranchesTests, changeBranch_shouldFailIfWorktreeDirty)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
 
+    auto changeBranchResult = branches.changeCurrentBranch("new_branch");
 
-    ASSERT_THROW(branches.changeCurrentBranch("new_branch"), std::runtime_error);
+
+    EXPECT_EQ(changeBranchResult, CppGit::Error::DIRTY_WORKTREE);
 }
 
 TEST_F(BranchesTests, detachHead)
@@ -373,9 +378,11 @@ TEST_F(BranchesTests, detachHead)
 
     auto initialCommitHash = commits.createCommit("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
-    branches.detachHead(initialCommitHash);
+
+    auto detachHeadResult = branches.detachHead(initialCommitHash);
 
 
+    EXPECT_EQ(detachHeadResult, CppGit::Error::NO_ERROR);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
 }
 

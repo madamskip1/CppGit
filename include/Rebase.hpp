@@ -2,10 +2,12 @@
 
 #include "CherryPick.hpp"
 #include "Commit.hpp"
+#include "Error.hpp"
 #include "Repository.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
+#include <expected>
 
 namespace CppGit {
 
@@ -15,9 +17,10 @@ class Rebase
 public:
     explicit Rebase(const Repository& repo);
 
-    auto rebase(const std::string_view upstream) const -> void;
-    auto abortRebase() const -> void;
-    auto continueRebase() const -> void;
+    auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
+    auto continueRebase() const -> std::expected<std::string, Error>;
+    auto abortRebase() const -> Error;
+    auto isRebaseInProgress() const -> bool;
 
 private:
     struct TodoLine
@@ -28,7 +31,7 @@ private:
     };
 
     auto startRebase(const std::string_view upstream) const -> void;
-    auto endRebase() const -> void;
+    auto endRebase() const -> std::string;
 
     auto createRebaseDir() const -> void;
     auto deleteAllRebaseFiles() const -> void;
@@ -43,9 +46,9 @@ private:
     auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
     auto nextTodo() const -> TodoLine;
 
-    auto processTodoList() const -> void;
-    auto processTodo(const TodoLine& todoLine) const -> void;
-    auto processPick(const TodoLine& todoLine) const -> void;
+    auto processTodoList() const -> Error;
+    auto processTodo(const TodoLine& todoLine) const -> Error;
+    auto processPick(const TodoLine& todoLine) const -> Error;
     auto todoDone(const TodoLine& todoLine) const -> void;
     static auto parseTodoLine(const std::string_view line) -> TodoLine;
 

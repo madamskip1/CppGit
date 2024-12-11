@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Branch.hpp"
+#include "Error.hpp"
 #include "Repository.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
@@ -24,10 +25,10 @@ public:
     auto getCurrentBranch() const -> std::string;
     auto getCurrentBranchInfo() const -> Branch;
 
-    auto changeCurrentBranch(const std::string_view branchName) const -> void;
-    auto changeCurrentBranch(const Branch& branch) const -> void;
+    auto changeCurrentBranch(const std::string_view branchName) const -> Error;
+    auto changeCurrentBranch(const Branch& branch) const -> Error;
 
-    auto detachHead(const std::string_view commitHash) const -> void;
+    auto detachHead(const std::string_view commitHash) const -> Error;
 
     auto branchExists(const std::string_view branchName, bool remote = false) const -> bool;
     auto branchExists(const Branch& branch) const -> bool;
@@ -44,7 +45,7 @@ public:
 private:
     auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;
 
-    auto changeHEAD(const std::string_view target) const -> void;
+    auto changeHEAD(const std::string_view target) const -> Error;
 
     const Repository& repo;
     const _details::Refs refs;

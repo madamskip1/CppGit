@@ -13,13 +13,13 @@ Index::Index(const Repository& repo)
 {
 }
 
-auto Index::add(const std::string_view filePattern) const -> void
+auto Index::add(const std::string_view filePattern) const -> Error
 {
     auto filesList = getUntrackedAndIndexFilesList(filePattern);
 
     if (filesList.empty())
     {
-        throw std::runtime_error("Given file pattern did not match any files");
+        return Error::PATTERN_NOT_MATCHING_ANY_FILES;
     }
 
     auto args = std::vector<std::string>{};
@@ -41,15 +41,17 @@ auto Index::add(const std::string_view filePattern) const -> void
     {
         throw std::runtime_error("Error while updating index.");
     }
+
+    return Error::NO_ERROR;
 }
 
-auto Index::remove(const std::string_view filePattern, bool force) const -> void
+auto Index::remove(const std::string_view filePattern, bool force) const -> Error
 {
     auto filesList = getFilesInIndexList(filePattern);
 
     if (filesList.empty())
     {
-        throw std::runtime_error("Given file pattern did not match any files");
+        return Error::PATTERN_NOT_MATCHING_ANY_FILES;
     }
 
     auto args = std::vector<std::string>{};
@@ -75,6 +77,8 @@ auto Index::remove(const std::string_view filePattern, bool force) const -> void
     {
         throw std::runtime_error("Error while updating index.");
     }
+
+    return Error::NO_ERROR;
 }
 
 auto Index::restoreAllStaged() const -> void

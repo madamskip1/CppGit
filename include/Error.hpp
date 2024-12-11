@@ -1,0 +1,34 @@
+#pragma once
+
+namespace CppGit {
+
+enum class Error
+{
+    NO_ERROR,
+    DIRTY_WORKTREE,
+    PATTERN_NOT_MATCHING_ANY_FILES,
+
+    // Cherry-pick
+    NO_CHERRY_PICK_IN_PROGRESS,
+    CHERRY_PICK_CONFLICT,
+    CHERRY_PICK_EMPTY_COMMIT,
+
+    // Rebase
+    REBASE_CONFLICT,
+    NO_REBASE_IN_PROGRESS,
+
+    // MERGE
+    MERGE_NOTHING_TO_MERGE,
+    MERGE_FF_BRANCHES_DIVERGENCE,
+    MERGE_NO_FF_CONFLICT,
+    NO_MERGE_IN_PROGRESS,
+
+    // Repository
+    CLONE_NO_PATH_GIVEN,
+    PATH_IS_NOT_A_DIRECTORY,
+    PATH_DIR_IS_NOT_EMPTY,
+    FAILED_TO_CREATE_DIRECTORIES,
+    CLONE_FAILED
+};
+
+} // namespace CppGit
