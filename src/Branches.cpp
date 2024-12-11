@@ -3,6 +3,7 @@
 #include "Index.hpp"
 #include "_details/Parser/BranchesParser.hpp"
 
+#include <expected>
 #include <fstream>
 #include <utility>
 
@@ -49,21 +50,21 @@ auto Branches::getCurrentBranch() const -> std::string
     return refs.getSymbolicRef("HEAD");
 }
 
-auto Branches::changeCurrentBranch(const std::string_view branchName) const -> void
+auto Branches::changeCurrentBranch(const std::string_view branchName) const -> Error
 {
     auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
 
-    changeHEAD(branchNameWithPrefix);
+    return changeHEAD(branchNameWithPrefix);
 }
 
-auto Branches::changeCurrentBranch(const Branch& branch) const -> void
+auto Branches::changeCurrentBranch(const Branch& branch) const -> Error
 {
     return changeCurrentBranch(branch.getRefName());
 }
 
-auto Branches::detachHead(const std::string_view commitHash) const -> void
+auto Branches::detachHead(const std::string_view commitHash) const -> Error
 {
-    changeHEAD(commitHash);
+    return changeHEAD(commitHash);
 }
 
 auto Branches::branchExists(const std::string_view branchName, bool remote) const -> bool
@@ -150,13 +151,13 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
     return branches;
 }
 
-auto Branches::changeHEAD(const std::string_view target) const -> void
+auto Branches::changeHEAD(const std::string_view target) const -> Error
 {
     auto index = repo.Index();
 
     if (index.isDirty())
     {
-        throw std::runtime_error("Worktree is dirty");
+        return Error::DIRTY_WORKTREE;
     }
 
     auto HEADFileContent = std::string{};
@@ -175,6 +176,8 @@ auto Branches::changeHEAD(const std::string_view target) const -> void
 
     indexWorktree.resetIndexToTree(hash);
     indexWorktree.copyForceIndexToWorktree();
+
+    return Error::NONE;
 }
 
 } // namespace CppGit
