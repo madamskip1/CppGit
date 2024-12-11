@@ -1,4 +1,5 @@
 #pragma once
+#include "Error.hpp"
 #include "Repository.hpp"
 
 #include <filesystem>
@@ -58,8 +59,8 @@ public:
     explicit Index(const Repository& repo);
     Index() = delete;
 
-    auto add(const std::string_view filePattern) const -> void;
-    auto remove(const std::string_view filePattern, bool force = false) const -> void;
+    auto add(const std::string_view filePattern) const -> Error;
+    auto remove(const std::string_view filePattern, bool force = false) const -> Error;
 
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void

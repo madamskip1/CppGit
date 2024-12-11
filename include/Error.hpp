@@ -6,6 +6,7 @@ enum class Error
 {
     NONE,
     DIRTY_WORKTREE,
+    PATTERN_NOT_MATCHING_ANY_FILES,
 
     // Cherry-pick
     NO_CHERRY_PICK_IN_PROGRESS,
