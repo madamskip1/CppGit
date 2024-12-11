@@ -152,18 +152,18 @@ auto Repository::isValidGitRepository() const -> bool
 auto Repository::clone(const std::string& url, const std::filesystem::path& path) -> Repository
 {
     auto repository = Repository(path);
-    if (repository.clone(url) != ErrorCode::NO_ERROR)
+    if (repository.clone(url) != Error::NONE)
     {
         throw std::runtime_error("Failed to clone repository");
     }
     return repository;
 }
 
-auto Repository::clone(const std::string& url) const -> ErrorCode
+auto Repository::clone(const std::string& url) const -> Error
 {
     if (path.empty())
     {
-        return ErrorCode::GIT_CLONE_NO_PATH_GIVEN;
+        return Error::CLONE_NO_PATH_GIVEN;
     }
 
     if (!std::filesystem::exists(path))
@@ -174,27 +174,27 @@ auto Repository::clone(const std::string& url) const -> ErrorCode
         }
         catch (const std::filesystem::filesystem_error&)
         {
-            return ErrorCode::GIT_CLONE_FAILED_TO_CREATE_DIRECTORIES;
+            return Error::FAILED_TO_CREATE_DIRECTORIES;
         }
     }
     else
     {
         if (!std::filesystem::is_directory(path))
         {
-            return ErrorCode::GIT_CLONE_PATH_IS_NOT_A_DIRECTORY;
+            return Error::PATH_IS_NOT_A_DIRECTORY;
         }
         if (!std::filesystem::is_empty(path))
         {
-            return ErrorCode::GIT_CLONE_PATH_DIR_IS_NOT_EMPTY;
+            return Error::PATH_DIR_IS_NOT_EMPTY;
         }
     }
 
     if (auto outout = executeGitCommand("clone", url, path.string()); outout.return_code != 0)
     {
-        return ErrorCode::GIT_CLONE_FAILED;
+        return Error::CLONE_FAILED;
     }
 
-    return ErrorCode::NO_ERROR;
+    return Error::NO_ERROR;
 }
 
 auto Repository::initRepository(bool bare, std::string_view mainBranchName) const -> bool
