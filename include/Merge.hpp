@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Error.hpp"
 #include "Index.hpp"
 #include "Repository.hpp"
 #include "_details/CreateCommit.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
+#include <expected>
 #include <string>
 #include <string_view>
 
@@ -16,10 +18,10 @@ class Merge
 public:
     explicit Merge(const Repository& repo);
 
-    auto mergeFastForward(const std::string_view sourceBranch) const -> std::string;
-    auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
+    auto mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, Error>;
+    auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>;
 
-    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") -> std::string;
+    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") -> std::expected<std::string, Error>;
 
     auto canFastForward(const std::string_view sourceBranch) const -> bool;
     auto canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
@@ -28,10 +30,10 @@ public:
     auto isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
 
     auto isMergeInProgress() const -> bool;
-    auto isThereAnyConflict() const -> bool;
+    auto isThereAnyConflict() const -> std::expected<bool, Error>;
 
-    auto abortMerge() const -> void;
-    auto continueMerge() const -> std::string;
+    auto abortMerge() const -> Error;
+    auto continueMerge() const -> std::expected<std::string, Error>;
 
 private:
     const Repository& repo;
@@ -48,6 +50,8 @@ private:
 
     auto createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void;
     auto removeNoFFMergeFiles() const -> void;
+
+    auto isThereAnyConflictImpl() const -> bool;
 };
 
 } // namespace CppGit

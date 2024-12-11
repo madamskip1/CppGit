@@ -2,7 +2,6 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
-#include "Exceptions.hpp"
 #include "Repository.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
@@ -22,16 +21,16 @@ Merge::Merge(const Repository& repo)
 }
 
 
-auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::string
+auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, Error>
 {
     return mergeFastForward(sourceBranch, "HEAD");
 }
 
-auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
+auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>
 {
     if (auto index = repo.Index(); index.isDirty())
     {
-        throw std::runtime_error("Cannot merge with dirty worktree");
+        return std::unexpected{ Error::DIRTY_WORKTREE };
     }
 
     auto ancestor = getAncestor(sourceBranch, targetBranch);
@@ -49,7 +48,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
 
     if (ancestor != targetBranchRef)
     {
-        throw std::runtime_error("Cannot fast-forward");
+        return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
     }
 
     auto refs = _details::Refs{ repo };
@@ -58,13 +57,13 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
     return sourceBranchRef;
 }
 
-auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) -> std::string
+auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) -> std::expected<std::string, Error>
 {
     auto index = repo.Index();
 
     if (index.isDirty())
     {
-        throw std::runtime_error("Cannot merge with dirty worktree");
+        return std::unexpected{ Error::DIRTY_WORKTREE };
     }
 
     auto mergeBaseOutput = repo.executeGitCommand("merge-base", "HEAD", sourceBranch);
@@ -81,12 +80,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     if (mergeBase == sourceBranchRef)
     {
-        throw std::runtime_error("Nothing to merge");
-    }
-
-    if (mergeBase == sourceBranchRef)
-    {
-        throw std::runtime_error("Nothing to merge");
+        return std::unexpected{ Error::MERGE_NOTHING_TO_MERGE };
     }
 
     auto readTreeOutput = repo.executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
@@ -103,7 +97,8 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
     if (!unmergedFilesEntries.empty())
     {
         startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
-        throw CppGit::MergeConflict{};
+
+        return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
     }
 
 
@@ -144,17 +139,14 @@ auto Merge::isMergeInProgress() const -> bool
     return std::filesystem::exists(topLevelPath / ".git/MERGE_HEAD");
 }
 
-auto Merge::isThereAnyConflict() const -> bool
+auto Merge::isThereAnyConflict() const -> std::expected<bool, Error>
 {
-    auto gitLsFilesOutput = repo.executeGitCommand("ls-files", "-u");
-
-    if (gitLsFilesOutput.return_code != 0)
+    if (!isMergeInProgress())
     {
-        throw std::runtime_error("Failed to list files");
+        return std::unexpected{ Error::NO_MERGE_IN_PROGRESS };
     }
 
-
-    return !gitLsFilesOutput.stdout.empty();
+    return isThereAnyConflictImpl();
 }
 
 auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
@@ -201,22 +193,41 @@ auto Merge::removeNoFFMergeFiles() const -> void
     _threeWayMerge.removeMergeMsgFile();
 }
 
-auto Merge::abortMerge() const -> void
+auto Merge::isThereAnyConflictImpl() const -> bool
 {
-    _indexWorktree.resetIndexToTree("HEAD");
-    removeNoFFMergeFiles();
+    auto gitLsFilesOutput = repo.executeGitCommand("ls-files", "-u");
+
+    if (gitLsFilesOutput.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list files");
+    }
+
+    return !gitLsFilesOutput.stdout.empty();
 }
 
-auto Merge::continueMerge() const -> std::string
+auto Merge::abortMerge() const -> Error
 {
     if (!isMergeInProgress())
     {
-        throw std::runtime_error("No merge in progress");
+        return Error::NO_MERGE_IN_PROGRESS;
     }
 
-    if (isThereAnyConflict())
+    _indexWorktree.resetIndexToTree("HEAD");
+    removeNoFFMergeFiles();
+
+    return Error::NONE;
+}
+
+auto Merge::continueMerge() const -> std::expected<std::string, Error>
+{
+    if (!isMergeInProgress())
     {
-        throw std::runtime_error("Cannot continue merge with conflicts");
+        return std::unexpected{ Error::NO_MERGE_IN_PROGRESS };
+    }
+
+    if (isThereAnyConflictImpl())
+    {
+        return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
     }
 
     auto mergeMsg = _threeWayMerge.getMergeMsg();

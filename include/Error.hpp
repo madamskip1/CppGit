@@ -16,6 +16,12 @@ enum class Error
     // Rebase
     REBASE_CONFLICT,
     NO_REBASE_IN_PROGRESS,
+
+    // MERGE
+    MERGE_NOTHING_TO_MERGE,
+    MERGE_FF_BRANCHES_DIVERGENCE,
+    MERGE_NO_FF_CONFLICT,
+    NO_MERGE_IN_PROGRESS
 };
 
 } // namespace CppGit
