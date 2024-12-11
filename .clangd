@@ -18,6 +18,8 @@ CompileFlags:
     - -Wuseless-cast
     - -Wduplicated-cond
     - -Wduplicated-branches
+    - -std=c++23
+    - /clang:-std=c++23
 
 Diagnostics:
   ClangTidy:

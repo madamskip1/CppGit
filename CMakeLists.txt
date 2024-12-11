@@ -1,8 +1,11 @@
-cmake_minimum_required(VERSION 3.0)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+cmake_minimum_required(VERSION 3.20)
 
 project(CppGit)
+
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+    set(CMAKE_CXX_STANDARD 23)
+endif()
 
 add_library(${PROJECT_NAME})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
