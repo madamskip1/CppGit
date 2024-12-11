@@ -177,7 +177,7 @@ auto Branches::changeHEAD(const std::string_view target) const -> Error
     indexWorktree.resetIndexToTree(hash);
     indexWorktree.copyForceIndexToWorktree();
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 } // namespace CppGit

@@ -4,7 +4,7 @@ namespace CppGit {
 
 enum class Error
 {
-    NONE,
+    NO_ERROR,
     DIRTY_WORKTREE,
     PATTERN_NOT_MATCHING_ANY_FILES,
 

@@ -287,7 +287,7 @@ TEST_F(RebaseTests, rebaseConflict_abort)
     auto rebaseAbortResult = rebase.abortRebase();
 
 
-    ASSERT_TRUE(rebaseAbortResult == CppGit::Error::NONE);
+    ASSERT_TRUE(rebaseAbortResult == CppGit::Error::NO_ERROR);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
     auto currentBranch = branches.getCurrentBranch();

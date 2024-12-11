@@ -25,7 +25,7 @@ auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std:
     startRebase(upstream);
 
     auto todoResult = processTodoList();
-    if (todoResult != Error::NONE)
+    if (todoResult != Error::NO_ERROR)
     {
         return std::unexpected{ todoResult };
     }
@@ -46,7 +46,7 @@ auto Rebase::abortRebase() const -> Error
 
     deleteAllRebaseFiles();
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 auto Rebase::continueRebase() const -> std::expected<std::string, Error>
@@ -243,7 +243,7 @@ auto Rebase::processTodoList() const -> Error
         todo = nextTodo();
     }
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 auto Rebase::processTodo(const TodoLine& todoLine) const -> Error
@@ -260,11 +260,11 @@ auto Rebase::processTodo(const TodoLine& todoLine) const -> Error
 
 auto Rebase::processPick(const TodoLine& todoLine) const -> Error
 {
-    auto cherryPickResult = cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NONE);
+    auto cherryPickResult = cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
 
-    if (cherryPickResult == Error::NONE)
+    if (cherryPickResult == Error::NO_ERROR)
     {
-        return Error::NONE;
+        return Error::NO_ERROR;
     }
     else if (cherryPickResult == Error::CHERRY_PICK_CONFLICT)
     {

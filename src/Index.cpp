@@ -42,7 +42,7 @@ auto Index::add(const std::string_view filePattern) const -> Error
         throw std::runtime_error("Error while updating index.");
     }
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 auto Index::remove(const std::string_view filePattern, bool force) const -> Error
@@ -78,7 +78,7 @@ auto Index::remove(const std::string_view filePattern, bool force) const -> Erro
         throw std::runtime_error("Error while updating index.");
     }
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 auto Index::restoreAllStaged() const -> void

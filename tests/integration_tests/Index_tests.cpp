@@ -29,7 +29,7 @@ TEST_F(IndexTests, addRegularFile)
     auto addResult = index.add("file.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
@@ -64,7 +64,7 @@ TEST_F(IndexTests, addRegularFileInDir)
     auto addResult = index.add("dir/file.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
@@ -89,7 +89,7 @@ TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
     auto addResult = index.add("dir");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
@@ -115,7 +115,7 @@ TEST_F(IndexTests, addExecutableFile)
     auto addResult = index.add("file.sh");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, "100755");
@@ -142,7 +142,7 @@ TEST_F(IndexTests, addSymlink)
     auto addResult = index.add("file-symlink.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, "120000");
@@ -169,7 +169,7 @@ TEST_F(IndexTests, addOnDeletedFile)
     auto addResult = index.add("file.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
     auto stagedFiles = index.getStagedFilesList();
@@ -194,7 +194,7 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
     auto addResult = index.add("*.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "file1.txt");
@@ -224,7 +224,7 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
     auto addResult = index.add("dir*/*.txt");
 
 
-    ASSERT_EQ(addResult, CppGit::Error::NONE);
+    ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "dir1/file.txt");
@@ -264,7 +264,7 @@ TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
     auto removeResult = index.remove("file.txt");
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -286,7 +286,7 @@ TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
     auto removeResult = index.remove("file.txt");
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -307,7 +307,7 @@ TEST_F(IndexTests, removeRegularFile_force)
     auto removeResult = index.remove("file.txt", true);
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -376,7 +376,7 @@ TEST_F(IndexTests, removeRegularFileInDir)
     auto removeResult = index.remove("dir/file.txt");
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -398,7 +398,7 @@ TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
     auto removeResult = index.remove("dir");
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
@@ -420,7 +420,7 @@ TEST_F(IndexTests, removeRegularFileInDir_force)
     auto removeResult = index.remove("dir", true);
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
@@ -479,7 +479,7 @@ TEST_F(IndexTests, removeRegularFileInDir_removedFile)
     auto removeResult = index.remove("dir/file.txt");
 
 
-    EXPECT_EQ(removeResult, CppGit::Error::NONE);
+    EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }

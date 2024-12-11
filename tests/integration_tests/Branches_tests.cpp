@@ -239,7 +239,7 @@ TEST_F(BranchesTests, changeBranch_shortName)
     auto changeBranchResult = branches.changeCurrentBranch("new_branch");
 
 
-    EXPECT_EQ(changeBranchResult, CppGit::Error::NONE);
+    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -253,7 +253,7 @@ TEST_F(BranchesTests, changeBranch_fullName)
     auto changeBranchResult = branches.changeCurrentBranch("refs/heads/new_branch");
 
 
-    EXPECT_EQ(changeBranchResult, CppGit::Error::NONE);
+    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -382,7 +382,7 @@ TEST_F(BranchesTests, detachHead)
     auto detachHeadResult = branches.detachHead(initialCommitHash);
 
 
-    EXPECT_EQ(detachHeadResult, CppGit::Error::NONE);
+    EXPECT_EQ(detachHeadResult, CppGit::Error::NO_ERROR);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
 }
 

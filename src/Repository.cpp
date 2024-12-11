@@ -152,7 +152,7 @@ auto Repository::isValidGitRepository() const -> bool
 auto Repository::clone(const std::string& url, const std::filesystem::path& path) -> Repository
 {
     auto repository = Repository(path);
-    if (repository.clone(url) != Error::NONE)
+    if (repository.clone(url) != Error::NO_ERROR)
     {
         throw std::runtime_error("Failed to clone repository");
     }

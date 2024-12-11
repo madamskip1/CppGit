@@ -215,7 +215,7 @@ auto Merge::abortMerge() const -> Error
     _indexWorktree.resetIndexToTree("HEAD");
     removeNoFFMergeFiles();
 
-    return Error::NONE;
+    return Error::NO_ERROR;
 }
 
 auto Merge::continueMerge() const -> std::expected<std::string, Error>

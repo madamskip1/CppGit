@@ -684,7 +684,7 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
     auto abortResult = merge.abortMerge();
 
 
-    EXPECT_EQ(abortResult, CppGit::Error::NONE);
+    EXPECT_EQ(abortResult, CppGit::Error::NO_ERROR);
     EXPECT_FALSE(merge.isMergeInProgress());
     EXPECT_FALSE(index.isDirty());
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
