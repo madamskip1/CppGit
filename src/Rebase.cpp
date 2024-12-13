@@ -16,16 +16,15 @@ namespace CppGit {
 Rebase::Rebase(const Repository& repo)
     : repo(repo),
       refs(repo),
-      cherryPick(repo),
-      indexWorktree(repo)
+      indexWorktree(repo),
+      cherryPick(repo)
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
 {
     startRebase(upstream);
 
-    auto todoResult = processTodoList();
-    if (todoResult != Error::NO_ERROR)
+    if (auto todoResult = processTodoList(); todoResult != Error::NO_ERROR)
     {
         return std::unexpected{ todoResult };
     }
@@ -89,27 +88,45 @@ auto Rebase::isRebaseInProgress() const -> bool
     return false;
 }
 
-auto Rebase::startRebase(const std::string_view upstream) const -> void
+auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
 {
-    auto mergeBase = repo.executeGitCommand("merge-base", "HEAD", upstream);
+    auto rebaseBase = repo.executeGitCommand("merge-base", "HEAD", upstream);
 
-    if (mergeBase.return_code != 0)
+    if (rebaseBase.return_code != 0)
     {
         throw std::runtime_error("Failed to find merge base");
     }
 
-    const auto& mergeBaseSha = mergeBase.stdout;
-    auto branches = repo.Branches();
+    const auto& rebaseBaseSha = rebaseBase.stdout;
+
     auto commitsHistory = repo.CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
-    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(mergeBaseSha, "HEAD");
+    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(rebaseBaseSha, "HEAD");
+
+    auto rebaseCommands = std::vector<RebaseTodoCommand>{};
+
+    for (const auto& commit : commitsToRebase)
+    {
+        auto commitHash = commit.getHash();
+        auto commitMessage = commit.getMessage();
+
+        rebaseCommands.emplace_back(RebaseTodoCommandType::PICK, commitHash, commitMessage);
+    }
+
+    return rebaseCommands;
+}
+
+auto Rebase::startRebase(const std::string_view upstream) const -> void
+{
+    auto rebaseCommands = getDefaultTodoCommands(upstream);
+    auto branches = repo.Branches();
     auto upstreamHash = refs.getRefHash(upstream);
 
     createRebaseDir();
     createHeadNameFile(branches.getCurrentBranch());
     createOntoFile(upstreamHash);
     createOrigHeadFiles(refs.getRefHash("HEAD"));
-    generateTodoFile(commitsToRebase);
+    generateTodoFile(rebaseCommands);
 
     branches.detachHead(upstreamHash);
 }
@@ -177,19 +194,19 @@ auto Rebase::getStoppedShaFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge/stopped-sha");
 }
 
-auto Rebase::generateTodoFile(const std::vector<Commit>& commits) const -> void
+auto Rebase::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
-    for (const auto& commit : commits)
+    for (const auto& command : rebaseCommands)
     {
-        file << "pick " << commit.getHash() << " " << commit.getMessage() << "\n";
+        file << command.toString() << "\n";
     }
     file.close();
 
     std::filesystem::copy(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo", repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.backup");
 }
 
-auto Rebase::nextTodo() const -> TodoLine
+auto Rebase::nextTodoCommand() const -> std::optional<RebaseTodoCommand>
 {
     auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
     auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
@@ -218,39 +235,42 @@ auto Rebase::nextTodo() const -> TodoLine
     std::filesystem::remove(todoFilePath);
     std::filesystem::rename(tempFilePath, todoFilePath);
 
-    auto todo = parseTodoLine(todoLine);
+    auto commandTodo = parseTodoCommandLine(todoLine);
 
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/message", todo.message);
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", todo.commitHash);
+    const auto& hash = commandTodo.has_value() ? commandTodo.value().hash : "";
+    const auto& message = commandTodo.has_value() ? commandTodo.value().message : "";
 
-    return todo;
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/message", message);
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", hash);
+
+    return commandTodo;
 }
 
 auto Rebase::processTodoList() const -> Error
 {
-    auto todo = nextTodo();
-    while (!todo.command.empty())
+    auto todoCommand = nextTodoCommand();
+    while (todoCommand)
     {
-        auto todoResult = processTodo(todo);
+        auto todoResult = processTodoCommand(todoCommand.value());
 
         if (todoResult == Error::REBASE_CONFLICT)
         {
-            startConflict(todo);
+            startConflict(todoCommand.value());
             return Error::REBASE_CONFLICT;
         }
 
-        todoDone(todo);
-        todo = nextTodo();
+        todoCommandDone(todoCommand.value());
+        todoCommand = nextTodoCommand();
     }
 
     return Error::NO_ERROR;
 }
 
-auto Rebase::processTodo(const TodoLine& todoLine) const -> Error
+auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    if (todoLine.command == "pick")
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::PICK)
     {
-        return processPick(todoLine);
+        return processPickCommand(rebaseTodoCommand);
     }
     else
     {
@@ -258,9 +278,9 @@ auto Rebase::processTodo(const TodoLine& todoLine) const -> Error
     }
 }
 
-auto Rebase::processPick(const TodoLine& todoLine) const -> Error
+auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    auto cherryPickResult = cherryPick.cherryPickCommit(todoLine.commitHash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
+    auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
 
     if (cherryPickResult == Error::NO_ERROR)
     {
@@ -276,20 +296,24 @@ auto Rebase::processPick(const TodoLine& todoLine) const -> Error
     }
 }
 
-auto Rebase::todoDone(const TodoLine& todoLine) const -> void
+auto Rebase::todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
-    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", todoLine.command, " ", todoLine.commitHash, " ", todoLine.message, "\n");
+    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", rebaseTodoCommand.toString(), "\n");
 }
 
-auto Rebase::startConflict(const TodoLine& todoLine) const -> void
+auto Rebase::startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
-    createStoppedShaFile(todoLine.commitHash);
-
-    todoDone(todoLine);
+    createStoppedShaFile(rebaseTodoCommand.hash);
+    todoCommandDone(rebaseTodoCommand);
 }
 
-auto Rebase::parseTodoLine(const std::string_view line) -> TodoLine
+auto Rebase::parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>
 {
+    if (line.empty())
+    {
+        return std::nullopt;
+    }
+
     std::size_t startPos = 0;
     std::size_t endPos = 0;
 
@@ -302,7 +326,7 @@ auto Rebase::parseTodoLine(const std::string_view line) -> TodoLine
 
     auto message = std::string{ line.substr(endPos + 1) };
 
-    return TodoLine{ command, commitHash, message };
+    return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command), commitHash, message };
 }
 
 } // namespace CppGit

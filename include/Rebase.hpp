@@ -3,11 +3,13 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Error.hpp"
+#include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
 #include <expected>
+#include <optional>
 
 namespace CppGit {
 
@@ -22,14 +24,9 @@ public:
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
 
-private:
-    struct TodoLine
-    {
-        std::string command;
-        std::string commitHash;
-        std::string message;
-    };
+    auto getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>;
 
+private:
     auto startRebase(const std::string_view upstream) const -> void;
     auto endRebase() const -> std::string;
 
@@ -43,16 +40,16 @@ private:
     auto getOrigHead() const -> std::string;
     auto getStoppedShaFile() const -> std::string;
 
-    auto generateTodoFile(const std::vector<Commit>& commits) const -> void;
-    auto nextTodo() const -> TodoLine;
+    auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void;
+    auto nextTodoCommand() const -> std::optional<RebaseTodoCommand>;
 
     auto processTodoList() const -> Error;
-    auto processTodo(const TodoLine& todoLine) const -> Error;
-    auto processPick(const TodoLine& todoLine) const -> Error;
-    auto todoDone(const TodoLine& todoLine) const -> void;
-    static auto parseTodoLine(const std::string_view line) -> TodoLine;
+    auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
+    static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 
-    auto startConflict(const TodoLine& todoLine) const -> void;
+    auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
     const Repository& repo;
     const _details::Refs refs;

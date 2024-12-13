@@ -4,6 +4,7 @@
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
+#include "RebaseTodoCommand.hpp"
 #include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
@@ -56,6 +57,43 @@ TEST_F(RebaseTests, simpleRebase)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
     EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
 }
+
+TEST_F(RebaseTests, simpleTodoCommandsList)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    branches.createBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
+    index.add("file1.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+
+    branches.changeCurrentBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+
+    auto todoCommands = rebase.getDefaultTodoCommands("main");
+
+    ASSERT_EQ(todoCommands.size(), 2);
+    const auto& firstCommand = todoCommands[0];
+    EXPECT_EQ(firstCommand.type, CppGit::RebaseTodoCommandType::PICK);
+    EXPECT_EQ(firstCommand.hash, thirdCommitHash);
+    EXPECT_EQ(firstCommand.message, "Third commit");
+    const auto& secondCommand = todoCommands[1];
+    EXPECT_EQ(secondCommand.type, CppGit::RebaseTodoCommandType::PICK);
+    EXPECT_EQ(secondCommand.hash, fourthCommitHash);
+    EXPECT_EQ(secondCommand.message, "Fourth commit");
+}
+
 
 TEST_F(RebaseTests, rebaseConflict_firstCommit)
 {
