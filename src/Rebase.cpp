@@ -22,14 +22,13 @@ Rebase::Rebase(const Repository& repo)
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
 {
-    startRebase(upstream);
+    auto rebaseComamnds = getDefaultTodoCommands(upstream);
+    return rebaseImpl(upstream, rebaseComamnds);
+}
 
-    if (auto todoResult = processTodoList(); todoResult != Error::NO_ERROR)
-    {
-        return std::unexpected{ todoResult };
-    }
-
-    return endRebase();
+auto Rebase::interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
+{
+    return rebaseImpl(upstream, rebaseCommands);
 }
 
 auto Rebase::abortRebase() const -> Error
@@ -116,9 +115,20 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
     return rebaseCommands;
 }
 
-auto Rebase::startRebase(const std::string_view upstream) const -> void
+auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
 {
-    auto rebaseCommands = getDefaultTodoCommands(upstream);
+    startRebase(upstream, rebaseCommands);
+
+    if (auto todoResult = processTodoList(); todoResult != Error::NO_ERROR)
+    {
+        return std::unexpected{ todoResult };
+    }
+
+    return endRebase();
+}
+
+auto Rebase::startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
+{
     auto branches = repo.Branches();
     auto upstreamHash = refs.getRefHash(upstream);
 

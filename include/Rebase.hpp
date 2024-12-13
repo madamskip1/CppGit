@@ -20,6 +20,7 @@ public:
     explicit Rebase(const Repository& repo);
 
     auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
+    auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
     auto continueRebase() const -> std::expected<std::string, Error>;
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
@@ -27,7 +28,8 @@ public:
     auto getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>;
 
 private:
-    auto startRebase(const std::string_view upstream) const -> void;
+    auto rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
+    auto startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void;
     auto endRebase() const -> std::string;
 
     auto createRebaseDir() const -> void;
