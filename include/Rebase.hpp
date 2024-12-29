@@ -48,6 +48,7 @@ private:
     auto processTodoList() const -> Error;
     auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
     auto todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
     static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 

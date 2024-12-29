@@ -16,6 +16,7 @@ enum class Error
     // Rebase
     REBASE_CONFLICT,
     NO_REBASE_IN_PROGRESS,
+    REBASE_BREAK,
 
     // MERGE
     MERGE_NOTHING_TO_MERGE,

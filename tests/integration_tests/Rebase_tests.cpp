@@ -526,3 +526,86 @@ TEST_F(RebaseTests, interactive_sameUpstream)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
     EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
 }
+
+TEST_F(RebaseTests, interactive_break)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
+    index.add("file1.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands.insert(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+
+
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(commits.getHeadCommitHash(), secondCommit);
+    // At that point we should only have Initial and Second Commits
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file2.txt"));
+    EXPECT_TRUE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+}
+
+TEST_F(RebaseTests, interactive_break_continue)
+{
+    auto commits = repository->Commits();
+    auto branches = repository->Branches();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
+    index.add("file1.txt");
+    auto secondCommit = commits.createCommit("Second commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
+    index.add("file2.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands.insert(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+
+    auto continueBreakResult = rebase.continueRebase();
+
+
+    ASSERT_TRUE(continueBreakResult.has_value());
+    EXPECT_EQ(continueBreakResult.value(), thirdCommitHash); // we did FastForward
+    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 3);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[2].getHash(), thirdCommitHash);
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
+    EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+    EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+}

@@ -174,6 +174,11 @@ public:
     {
     }
 
+    explicit(false) RebaseTodoCommand(const RebaseTodoCommandType type)
+        : type{ type }
+    {
+    }
+
     auto operator==(const RebaseTodoCommand& rhs) const -> bool = default;
 
     auto toString() const -> std::string

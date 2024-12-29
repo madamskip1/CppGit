@@ -54,20 +54,22 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
         return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
     }
 
-    auto commitHash = getStoppedShaFile();
-    auto commits = Commits{ repo };
-    auto _createCommit = _details::CreateCommit{ repo };
-    auto commitInfo = commits.getCommitInfo(commitHash);
+    if (auto stoppedHash = getStoppedShaFile(); stoppedHash != "")
+    {
+        auto commits = Commits{ repo };
+        auto _createCommit = _details::CreateCommit{ repo };
+        auto commitInfo = commits.getCommitInfo(stoppedHash);
 
-    auto envp = std::vector<std::string>{
-        "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
-        "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
-        "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
-    };
+        auto envp = std::vector<std::string>{
+            "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
+            "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
+            "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
+        };
 
-    auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
+        auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
 
-    _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+        _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    }
 
     processTodoList();
 
@@ -76,15 +78,7 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
 auto Rebase::isRebaseInProgress() const -> bool
 {
-    if (std::ifstream headFile(repo.getGitDirectoryPath() / "REBASE_HEAD"); headFile.is_open())
-    {
-        auto isEmpty = headFile.peek() == std::ifstream::traits_type::eof();
-        headFile.close();
-
-        return !isEmpty;
-    }
-
-    return false;
+    return std::filesystem::exists(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo");
 }
 
 auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
@@ -269,6 +263,11 @@ auto Rebase::processTodoList() const -> Error
             return Error::REBASE_CONFLICT;
         }
 
+        if (todoResult == Error::REBASE_BREAK)
+        {
+            return Error::REBASE_BREAK;
+        }
+
         todoCommandDone(todoCommand.value());
         todoCommand = nextTodoCommand();
     }
@@ -282,10 +281,13 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     {
         return processPickCommand(rebaseTodoCommand);
     }
-    else
+
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::BREAK)
     {
-        throw std::runtime_error("Todo command not yet implemented");
+        return processBreakCommand(rebaseTodoCommand);
     }
+
+    throw std::runtime_error("Todo command not yet implemented");
 }
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
@@ -319,6 +321,11 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     }
 }
 
+auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
+{
+    return Error::REBASE_BREAK;
+}
+
 auto Rebase::todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
     _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", rebaseTodoCommand.toString(), "\n");
@@ -342,6 +349,11 @@ auto Rebase::parseTodoCommandLine(const std::string_view line) -> std::optional<
 
     endPos = line.find(' ', startPos);
     auto command = std::string{ line.substr(startPos, endPos - startPos) };
+
+    if (endPos == std::string::npos)
+    {
+        return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command) };
+    }
 
     startPos = endPos + 1;
     endPos = line.find(' ', startPos);
