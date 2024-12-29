@@ -17,7 +17,8 @@ Rebase::Rebase(const Repository& repo)
     : repo(repo),
       refs(repo),
       indexWorktree(repo),
-      cherryPick(repo)
+      cherryPick(repo),
+      rebaseFilesHelper(repo)
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
@@ -38,11 +39,11 @@ auto Rebase::abortRebase() const -> Error
         return Error::NO_REBASE_IN_PROGRESS;
     }
 
-    indexWorktree.resetIndexToTree(getOrigHead());
+    indexWorktree.resetIndexToTree(rebaseFilesHelper.getOrigHead());
     indexWorktree.copyForceIndexToWorktree();
-    refs.updateSymbolicRef("HEAD", getHeadName());
+    refs.updateSymbolicRef("HEAD", rebaseFilesHelper.getHeadName());
 
-    deleteAllRebaseFiles();
+    rebaseFilesHelper.deleteAllRebaseFiles();
 
     return Error::NO_ERROR;
 }
@@ -54,7 +55,7 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
         return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
     }
 
-    if (auto stoppedHash = getStoppedShaFile(); stoppedHash != "")
+    if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
     {
         auto commits = Commits{ repo };
         auto _createCommit = _details::CreateCommit{ repo };
@@ -126,11 +127,11 @@ auto Rebase::startRebase(const std::string_view upstream, const std::vector<Reba
     auto branches = repo.Branches();
     auto upstreamHash = refs.getRefHash(upstream);
 
-    createRebaseDir();
-    createHeadNameFile(branches.getCurrentBranch());
-    createOntoFile(upstreamHash);
-    createOrigHeadFiles(refs.getRefHash("HEAD"));
-    generateTodoFile(rebaseCommands);
+    rebaseFilesHelper.createRebaseDir();
+    rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranch());
+    rebaseFilesHelper.createOntoFile(upstreamHash);
+    rebaseFilesHelper.createOrigHeadFiles(refs.getRefHash("HEAD"));
+    rebaseFilesHelper.generateTodoFile(rebaseCommands);
 
     branches.detachHead(upstreamHash);
 }
@@ -138,102 +139,23 @@ auto Rebase::startRebase(const std::string_view upstream, const std::vector<Reba
 auto Rebase::endRebase() const -> std::string
 {
     auto currentHash = refs.getRefHash("HEAD");
-    auto headName = getHeadName();
+    auto headName = rebaseFilesHelper.getHeadName();
     refs.updateRefHash(headName, currentHash);
     refs.updateSymbolicRef("HEAD", headName);
 
-    deleteAllRebaseFiles();
+    rebaseFilesHelper.deleteAllRebaseFiles();
 
     return currentHash;
 }
 
-auto Rebase::createRebaseDir() const -> void
-{
-    std::filesystem::create_directory(repo.getGitDirectoryPath() / "rebase-merge");
-}
-
-auto Rebase::deleteAllRebaseFiles() const -> void
-{
-    std::filesystem::remove_all(repo.getGitDirectoryPath() / "rebase-merge");
-    std::filesystem::remove(repo.getGitDirectoryPath() / "REBASE_HEAD");
-}
-
-auto Rebase::createHeadNameFile(const std::string_view branchName) const -> void
-{
-    // Indicates the branch that was checked out before the rebase started
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/head-name", branchName);
-}
-
-auto Rebase::getHeadName() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "head-name");
-}
-
-auto Rebase::createOntoFile(const std::string_view onto) const -> void
-{
-    // Contains the commit hash of the branch or commit onto which the current branch is being rebased
-
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/onto", onto);
-}
-
-auto Rebase::createOrigHeadFiles(const std::string_view origHead) const -> void
-{
-    // Contains the commit hash of the branch that was checked out before the rebase started
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/orig-head", origHead);
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "ORIG_HEAD", origHead);
-}
-
-auto Rebase::getOrigHead() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge/orig-head");
-}
-
-auto Rebase::createStoppedShaFile(const std::string_view hash) const -> void
-{
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/stopped-sha", hash);
-}
-
-auto Rebase::getStoppedShaFile() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge/stopped-sha");
-}
-
-auto Rebase::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
-{
-    auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
-    for (const auto& command : rebaseCommands)
-    {
-        file << command.toString() << "\n";
-    }
-    file.close();
-
-    std::filesystem::copy(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo", repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.backup");
-}
-
-auto Rebase::peekTodoCommand() const -> std::optional<RebaseTodoCommand>
-{
-    auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
-    auto todoFile = std::ifstream{ todoFilePath };
-    std::string todoLine;
-    std::getline(todoFile, todoLine);
-    todoFile.close();
-
-    auto commandTodo = parseTodoCommandLine(todoLine);
-
-    const auto& hash = commandTodo.has_value() ? commandTodo.value().hash : "";
-    const auto& message = commandTodo.has_value() ? commandTodo.value().message : "";
-
-    return commandTodo;
-}
-
 auto Rebase::processTodoList() const -> Error
 {
-    auto todoCommand = peekTodoCommand();
+    auto todoCommand = rebaseFilesHelper.peekTodoFile();
     while (todoCommand)
     {
         auto todoResult = processTodoCommand(todoCommand.value());
-        appendTodoCommandToDoneList(todoCommand.value());
-        popTodoCommandFromTodoList();
+        rebaseFilesHelper.appendDoneFile(todoCommand.value());
+        rebaseFilesHelper.popTodoFile();
 
         if (todoResult == Error::REBASE_CONFLICT)
         {
@@ -246,7 +168,7 @@ auto Rebase::processTodoList() const -> Error
             return Error::REBASE_BREAK;
         }
 
-        todoCommand = peekTodoCommand();
+        todoCommand = rebaseFilesHelper.peekTodoFile();
     }
 
     return Error::NO_ERROR;
@@ -303,65 +225,10 @@ auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
     return Error::REBASE_BREAK;
 }
 
-auto Rebase::appendTodoCommandToDoneList(const RebaseTodoCommand& rebaseTodoCommand) const -> void
-{
-    auto x = rebaseTodoCommand.toString();
-    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", rebaseTodoCommand.toString(), "\n");
-}
-
-auto Rebase::popTodoCommandFromTodoList() const -> void
-{
-    auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
-    auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
-
-    auto todoFile = std::ifstream{ todoFilePath };
-    auto tempFile = std::ofstream{ tempFilePath };
-
-    std::string line;
-    std::getline(todoFile, line); // skip first line
-
-    while (std::getline(todoFile, line))
-    {
-        tempFile << line << "\n";
-    }
-
-    todoFile.close();
-    tempFile.close();
-
-    std::filesystem::remove(todoFilePath);
-    std::filesystem::rename(tempFilePath, todoFilePath);
-}
 
 auto Rebase::startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
-    createStoppedShaFile(rebaseTodoCommand.hash);
-}
-
-auto Rebase::parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>
-{
-    if (line.empty())
-    {
-        return std::nullopt;
-    }
-
-    std::size_t startPos = 0;
-    std::size_t endPos = 0;
-
-    endPos = line.find(' ', startPos);
-    auto command = std::string{ line.substr(startPos, endPos - startPos) };
-
-    if (endPos == std::string::npos)
-    {
-        return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command) };
-    }
-
-    startPos = endPos + 1;
-    endPos = line.find(' ', startPos);
-    auto commitHash = std::string{ line.substr(startPos, endPos - startPos) };
-
-    auto message = std::string{ line.substr(endPos + 1) };
-
-    return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command), commitHash, message };
+    rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
 }
 
 } // namespace CppGit
