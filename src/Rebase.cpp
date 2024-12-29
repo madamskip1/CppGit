@@ -290,6 +290,19 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
+    auto commits = Commits{ repo };
+    auto headCommitHash = commits.getHeadCommitHash();
+
+    if (auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash); pickedCommitInfo.getParents()[0] == headCommitHash)
+    {
+        // can FastForward
+        indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
+        indexWorktree.copyForceIndexToWorktree();
+        refs.detachHead(rebaseTodoCommand.hash);
+
+        return Error::NO_ERROR;
+    }
+
     auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
 
     if (cherryPickResult == Error::NO_ERROR)
