@@ -51,6 +51,8 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
         return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
     }
 
+    _indexWorktree.resetIndexToTree(sourceBranchRef);
+    _indexWorktree.copyForceIndexToWorktree();
     auto refs = _details::Refs{ repo };
     refs.updateRefHash("HEAD", sourceBranchRef);
 

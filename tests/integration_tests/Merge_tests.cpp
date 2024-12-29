@@ -247,18 +247,24 @@ TEST_F(MergeTests, mergeFastForward_linearBehind)
     auto commits = repository->Commits();
     auto branches = repository->Branches();
     auto merge = repository->Merge();
+    auto index = repository->Index();
 
-
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "initial");
+    index.add("file.txt");
     commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "second");
+    index.add("file.txt");
     auto secondCommitHash = commits.createCommit("Second commit");
     branches.changeCurrentBranch("second_branch");
+
     auto mergeCommitHash = merge.mergeFastForward("main");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), secondCommitHash);
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "second");
 }
 
 TEST_F(MergeTests, mergeFastForward_linearAhead)
