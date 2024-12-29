@@ -43,13 +43,14 @@ private:
     auto getStoppedShaFile() const -> std::string;
 
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void;
-    auto nextTodoCommand() const -> std::optional<RebaseTodoCommand>;
+    auto peekTodoCommand() const -> std::optional<RebaseTodoCommand>;
 
     auto processTodoList() const -> Error;
     auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
-    auto todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
+    auto appendTodoCommandToDoneList(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
+    auto popTodoCommandFromTodoList() const -> void;
     static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;

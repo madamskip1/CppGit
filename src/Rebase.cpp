@@ -210,52 +210,30 @@ auto Rebase::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseComman
     std::filesystem::copy(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo", repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.backup");
 }
 
-auto Rebase::nextTodoCommand() const -> std::optional<RebaseTodoCommand>
+auto Rebase::peekTodoCommand() const -> std::optional<RebaseTodoCommand>
 {
     auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
-    auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
-
     auto todoFile = std::ifstream{ todoFilePath };
-    auto tempFile = std::ofstream{ tempFilePath };
-
     std::string todoLine;
-    std::string line;
-    bool firstLine = true;
-
-    while (std::getline(todoFile, line))
-    {
-        if (firstLine)
-        {
-            todoLine = line;
-            firstLine = false;
-            continue;
-        }
-        tempFile << line << "\n";
-    }
-
+    std::getline(todoFile, todoLine);
     todoFile.close();
-    tempFile.close();
-
-    std::filesystem::remove(todoFilePath);
-    std::filesystem::rename(tempFilePath, todoFilePath);
 
     auto commandTodo = parseTodoCommandLine(todoLine);
 
     const auto& hash = commandTodo.has_value() ? commandTodo.value().hash : "";
     const auto& message = commandTodo.has_value() ? commandTodo.value().message : "";
 
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge/message", message);
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", hash);
-
     return commandTodo;
 }
 
 auto Rebase::processTodoList() const -> Error
 {
-    auto todoCommand = nextTodoCommand();
+    auto todoCommand = peekTodoCommand();
     while (todoCommand)
     {
         auto todoResult = processTodoCommand(todoCommand.value());
+        appendTodoCommandToDoneList(todoCommand.value());
+        popTodoCommandFromTodoList();
 
         if (todoResult == Error::REBASE_CONFLICT)
         {
@@ -268,8 +246,7 @@ auto Rebase::processTodoList() const -> Error
             return Error::REBASE_BREAK;
         }
 
-        todoCommandDone(todoCommand.value());
-        todoCommand = nextTodoCommand();
+        todoCommand = peekTodoCommand();
     }
 
     return Error::NO_ERROR;
@@ -326,15 +303,38 @@ auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
     return Error::REBASE_BREAK;
 }
 
-auto Rebase::todoCommandDone(const RebaseTodoCommand& rebaseTodoCommand) const -> void
+auto Rebase::appendTodoCommandToDoneList(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
+    auto x = rebaseTodoCommand.toString();
     _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge/done", rebaseTodoCommand.toString(), "\n");
+}
+
+auto Rebase::popTodoCommandFromTodoList() const -> void
+{
+    auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
+    auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
+
+    auto todoFile = std::ifstream{ todoFilePath };
+    auto tempFile = std::ofstream{ tempFilePath };
+
+    std::string line;
+    std::getline(todoFile, line); // skip first line
+
+    while (std::getline(todoFile, line))
+    {
+        tempFile << line << "\n";
+    }
+
+    todoFile.close();
+    tempFile.close();
+
+    std::filesystem::remove(todoFilePath);
+    std::filesystem::rename(tempFilePath, todoFilePath);
 }
 
 auto Rebase::startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
     createStoppedShaFile(rebaseTodoCommand.hash);
-    todoCommandDone(rebaseTodoCommand);
 }
 
 auto Rebase::parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>

@@ -157,13 +157,11 @@ TEST_F(RebaseTests, rebaseConflict_firstCommit)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Third commit");
     auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
@@ -206,13 +204,11 @@ TEST_F(RebaseTests, rebaseConflict_notFirstCommit)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Fourth commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n"
                           + "pick " + fourthCommit + " Fourth commit\n";
@@ -258,13 +254,11 @@ TEST_F(RebaseTests, rebaseConflict_bothConflictAndNotFiles)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Third commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
@@ -313,13 +307,11 @@ TEST_F(RebaseTests, rebaseConflict_conflictTwoFiles)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), "Third commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
@@ -530,7 +522,6 @@ TEST_F(RebaseTests, interactive_sameUpstream)
 TEST_F(RebaseTests, interactive_break)
 {
     auto commits = repository->Commits();
-    auto branches = repository->Branches();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
     auto commitsHistory = repository->CommitsHistory();
@@ -546,7 +537,7 @@ TEST_F(RebaseTests, interactive_break)
     auto thirdCommitHash = commits.createCommit("Third commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
-    todoCommands.insert(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
+    todoCommands.emplace(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
 
     auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
 
@@ -563,7 +554,13 @@ TEST_F(RebaseTests, interactive_break)
     EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_TRUE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
+    auto todoFileExpected = "pick " + thirdCommitHash + " Third commit\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), todoFileExpected);
+    auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
+                          + "break\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
 }
 
 TEST_F(RebaseTests, interactive_break_continue)

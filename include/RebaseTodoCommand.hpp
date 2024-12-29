@@ -183,7 +183,14 @@ public:
 
     auto toString() const -> std::string
     {
-        return type.toStringFull() + " " + hash + " " + message;
+        if (hash.empty())
+        {
+            return type.toStringFull();
+        }
+        else
+        {
+            return type.toStringFull() + " " + hash + " " + message;
+        }
     }
 };
 
