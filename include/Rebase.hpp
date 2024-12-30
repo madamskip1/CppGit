@@ -5,6 +5,7 @@
 #include "Error.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
+#include "_details/ApplyDiff.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/RebaseFilesHelper.hpp"
 #include "_details/Refs.hpp"
@@ -23,6 +24,7 @@ public:
     auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
     auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
     auto continueRebase() const -> std::expected<std::string, Error>;
+    auto continueReword(const std::string_view message = "", const std::string_view description = "") const -> std::expected<std::string, Error>;
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
 
@@ -37,6 +39,7 @@ private:
     auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
+    auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
@@ -45,6 +48,7 @@ private:
     const _details::IndexWorktree indexWorktree;
     const CherryPick cherryPick;
     const _details::RebaseFilesHelper rebaseFilesHelper;
+    const _details::ApplyDiff applyDiff;
 };
 
 } // namespace CppGit

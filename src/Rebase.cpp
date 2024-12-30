@@ -18,7 +18,8 @@ Rebase::Rebase(const Repository& repo)
       refs(repo),
       indexWorktree(repo),
       cherryPick(repo),
-      rebaseFilesHelper(repo)
+      rebaseFilesHelper(repo),
+      applyDiff(repo)
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
@@ -71,6 +72,46 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
         _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
     }
+
+    processTodoList();
+
+    return endRebase();
+}
+
+auto Rebase::continueReword(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+{
+    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
+    if (!lastCommand)
+    {
+        return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
+    }
+
+    if (lastCommand->type != RebaseTodoCommandType::REWORD)
+    {
+        return std::unexpected{ Error::NO_REBASE_REWORD_IN_PROGRESS };
+    }
+
+    auto commits = Commits{ repo };
+    auto envp = rebaseFilesHelper.getAuthorScriptFile();
+    auto parent = commits.getHeadCommitHash();
+
+    auto messageAndDesc = std::string{};
+
+    if (message.empty())
+    {
+        messageAndDesc = rebaseFilesHelper.getCommitEditMsgFile();
+    }
+    else
+    {
+        messageAndDesc = message;
+        if (!description.empty())
+        {
+            messageAndDesc += "\n\n";
+            messageAndDesc += description;
+        }
+    }
+
+    auto commitHash = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, envp);
 
     processTodoList();
 
@@ -163,9 +204,10 @@ auto Rebase::processTodoList() const -> Error
             return Error::REBASE_CONFLICT;
         }
 
-        if (todoResult == Error::REBASE_BREAK)
+        if (todoResult == Error::REBASE_BREAK
+            || todoResult == Error::REBASE_REWORD)
         {
-            return Error::REBASE_BREAK;
+            return todoResult;
         }
 
         todoCommand = rebaseFilesHelper.peekTodoFile();
@@ -184,6 +226,11 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     if (rebaseTodoCommand.type == RebaseTodoCommandType::BREAK)
     {
         return processBreakCommand(rebaseTodoCommand);
+    }
+
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::REWORD)
+    {
+        return processReword(rebaseTodoCommand);
     }
 
     throw std::runtime_error("Todo command not yet implemented");
@@ -223,6 +270,20 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
 {
     return Error::REBASE_BREAK;
+}
+
+auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+{
+    auto commits = Commits{ repo };
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+
+    auto msgAndDesc = commitInfo.getMessage() + (commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription());
+    rebaseFilesHelper.createCommitEditMsgFile(commitInfo.getMessage());
+    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+
+    applyDiff.apply(rebaseTodoCommand.hash);
+
+    return Error::REBASE_REWORD;
 }
 
 

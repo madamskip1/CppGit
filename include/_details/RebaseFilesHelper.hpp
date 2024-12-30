@@ -28,11 +28,19 @@ public:
     auto createStoppedShaFile(const std::string_view hash) const -> void;
     auto getStoppedShaFile() const -> std::string;
 
+    auto createCommitEditMsgFile(const std::string_view message) const -> void;
+    auto getCommitEditMsgFile() const -> std::string;
+
+    auto createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void;
+    auto getAuthorScriptFile() const -> std::vector<std::string>;
+    auto removeAuthorScriptFile() const -> void;
+
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
     auto popTodoFile() const -> void;
     auto appendDoneFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
+    auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
 
 
 private:
@@ -41,4 +49,4 @@ private:
     static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 };
 
-} // namespace CppGit
+} // namespace CppGit::_details

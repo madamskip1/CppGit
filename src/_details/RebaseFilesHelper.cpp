@@ -1,6 +1,7 @@
 #include "_details/RebaseFilesHelper.hpp"
 
 #include "_details/FileUtility.hpp"
+#include "_details/Parser/Parser.hpp"
 
 namespace CppGit::_details {
 
@@ -59,6 +60,37 @@ auto RebaseFilesHelper::getStoppedShaFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
 }
 
+
+auto RebaseFilesHelper::createCommitEditMsgFile(const std::string_view message) const -> void
+{
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "COMMIT_EDITMSG", message);
+}
+
+auto RebaseFilesHelper::getCommitEditMsgFile() const -> std::string
+{
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "COMMIT_EDITMSG");
+}
+
+auto RebaseFilesHelper::createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void
+{
+    auto authorScript = "GIT_AUTHOR_NAME=" + std::string{ authorName } + "\n"
+                      + "GIT_AUTHOR_EMAIL=" + std::string{ authorEmail } + "\n"
+                      + "GIT_AUTHOR_DATE=" + std::string{ authorDate };
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "author-script", authorScript);
+}
+
+auto RebaseFilesHelper::getAuthorScriptFile() const -> std::vector<std::string>
+{
+    auto autorScript = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
+
+    return Parser::splitToStringsVector(autorScript, '\n');
+}
+
+auto RebaseFilesHelper::removeAuthorScriptFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
+}
+
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
@@ -115,6 +147,33 @@ auto RebaseFilesHelper::appendDoneFile(const RebaseTodoCommand& rebaseTodoComman
     _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "done", rebaseTodoCommand.toString(), "\n");
 }
 
+auto RebaseFilesHelper::getLastDoneCommand() const -> std::optional<RebaseTodoCommand>
+{
+    auto doneFile = std::ifstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::in | std::ios::ate };
+
+    doneFile.seekg(-2, std::ios::end); // -2, because we always have '\n' after each command
+    char c;
+    while (doneFile.tellg() > 0)
+    {
+        doneFile.get(c);
+        if (c == '\n')
+        {
+            break;
+        }
+        doneFile.seekg(-2, std::ios::cur);
+    }
+
+    std::string lastLine;
+    std::getline(doneFile, lastLine);
+
+    if (lastLine.empty())
+    {
+        return std::nullopt;
+    }
+
+    return parseTodoCommandLine(lastLine);
+}
+
 auto RebaseFilesHelper::parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>
 {
     if (line.empty())
@@ -142,4 +201,4 @@ auto RebaseFilesHelper::parseTodoCommandLine(const std::string_view line) -> std
     return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command), commitHash, message };
 }
 
-} // namespace CppGit
+} // namespace CppGit::_details
