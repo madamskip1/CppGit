@@ -19,7 +19,8 @@ Rebase::Rebase(const Repository& repo)
       indexWorktree(repo),
       cherryPick(repo),
       rebaseFilesHelper(repo),
-      applyDiff(repo)
+      applyDiff(repo),
+      index(repo)
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
@@ -56,7 +57,20 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
         return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
     }
 
-    if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
+    if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
+    {
+        auto commits = Commits{ repo };
+        if (index.areAnyNotStagedTrackedFiles())
+        {
+            return std::unexpected{ Error::DIRTY_WORKTREE };
+        }
+
+        if (index.areAnyStagedFiles())
+        {
+            commits.amendCommit();
+        }
+    }
+    else if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
     {
         auto commits = Commits{ repo };
         auto _createCommit = _details::CreateCommit{ repo };
@@ -204,8 +218,7 @@ auto Rebase::processTodoList() const -> Error
             return Error::REBASE_CONFLICT;
         }
 
-        if (todoResult == Error::REBASE_BREAK
-            || todoResult == Error::REBASE_REWORD)
+        if (todoResult != Error::NO_ERROR)
         {
             return todoResult;
         }
@@ -231,6 +244,11 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     if (rebaseTodoCommand.type == RebaseTodoCommandType::REWORD)
     {
         return processReword(rebaseTodoCommand);
+    }
+
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::EDIT)
+    {
+        return processEdit(rebaseTodoCommand);
     }
 
     throw std::runtime_error("Todo command not yet implemented");
@@ -284,6 +302,28 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     applyDiff.apply(rebaseTodoCommand.hash);
 
     return Error::REBASE_REWORD;
+}
+
+auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+{
+    auto pickResult = processPickCommand(rebaseTodoCommand);
+
+    if (pickResult != Error::NO_ERROR)
+    {
+        return pickResult;
+    }
+
+    auto commits = Commits{ repo };
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+
+    auto msgAndDesc = commitInfo.getMessage() + (commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription());
+    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+
+    auto hashCommit = commits.getHeadCommitHash();
+    rebaseFilesHelper.createAmendFile(hashCommit);
+    rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
+
+    return Error::REBASE_EDIT;
 }
 
 

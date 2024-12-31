@@ -3,6 +3,7 @@
 #include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Error.hpp"
+#include "Index.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
 #include "_details/ApplyDiff.hpp"
@@ -40,6 +41,7 @@ private:
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
     auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
@@ -49,6 +51,7 @@ private:
     const CherryPick cherryPick;
     const _details::RebaseFilesHelper rebaseFilesHelper;
     const _details::ApplyDiff applyDiff;
+    const Index index;
 };
 
 } // namespace CppGit

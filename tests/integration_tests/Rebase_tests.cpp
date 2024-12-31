@@ -760,3 +760,132 @@ TEST_F(RebaseTests, interactive_reword_continue_oldMessage)
     checkCommitAuthorEqualTest(commits.getCommitInfo(continueRewordResult.value()));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
 }
+
+TEST_F(RebaseTests, interactive_edit_stop)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
+    index.add("file1.txt");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto secondCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommit }, envp);
+    auto thirdCommit = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands[0].type = CppGit::RebaseTodoCommandType::EDIT;
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+
+
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(commits.getHeadCommitHash(), secondCommit);
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    checkCommitAuthorEqualTest(commits.getCommitInfo(commitsLog[1].getHash()));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
+
+    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
+    EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
+    auto todoFileExpected = "pick " + thirdCommit + " Third commit\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), todoFileExpected);
+    auto doneFileExpected = "edit " + secondCommit + " Second commit\n";
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "amend"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), secondCommit);
+    auto authorScriptFileContent = CppGit::_details::RebaseFilesHelper{ *repository }.getAuthorScriptFile();
+    EXPECT_EQ(authorScriptFileContent[0], envp[0]); // Author Name
+    EXPECT_EQ(authorScriptFileContent[1], envp[1]); // Author email
+    EXPECT_EQ(authorScriptFileContent[2], envp[2]); // Author date
+}
+
+TEST_F(RebaseTests, interactive_edit_continue_changes)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World!");
+    index.add("file1.txt");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto secondCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommit }, envp);
+    auto thirdCommit = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands[0].type = CppGit::RebaseTodoCommandType::EDIT;
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+
+    CppGit::_details::FileUtility::createOrAppendFile(repositoryPath / "file1.txt", " Modified");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
+    index.add("file1.txt");
+    index.add("file2.txt");
+
+    auto continueEditResult = rebase.continueRebase();
+
+    EXPECT_NE(commits.getHeadCommitHash(), thirdCommit); // we couldn't do FastForward
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 3);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_NE(commitsLog[1].getHash(), secondCommit);
+    checkCommitAuthorEqualTest(commits.getCommitInfo(commitsLog[1].getHash()));
+    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_NE(commitsLog[2].getHash(), thirdCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World! Modified");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
+}
+
+TEST_F(RebaseTests, interactive_edit_continue_noChanges)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
+    index.add("file.txt");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto secondCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommit }, envp);
+    auto thirdCommit = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands[0].type = CppGit::RebaseTodoCommandType::EDIT;
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+
+    auto continueEditResult = rebase.continueRebase();
+
+
+    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommit); // we could do FastForward
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 3);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    checkCommitAuthorEqualTest(commits.getCommitInfo(commitsLog[1].getHash()));
+    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[2].getHash(), thirdCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
+}

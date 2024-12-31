@@ -35,6 +35,9 @@ public:
     auto getAuthorScriptFile() const -> std::vector<std::string>;
     auto removeAuthorScriptFile() const -> void;
 
+    auto createAmendFile(const std::string_view hash) const -> void;
+    auto getAmendFile() const -> std::string;
+
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;

@@ -91,6 +91,17 @@ auto RebaseFilesHelper::removeAuthorScriptFile() const -> void
     std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
 }
 
+
+auto RebaseFilesHelper::createAmendFile(const std::string_view hash) const -> void
+{
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "amend", hash);
+}
+
+auto RebaseFilesHelper::getAmendFile() const -> std::string
+{
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "amend");
+}
+
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
