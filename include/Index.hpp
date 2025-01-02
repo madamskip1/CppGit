@@ -85,6 +85,8 @@ public:
     auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
     auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
+    auto areAnyNotStagedTrackedFiles() const -> bool;
+
     auto isDirty() const -> bool;
 
 private:

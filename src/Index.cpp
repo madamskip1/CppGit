@@ -247,6 +247,18 @@ auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) 
     return IndexParser::parseStageDetailedList(output.stdout);
 }
 
+auto Index::areAnyNotStagedTrackedFiles() const -> bool
+{
+    auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--exclude-standard", "--deduplicate");
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to check if there are any not staged tracked files");
+    }
+
+    return !output.stdout.empty();
+}
+
 auto Index::isDirty() const -> bool
 {
     auto commits = repo.Commits();

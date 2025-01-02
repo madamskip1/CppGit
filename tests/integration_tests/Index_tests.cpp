@@ -1062,3 +1062,122 @@ TEST_F(IndexTests, getNotStagedFiles_trackedDeletedNotStaged)
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_justFirstCommit)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_notTrackedFile)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_stagedNotTrackedBefore)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedNotChanged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedNotStagged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
+
+
+    EXPECT_TRUE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedStagged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
+    index.add("file.txt");
+    commits.createCommit("Third commit");
+
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedNotStaged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+    std::filesystem::remove(repositoryPath / "file.txt");
+
+
+    EXPECT_TRUE(index.areAnyNotStagedTrackedFiles());
+}
+
+TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedStaged)
+{
+    auto index = repository->Index();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
+    index.add("file.txt");
+    commits.createCommit("Second commit");
+    std::filesystem::remove(repositoryPath / "file.txt");
+    index.add("file.txt");
+
+
+    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+}
