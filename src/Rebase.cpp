@@ -251,6 +251,11 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return processEdit(rebaseTodoCommand);
     }
 
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::DROP)
+    {
+        return processDrop(rebaseTodoCommand);
+    }
+
     throw std::runtime_error("Todo command not yet implemented");
 }
 
@@ -324,6 +329,11 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
     rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
 
     return Error::REBASE_EDIT;
+}
+
+auto Rebase::processDrop(const RebaseTodoCommand&) const -> Error
+{
+    return Error::NO_ERROR;
 }
 
 

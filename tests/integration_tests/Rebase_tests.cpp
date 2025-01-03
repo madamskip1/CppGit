@@ -889,3 +889,37 @@ TEST_F(RebaseTests, interactive_edit_continue_noChanges)
     EXPECT_EQ(commitsLog[2].getHash(), thirdCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
 }
+
+TEST_F(RebaseTests, interactive_drop)
+{
+    auto commits = repository->Commits();
+    auto rebase = repository->Rebase();
+    auto index = repository->Index();
+    auto commitsHistory = repository->CommitsHistory();
+    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+
+
+    auto initialCommit = commits.createCommit("Initial commit");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
+    index.add("file.txt");
+    auto envp = prepareCommitAuthorCommiterTestEnvp();
+    auto secondCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommit }, envp);
+    auto thirdCommit = commits.createCommit("Third commit");
+
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
+
+    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+
+
+    ASSERT_TRUE(rebaseResult.has_value());
+    EXPECT_NE(rebaseResult.value(), thirdCommit);
+    EXPECT_NE(commits.getHeadCommitHash(), thirdCommit);
+    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    ASSERT_EQ(commitsLog.size(), 2);
+    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
+}

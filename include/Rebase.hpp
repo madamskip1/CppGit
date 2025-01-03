@@ -42,6 +42,7 @@ private:
     auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
     auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
