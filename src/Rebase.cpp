@@ -125,7 +125,7 @@ auto Rebase::continueReword(const std::string_view message, const std::string_vi
         }
     }
 
-    auto commitHash = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, envp);
+    auto commitHash = commits.amendCommit(messageAndDesc);
 
     processTodoList();
 
@@ -297,14 +297,19 @@ auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
 
 auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
+    auto pickResult = processPickCommand(rebaseTodoCommand);
+
+    if (pickResult != Error::NO_ERROR)
+    {
+        return pickResult;
+    }
+
     auto commits = Commits{ repo };
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
     auto msgAndDesc = commitInfo.getMessage() + (commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription());
     rebaseFilesHelper.createCommitEditMsgFile(commitInfo.getMessage());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
-
-    applyDiff.apply(rebaseTodoCommand.hash);
 
     return Error::REBASE_REWORD;
 }
