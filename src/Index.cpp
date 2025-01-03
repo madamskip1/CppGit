@@ -184,19 +184,14 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
 
 auto Index::getStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
+    auto output = getStagedFilesListOutput(filePattern);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
-
-    if (output.stdout.empty())
+    if (output.empty())
     {
         return std::vector<std::string>{};
     }
 
-    return Parser::splitToStringsVector(output.stdout, '\n');
+    return Parser::splitToStringsVector(output, '\n');
 }
 
 auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) const -> std::vector<DiffIndexEntry>
@@ -245,6 +240,13 @@ auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) 
     }
 
     return IndexParser::parseStageDetailedList(output.stdout);
+}
+
+auto Index::areAnyStagedFiles() const -> bool
+{
+    auto output = getStagedFilesListOutput();
+
+    return !output.empty();
 }
 
 auto Index::areAnyNotStagedTrackedFiles() const -> bool
@@ -325,6 +327,18 @@ auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const 
     }
 
     return Parser::splitToStringsVector(output.stdout, '\n');
+}
+
+auto Index::getStagedFilesListOutput(const std::string_view filePattern) const -> std::string
+{
+    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
+
+    if (output.return_code != 0)
+    {
+        throw std::runtime_error("Failed to list staged files");
+    }
+
+    return output.stdout;
 }
 
 } // namespace CppGit

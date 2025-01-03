@@ -85,6 +85,7 @@ public:
     auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
     auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
+    auto areAnyStagedFiles() const -> bool;
     auto areAnyNotStagedTrackedFiles() const -> bool;
 
     auto isDirty() const -> bool;
@@ -94,6 +95,8 @@ private:
 
     auto getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>;
     auto getUntrackedAndIndexFilesList(const std::string_view pattern = "") const -> std::vector<std::string>;
+
+    auto getStagedFilesListOutput(const std::string_view filePattern = "") const -> std::string;
 };
 
 } // namespace CppGit
