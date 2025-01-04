@@ -60,6 +60,9 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
     if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
     {
         auto commits = Commits{ repo };
+        auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
+        auto hashAfter = hashBefore;
+
         if (index.areAnyNotStagedTrackedFiles())
         {
             return std::unexpected{ Error::DIRTY_WORKTREE };
@@ -67,8 +70,10 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
         if (index.areAnyStagedFiles())
         {
-            commits.amendCommit();
+            hashAfter = commits.amendCommit();
         }
+
+        rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
     }
     else if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
     {
@@ -261,33 +266,15 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    auto commits = Commits{ repo };
-    auto headCommitHash = commits.getHeadCommitHash();
+    auto pickResult = pickCommit(rebaseTodoCommand);
 
-    if (auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash); pickedCommitInfo.getParents()[0] == headCommitHash)
+    if (!pickResult.has_value())
     {
-        // can FastForward
-        indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
-        indexWorktree.copyForceIndexToWorktree();
-        refs.detachHead(rebaseTodoCommand.hash);
-
-        return Error::NO_ERROR;
+        return pickResult.error();
     }
 
-    auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP).error_or(Error::NO_ERROR);
-
-    if (cherryPickResult == Error::NO_ERROR)
-    {
-        return Error::NO_ERROR;
-    }
-    else if (cherryPickResult == Error::CHERRY_PICK_CONFLICT)
-    {
-        return Error::REBASE_CONFLICT;
-    }
-    else
-    {
-        throw std::runtime_error("Unexpected error during cherry-pick");
-    }
+    rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, pickResult.value());
+    return Error::NO_ERROR;
 }
 
 auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
@@ -297,7 +284,7 @@ auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
 
 auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    auto pickResult = processPickCommand(rebaseTodoCommand);
+    auto pickResult = pickCommit(rebaseTodoCommand).error_or(Error::NO_ERROR);
 
     if (pickResult != Error::NO_ERROR)
     {
@@ -316,7 +303,8 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
 auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    auto pickResult = processPickCommand(rebaseTodoCommand);
+    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
+    auto pickResult = pickCommit(rebaseTodoCommand).error_or(Error::NO_ERROR);
 
     if (pickResult != Error::NO_ERROR)
     {
@@ -339,6 +327,44 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 auto Rebase::processDrop(const RebaseTodoCommand&) const -> Error
 {
     return Error::NO_ERROR;
+}
+
+auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>
+{
+    auto commits = Commits{ repo };
+    auto headCommitHash = commits.getHeadCommitHash();
+
+    if (auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash); pickedCommitInfo.getParents()[0] == headCommitHash)
+    {
+        // can FastForward
+        indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
+        indexWorktree.copyForceIndexToWorktree();
+        refs.detachHead(rebaseTodoCommand.hash);
+
+        return std::unexpected{ Error::NO_ERROR };
+    }
+
+    auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP);
+
+    if (!cherryPickResult.has_value())
+    {
+        auto error = cherryPickResult.error();
+
+        if (error == Error::NO_ERROR)
+        {
+            return std::unexpected{ Error::NO_ERROR };
+        }
+        else if (error == Error::CHERRY_PICK_CONFLICT)
+        {
+            return std::unexpected{ Error::REBASE_CONFLICT };
+        }
+        else
+        {
+            throw std::runtime_error("Unexpected error during cherry-pick");
+        }
+    }
+
+    return cherryPickResult.value();
 }
 
 

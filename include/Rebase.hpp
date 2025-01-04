@@ -44,6 +44,8 @@ private:
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
+    auto pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>;
+
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
     const Repository& repo;

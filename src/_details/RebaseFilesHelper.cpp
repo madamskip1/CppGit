@@ -102,6 +102,26 @@ auto RebaseFilesHelper::getAmendFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "amend");
 }
 
+auto RebaseFilesHelper::createRebaseHeadFile(const std::string_view hash) const -> void
+{
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", hash);
+}
+
+auto RebaseFilesHelper::getRebaseHeadFile() const -> std::string
+{
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "REBASE_HEAD");
+}
+
+auto RebaseFilesHelper::removeRebaseHeadFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "REBASE_HEAD");
+}
+
+auto RebaseFilesHelper::appendRewrittenListFile(const std::string_view hashBefore, const std::string_view hashAfter) const -> void
+{
+    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-list", hashBefore, " ", hashAfter, "\n");
+}
+
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };

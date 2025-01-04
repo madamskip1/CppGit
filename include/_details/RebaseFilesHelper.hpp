@@ -38,6 +38,12 @@ public:
     auto createAmendFile(const std::string_view hash) const -> void;
     auto getAmendFile() const -> std::string;
 
+    auto createRebaseHeadFile(const std::string_view hash) const -> void;
+    auto getRebaseHeadFile() const -> std::string;
+    auto removeRebaseHeadFile() const -> void;
+
+    auto appendRewrittenListFile(const std::string_view hashBefore, const std::string_view hashAfter) const -> void;
+
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
