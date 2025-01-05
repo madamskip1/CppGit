@@ -61,6 +61,11 @@ auto RebaseFilesHelper::getStoppedShaFile() const -> std::string
 }
 
 
+auto RebaseFilesHelper::removeStoppedShaFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
+}
+
 auto RebaseFilesHelper::createCommitEditMsgFile(const std::string_view message) const -> void
 {
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "COMMIT_EDITMSG", message);

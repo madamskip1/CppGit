@@ -27,6 +27,7 @@ public:
 
     auto createStoppedShaFile(const std::string_view hash) const -> void;
     auto getStoppedShaFile() const -> std::string;
+    auto removeStoppedShaFile() const -> void;
 
     auto createCommitEditMsgFile(const std::string_view message) const -> void;
     auto getCommitEditMsgFile() const -> std::string;

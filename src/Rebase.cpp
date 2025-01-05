@@ -89,10 +89,18 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
         auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
 
-        _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+        auto hashAfter = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+        rebaseFilesHelper.appendRewrittenListFile(stoppedHash, hashAfter);
     }
 
-    processTodoList();
+    rebaseFilesHelper.removeStoppedShaFile();
+
+    auto processTodoListResult = processTodoList();
+
+    if (processTodoListResult != Error::NO_ERROR)
+    {
+        return std::unexpected{ processTodoListResult };
+    }
 
     return endRebase();
 }
@@ -131,8 +139,14 @@ auto Rebase::continueReword(const std::string_view message, const std::string_vi
     }
 
     auto commitHash = commits.amendCommit(messageAndDesc);
+    rebaseFilesHelper.appendRewrittenListFile(lastCommand->hash, commitHash);
 
-    processTodoList();
+    auto processTodoListResult = processTodoList();
+
+    if (processTodoListResult != Error::NO_ERROR)
+    {
+        return std::unexpected{ processTodoListResult };
+    }
 
     return endRebase();
 }
