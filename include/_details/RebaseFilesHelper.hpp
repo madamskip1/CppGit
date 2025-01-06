@@ -52,7 +52,7 @@ public:
     auto removeCurrentFixupFile() const -> void;
     auto getCurrentFixupFile() const -> std::string;
 
-    auto appendMessageSqaushFile(const std::string_view message, const std::string_view description = "") const -> void;
+    auto createMessageSquashFile(const std::string_view message) const -> void;
     auto getMessageSqaushFile() const -> std::string;
     auto removeMessageSqaushFile() const -> void;
 

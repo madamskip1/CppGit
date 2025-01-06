@@ -351,7 +351,6 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     {
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
         auto commitInfo = Commits{ repo }.getCommitInfo(rebaseTodoCommand.hash);
-        rebaseFilesHelper.appendMessageSqaushFile(commitInfo.getMessage(), commitInfo.getDescription());
     }
     else if (rebaseTodoCommand.hash != newCommitHash)
     {
@@ -442,6 +441,17 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         }
     }
 
+    auto commits = Commits{ repo };
+
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
+
+    auto messageSquash = headCommitInfo.getMessage();
+    messageSquash += headCommitInfo.getDescription().empty() ? "" : "\n\n" + headCommitInfo.getDescription();
+    messageSquash += "\n\n" + commitInfo.getMessage();
+    messageSquash += commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription();
+    rebaseFilesHelper.createMessageSquashFile(messageSquash);
+
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     auto newCommitHash = Commits{ repo }.amendCommit();
     return Error::NO_ERROR;
@@ -458,16 +468,23 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     }
     auto commits = Commits{ repo };
 
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-    rebaseFilesHelper.appendMessageSqaushFile(commitInfo.getMessage(), commitInfo.getDescription());
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
+
+    auto messageSquash = headCommitInfo.getMessage();
+    messageSquash += headCommitInfo.getDescription().empty() ? "" : "\n\n" + headCommitInfo.getDescription();
+    messageSquash += "\n\n" + commitInfo.getMessage();
+    messageSquash += commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription();
+    rebaseFilesHelper.createMessageSquashFile(messageSquash);
 
     if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); !peakCommand || (peakCommand->type != RebaseTodoCommandType::FIXUP && peakCommand->type != RebaseTodoCommandType::SQUASH))
     {
         return Error::REBASE_SQUASH;
     }
 
-    auto newCommitHash = commits.amendCommit();
+    auto newCommitHash = commits.amendCommit(messageSquash);
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
     return Error::NO_ERROR;

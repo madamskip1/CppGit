@@ -185,18 +185,9 @@ auto RebaseFilesHelper::getCurrentFixupFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup");
 }
 
-
-auto RebaseFilesHelper::appendMessageSqaushFile(const std::string_view message, const std::string_view description) const -> void
+auto RebaseFilesHelper::createMessageSquashFile(const std::string_view message) const -> void
 {
-    auto messageAndDesc = std::string{ message };
-    if (!description.empty())
-    {
-        messageAndDesc += "\n\n";
-        messageAndDesc += description;
-    }
-    messageAndDesc += "\n\n";
-
-    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash", messageAndDesc);
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash", message);
 }
 
 auto RebaseFilesHelper::getMessageSqaushFile() const -> std::string
