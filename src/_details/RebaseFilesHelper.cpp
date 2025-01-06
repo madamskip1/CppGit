@@ -127,6 +127,29 @@ auto RebaseFilesHelper::appendRewrittenListFile(const std::string_view hashBefor
     _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-list", hashBefore, " ", hashAfter, "\n");
 }
 
+auto RebaseFilesHelper::appendRewrittenPendingFile(const std::string_view hash) const -> void
+{
+    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending", hash, "\n");
+}
+
+
+auto RebaseFilesHelper::moveRewrittenPendingToRewrittenList(const std::string_view newHash) const -> void
+{
+    auto rewrittenPending = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending");
+
+    auto splitted = Parser::splitToStringViewsVector(rewrittenPending, '\n');
+
+    for (const auto& hash : splitted)
+    {
+        if (!hash.empty())
+        {
+            _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-list", hash, " ", newHash, "\n");
+        }
+    }
+
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending");
+}
+
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
@@ -176,6 +199,19 @@ auto RebaseFilesHelper::popTodoFile() const -> void
 
     std::filesystem::remove(todoFilePath);
     std::filesystem::rename(tempFilePath, todoFilePath);
+}
+
+
+auto RebaseFilesHelper::peakAndPopTodoFile() const -> std::optional<RebaseTodoCommand>
+{
+    auto command = peekTodoFile();
+
+    if (command)
+    {
+        popTodoFile();
+    }
+
+    return command;
 }
 
 auto RebaseFilesHelper::appendDoneFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void

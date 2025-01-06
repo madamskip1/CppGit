@@ -224,12 +224,11 @@ auto Rebase::endRebase() const -> std::string
 
 auto Rebase::processTodoList() const -> Error
 {
-    auto todoCommand = rebaseFilesHelper.peekTodoFile();
+    auto todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     while (todoCommand)
     {
         auto todoResult = processTodoCommand(todoCommand.value());
         rebaseFilesHelper.appendDoneFile(todoCommand.value());
-        rebaseFilesHelper.popTodoFile();
 
         if (todoResult == Error::REBASE_CONFLICT)
         {
@@ -242,7 +241,7 @@ auto Rebase::processTodoList() const -> Error
             return todoResult;
         }
 
-        todoCommand = rebaseFilesHelper.peekTodoFile();
+        todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     }
 
     return Error::NO_ERROR;
@@ -275,6 +274,11 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return processDrop(rebaseTodoCommand);
     }
 
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::FIXUP)
+    {
+        return processFixup(rebaseTodoCommand);
+    }
+
     throw std::runtime_error("Todo command not yet implemented");
 }
 
@@ -287,7 +291,17 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return pickResult.error();
     }
 
-    rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, pickResult.value());
+    const auto& newCommitHash = pickResult.value();
+
+    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); peakCommand && peakCommand->type == RebaseTodoCommandType::FIXUP)
+    {
+        rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+    }
+    else if (rebaseTodoCommand.hash != newCommitHash)
+    {
+        rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, newCommitHash);
+    }
+
     return Error::NO_ERROR;
 }
 
@@ -343,6 +357,29 @@ auto Rebase::processDrop(const RebaseTodoCommand&) const -> Error
     return Error::NO_ERROR;
 }
 
+auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+{
+    auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
+
+    if (applyResult == _details::ApplyDiffResult::CONFLICT)
+    {
+        // TODO what to do when fixup has conflict
+        return Error::REBASE_CONFLICT;
+    }
+
+    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+
+    auto newCommitHash = Commits{ repo }.amendCommit();
+    auto peakCommand = rebaseFilesHelper.peekTodoFile();
+
+    if (!peakCommand || peakCommand->type != RebaseTodoCommandType::FIXUP)
+    {
+        rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
+    }
+
+    return Error::NO_ERROR;
+}
+
 auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>
 {
     auto commits = Commits{ repo };
@@ -355,7 +392,7 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
         indexWorktree.copyForceIndexToWorktree();
         refs.detachHead(rebaseTodoCommand.hash);
 
-        return std::unexpected{ Error::NO_ERROR };
+        return rebaseTodoCommand.hash;
     }
 
     auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP);
@@ -364,11 +401,7 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
     {
         auto error = cherryPickResult.error();
 
-        if (error == Error::NO_ERROR)
-        {
-            return std::unexpected{ Error::NO_ERROR };
-        }
-        else if (error == Error::CHERRY_PICK_CONFLICT)
+        if (error == Error::CHERRY_PICK_CONFLICT)
         {
             return std::unexpected{ Error::REBASE_CONFLICT };
         }

@@ -43,6 +43,7 @@ private:
     auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>;
 

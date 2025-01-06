@@ -44,11 +44,14 @@ public:
     auto removeRebaseHeadFile() const -> void;
 
     auto appendRewrittenListFile(const std::string_view hashBefore, const std::string_view hashAfter) const -> void;
+    auto appendRewrittenPendingFile(const std::string_view hash) const -> void;
+    auto moveRewrittenPendingToRewrittenList(const std::string_view newHash) const -> void;
 
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
     auto popTodoFile() const -> void;
+    auto peakAndPopTodoFile() const -> std::optional<RebaseTodoCommand>;
     auto appendDoneFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
     auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
 
