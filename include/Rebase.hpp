@@ -26,10 +26,12 @@ public:
     auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
     auto continueRebase() const -> std::expected<std::string, Error>;
     auto continueReword(const std::string_view message = "", const std::string_view description = "") const -> std::expected<std::string, Error>;
+    auto continueSquash(const std::string_view message = "", const std::string_view description = "") const -> std::expected<std::string, Error>;
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
 
     auto getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>;
+    auto getSquashMessage() const -> std::string;
 
 private:
     auto rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
@@ -44,6 +46,7 @@ private:
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>;
 

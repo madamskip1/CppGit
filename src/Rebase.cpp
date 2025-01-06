@@ -118,10 +118,6 @@ auto Rebase::continueReword(const std::string_view message, const std::string_vi
         return std::unexpected{ Error::NO_REBASE_REWORD_IN_PROGRESS };
     }
 
-    auto commits = Commits{ repo };
-    auto envp = rebaseFilesHelper.getAuthorScriptFile();
-    auto parent = commits.getHeadCommitHash();
-
     auto messageAndDesc = std::string{};
 
     if (message.empty())
@@ -138,8 +134,50 @@ auto Rebase::continueReword(const std::string_view message, const std::string_vi
         }
     }
 
-    auto commitHash = commits.amendCommit(messageAndDesc);
+    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
     rebaseFilesHelper.appendRewrittenListFile(lastCommand->hash, commitHash);
+
+    auto processTodoListResult = processTodoList();
+
+    if (processTodoListResult != Error::NO_ERROR)
+    {
+        return std::unexpected{ processTodoListResult };
+    }
+
+    return endRebase();
+}
+
+auto Rebase::continueSquash(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+{
+    auto currentFixup = rebaseFilesHelper.getCurrentFixupFile();
+
+    if (currentFixup.empty())
+    {
+        return std::unexpected{ Error::NO_REBASE_SQUASH_IN_PROGRESS };
+    }
+
+    auto messageAndDesc = std::string{};
+
+    if (message.empty())
+    {
+        messageAndDesc = rebaseFilesHelper.getMessageSqaushFile();
+    }
+    else
+    {
+        messageAndDesc = message;
+        if (!description.empty())
+        {
+            messageAndDesc += "\n\n";
+            messageAndDesc += description;
+        }
+    }
+
+    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
+    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
+    rebaseFilesHelper.appendRewrittenPendingFile(lastCommand->hash);
+    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(commitHash);
+    rebaseFilesHelper.removeCurrentFixupFile();
+    rebaseFilesHelper.removeMessageSqaushFile();
 
     auto processTodoListResult = processTodoList();
 
@@ -182,6 +220,17 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
     }
 
     return rebaseCommands;
+}
+
+auto Rebase::getSquashMessage() const -> std::string
+{
+    auto squashMessage = rebaseFilesHelper.getMessageSqaushFile();
+    if (squashMessage.size() >= 2 && squashMessage[squashMessage.size() - 1] == '\n' && squashMessage[squashMessage.size() - 2] == '\n')
+    {
+        squashMessage.pop_back();
+        squashMessage.pop_back();
+    }
+    return squashMessage;
 }
 
 auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
@@ -279,6 +328,11 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return processFixup(rebaseTodoCommand);
     }
 
+    if (rebaseTodoCommand.type == RebaseTodoCommandType::SQUASH)
+    {
+        return processSquash(rebaseTodoCommand);
+    }
+
     throw std::runtime_error("Todo command not yet implemented");
 }
 
@@ -293,9 +347,11 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
     const auto& newCommitHash = pickResult.value();
 
-    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); peakCommand && peakCommand->type == RebaseTodoCommandType::FIXUP)
+    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH))
     {
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+        auto commitInfo = Commits{ repo }.getCommitInfo(rebaseTodoCommand.hash);
+        rebaseFilesHelper.appendMessageSqaushFile(commitInfo.getMessage(), commitInfo.getDescription());
     }
     else if (rebaseTodoCommand.hash != newCommitHash)
     {
@@ -367,15 +423,52 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         return Error::REBASE_CONFLICT;
     }
 
-    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
-    auto newCommitHash = Commits{ repo }.amendCommit();
-    auto peakCommand = rebaseFilesHelper.peekTodoFile();
-
-    if (!peakCommand || peakCommand->type != RebaseTodoCommandType::FIXUP)
+    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); !peakCommand || (peakCommand->type != RebaseTodoCommandType::FIXUP && peakCommand->type != RebaseTodoCommandType::SQUASH))
     {
-        rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
+        if (rebaseFilesHelper.areAnySquashInCurrentFixup())
+        {
+            return Error::REBASE_SQUASH;
+        }
+        else
+        {
+            auto newCommitHash = Commits{ repo }.amendCommit();
+            rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+
+            rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
+            rebaseFilesHelper.removeCurrentFixupFile();
+            return Error::NO_ERROR;
+        }
     }
+
+    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+    auto newCommitHash = Commits{ repo }.amendCommit();
+    return Error::NO_ERROR;
+}
+
+auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+{
+    auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
+
+    if (applyResult == _details::ApplyDiffResult::CONFLICT)
+    {
+        // TODO what to do when fixup has conflict
+        return Error::REBASE_CONFLICT;
+    }
+    auto commits = Commits{ repo };
+
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    rebaseFilesHelper.appendMessageSqaushFile(commitInfo.getMessage(), commitInfo.getDescription());
+    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+
+    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); !peakCommand || (peakCommand->type != RebaseTodoCommandType::FIXUP && peakCommand->type != RebaseTodoCommandType::SQUASH))
+    {
+        return Error::REBASE_SQUASH;
+    }
+
+    auto newCommitHash = commits.amendCommit();
+    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
     return Error::NO_ERROR;
 }

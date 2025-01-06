@@ -47,6 +47,15 @@ public:
     auto appendRewrittenPendingFile(const std::string_view hash) const -> void;
     auto moveRewrittenPendingToRewrittenList(const std::string_view newHash) const -> void;
 
+    auto appendCurrentFixupFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
+    auto areAnySquashInCurrentFixup() const -> bool;
+    auto removeCurrentFixupFile() const -> void;
+    auto getCurrentFixupFile() const -> std::string;
+
+    auto appendMessageSqaushFile(const std::string_view message, const std::string_view description = "") const -> void;
+    auto getMessageSqaushFile() const -> std::string;
+    auto removeMessageSqaushFile() const -> void;
+
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
