@@ -54,6 +54,8 @@ private:
 
     auto isNextCommandFixupOrSquash() const -> bool;
 
+    auto continueEditImpl() const -> std::expected<std::string, Error>;
+
     const Repository& repo;
     const _details::Refs refs;
     const _details::IndexWorktree indexWorktree;

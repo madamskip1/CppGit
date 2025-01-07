@@ -59,21 +59,12 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
     if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
     {
-        auto commits = Commits{ repo };
-        auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
-        auto hashAfter = hashBefore;
+        auto continueEditResult = continueEditImpl();
 
-        if (index.areAnyNotStagedTrackedFiles())
+        if (!continueEditResult.has_value())
         {
-            return std::unexpected{ Error::DIRTY_WORKTREE };
+            return continueEditResult;
         }
-
-        if (index.areAnyStagedFiles())
-        {
-            hashAfter = commits.amendCommit();
-        }
-
-        rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
     }
     else if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
     {
@@ -535,6 +526,27 @@ auto Rebase::isNextCommandFixupOrSquash() const -> bool
     auto peakCommand = rebaseFilesHelper.peekTodoFile();
 
     return peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH);
+}
+
+auto Rebase::continueEditImpl() const -> std::expected<std::string, Error>
+{
+    auto commits = Commits{ repo };
+    auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
+    auto hashAfter = hashBefore;
+
+    if (index.areAnyNotStagedTrackedFiles())
+    {
+        return std::unexpected{ Error::DIRTY_WORKTREE };
+    }
+
+    if (index.areAnyStagedFiles())
+    {
+        hashAfter = commits.amendCommit();
+    }
+
+    rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
+
+    return hashAfter;
 }
 
 } // namespace CppGit
