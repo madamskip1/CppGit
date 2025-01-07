@@ -347,7 +347,7 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
     const auto& newCommitHash = pickResult.value();
 
-    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH))
+    if (isNextCommandFixupOrSquash())
     {
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
         auto commitInfo = Commits{ repo }.getCommitInfo(rebaseTodoCommand.hash);
@@ -424,7 +424,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
 
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
-    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); !peakCommand || (peakCommand->type != RebaseTodoCommandType::FIXUP && peakCommand->type != RebaseTodoCommandType::SQUASH))
+    if (!isNextCommandFixupOrSquash())
     {
         if (rebaseFilesHelper.areAnySquashInCurrentFixup())
         {
@@ -479,7 +479,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     messageSquash += commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription();
     rebaseFilesHelper.createMessageSquashFile(messageSquash);
 
-    if (auto peakCommand = rebaseFilesHelper.peekTodoFile(); !peakCommand || (peakCommand->type != RebaseTodoCommandType::FIXUP && peakCommand->type != RebaseTodoCommandType::SQUASH))
+    if (!isNextCommandFixupOrSquash())
     {
         return Error::REBASE_SQUASH;
     }
@@ -528,6 +528,13 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
 auto Rebase::startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
     rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
+}
+
+auto Rebase::isNextCommandFixupOrSquash() const -> bool
+{
+    auto peakCommand = rebaseFilesHelper.peekTodoFile();
+
+    return peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH);
 }
 
 } // namespace CppGit

@@ -52,6 +52,8 @@ private:
 
     auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
 
+    auto isNextCommandFixupOrSquash() const -> bool;
+
     const Repository& repo;
     const _details::Refs refs;
     const _details::IndexWorktree indexWorktree;
