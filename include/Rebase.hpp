@@ -24,9 +24,10 @@ public:
 
     auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
     auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
+
     auto continueRebase() const -> std::expected<std::string, Error>;
-    auto continueReword(const std::string_view message = "", const std::string_view description = "") const -> std::expected<std::string, Error>;
-    auto continueSquash(const std::string_view message = "", const std::string_view description = "") const -> std::expected<std::string, Error>;
+    auto continueRebase(const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
+
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
 
@@ -55,6 +56,11 @@ private:
     auto isNextCommandFixupOrSquash() const -> bool;
 
     auto continueEditImpl() const -> std::expected<std::string, Error>;
+    auto continueRewordImpl(const RebaseTodoCommand& lastDoneCommand, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>;
+    auto continueSquashImpl(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>;
+    auto continueConflictImpl(const std::string_view stoppedSha) const -> std::expected<std::string, Error>;
+
+    auto concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string;
 
     const Repository& repo;
     const _details::Refs refs;

@@ -739,7 +739,7 @@ TEST_F(RebaseTests, interactive_reword_continue_fastForward_changeMessage)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword("New message");
+    auto continueRewordResult = rebase.continueRebase("New message");
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -779,7 +779,7 @@ TEST_F(RebaseTests, interactive_reword_continue_fastForward_noChangeMessage)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword();
+    auto continueRewordResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -822,7 +822,7 @@ TEST_F(RebaseTests, interactive_reword_continue_noFastForward_changeMessage)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword("New message");
+    auto continueRewordResult = rebase.continueRebase("New message");
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -865,7 +865,7 @@ TEST_F(RebaseTests, interactive_reword_continue_noFastForward_noChangeMessage)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword();
+    auto continueRewordResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -906,7 +906,7 @@ TEST_F(RebaseTests, interactive_reword_continue_withDescription)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword("New message", "New description");
+    auto continueRewordResult = rebase.continueRebase("New message", "New description");
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -946,7 +946,7 @@ TEST_F(RebaseTests, interactive_reword_continue_oldMessage)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
 
-    auto continueRewordResult = rebase.continueReword();
+    auto continueRewordResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(continueRewordResult.has_value());
@@ -1237,7 +1237,7 @@ TEST_F(RebaseTests, interactive_breakAfterReword)
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto continueRewordResult = rebase.continueReword("New message");
+    auto continueRewordResult = rebase.continueRebase("New message");
 
 
     ASSERT_FALSE(continueRewordResult.has_value());
@@ -2152,7 +2152,7 @@ TEST_F(RebaseTests, interactive_squash_continue)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash("New message", "New description");
+    auto squashContinueResult = rebase.continueRebase("New message", "New description");
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
@@ -2201,7 +2201,7 @@ TEST_F(RebaseTests, interactive_squash_continue_withoutChangeMessage)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
@@ -2251,7 +2251,7 @@ TEST_F(RebaseTests, interactive_squash_twoInARow_continue)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
@@ -2299,7 +2299,7 @@ TEST_F(RebaseTests, interactive_fixupSquash_continue)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
@@ -2347,7 +2347,7 @@ TEST_F(RebaseTests, interactive_squashFixup_continue)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
@@ -2396,7 +2396,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash("New message", "New description");
+    auto squashContinueResult = rebase.continueRebase("New message", "New description");
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2460,7 +2460,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash_withoutChangeMessage)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2525,7 +2525,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash_twoInARow)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2592,7 +2592,7 @@ TEST_F(RebaseTests, interactive_breakAfterFixupSquash)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2659,7 +2659,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquashFixup)
 
     rebase.interactiveRebase(initialCommit, todoCommands);
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2728,7 +2728,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak)
     rebase.interactiveRebase(initialCommit, todoCommands);
     rebase.continueRebase(); // we was at first break
 
-    auto squashContinueResult = rebase.continueSquash("New message", "New description");
+    auto squashContinueResult = rebase.continueRebase("New message", "New description");
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2794,7 +2794,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak_withoutChangeMessage)
     rebase.interactiveRebase(initialCommit, todoCommands);
     rebase.continueRebase(); // we was at first break
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2861,7 +2861,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak_twoInARow)
     rebase.interactiveRebase(initialCommit, todoCommands);
     rebase.continueRebase(); // we was at first break
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2930,7 +2930,7 @@ TEST_F(RebaseTests, interactive_fixupSquashAfterBreak)
     rebase.interactiveRebase(initialCommit, todoCommands);
     rebase.continueRebase(); // we was at first break
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());
@@ -2999,7 +2999,7 @@ TEST_F(RebaseTests, interactive_squashFixupAfterBreak)
     rebase.interactiveRebase(initialCommit, todoCommands);
     rebase.continueRebase(); // we was at first break
 
-    auto squashContinueResult = rebase.continueSquash();
+    auto squashContinueResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(squashContinueResult.has_value());

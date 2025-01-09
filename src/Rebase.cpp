@@ -34,6 +34,7 @@ auto Rebase::interactiveRebase(const std::string_view upstream, const std::vecto
     return rebaseImpl(upstream, rebaseCommands);
 }
 
+
 auto Rebase::abortRebase() const -> Error
 {
     if (!isRebaseInProgress())
@@ -52,127 +53,44 @@ auto Rebase::abortRebase() const -> Error
 
 auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 {
+    return continueRebase("", "");
+}
+
+auto Rebase::continueRebase(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+{
     if (!isRebaseInProgress())
     {
         return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
     }
 
+    auto continueResult = std::expected<std::string, Error>{};
+
+    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
+
     if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
     {
-        auto continueEditResult = continueEditImpl();
-
-        if (!continueEditResult.has_value())
-        {
-            return continueEditResult;
-        }
+        continueResult = continueEditImpl();
     }
-    else if (auto stoppedHash = rebaseFilesHelper.getStoppedShaFile(); stoppedHash != "")
+    else if (lastCommand->type == RebaseTodoCommandType::REWORD)
     {
-        auto commits = Commits{ repo };
-        auto _createCommit = _details::CreateCommit{ repo };
-        auto commitInfo = commits.getCommitInfo(stoppedHash);
-
-        auto envp = std::vector<std::string>{
-            "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
-            "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
-            "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
-        };
-
-        auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
-
-        auto hashAfter = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
-        rebaseFilesHelper.appendRewrittenListFile(stoppedHash, hashAfter);
-        rebaseFilesHelper.removeStoppedShaFile();
+        continueResult = continueRewordImpl(lastCommand.value(), message, description);
     }
-
-
-    auto processTodoListResult = processTodoList();
-
-    if (processTodoListResult != Error::NO_ERROR)
+    else if (rebaseFilesHelper.areAnySquashInCurrentFixup())
     {
-        return std::unexpected{ processTodoListResult };
+        continueResult = continueSquashImpl(message, description);
     }
-
-    return endRebase();
-}
-
-auto Rebase::continueReword(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
-{
-    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
-    if (!lastCommand)
+    else if (auto stoppedSha = rebaseFilesHelper.getStoppedShaFile(); stoppedSha != "")
     {
-        return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
+        continueResult = continueConflictImpl(stoppedSha);
     }
 
-    if (lastCommand->type != RebaseTodoCommandType::REWORD)
+    if (!continueResult.has_value())
     {
-        return std::unexpected{ Error::NO_REBASE_REWORD_IN_PROGRESS };
+        return continueResult;
     }
 
-    auto messageAndDesc = std::string{};
 
-    if (message.empty())
-    {
-        messageAndDesc = rebaseFilesHelper.getCommitEditMsgFile();
-    }
-    else
-    {
-        messageAndDesc = message;
-        if (!description.empty())
-        {
-            messageAndDesc += "\n\n";
-            messageAndDesc += description;
-        }
-    }
-
-    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
-    rebaseFilesHelper.appendRewrittenListFile(lastCommand->hash, commitHash);
-
-    auto processTodoListResult = processTodoList();
-
-    if (processTodoListResult != Error::NO_ERROR)
-    {
-        return std::unexpected{ processTodoListResult };
-    }
-
-    return endRebase();
-}
-
-auto Rebase::continueSquash(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
-{
-    auto currentFixup = rebaseFilesHelper.getCurrentFixupFile();
-
-    if (currentFixup.empty())
-    {
-        return std::unexpected{ Error::NO_REBASE_SQUASH_IN_PROGRESS };
-    }
-
-    auto messageAndDesc = std::string{};
-
-    if (message.empty())
-    {
-        messageAndDesc = rebaseFilesHelper.getMessageSqaushFile();
-    }
-    else
-    {
-        messageAndDesc = message;
-        if (!description.empty())
-        {
-            messageAndDesc += "\n\n";
-            messageAndDesc += description;
-        }
-    }
-
-    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
-    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
-    rebaseFilesHelper.appendRewrittenPendingFile(lastCommand->hash);
-    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(commitHash);
-    rebaseFilesHelper.removeCurrentFixupFile();
-    rebaseFilesHelper.removeMessageSqaushFile();
-
-    auto processTodoListResult = processTodoList();
-
-    if (processTodoListResult != Error::NO_ERROR)
+    if (auto processTodoListResult = processTodoList(); processTodoListResult != Error::NO_ERROR)
     {
         return std::unexpected{ processTodoListResult };
     }
@@ -215,13 +133,7 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
 
 auto Rebase::getSquashMessage() const -> std::string
 {
-    auto squashMessage = rebaseFilesHelper.getMessageSqaushFile();
-    if (squashMessage.size() >= 2 && squashMessage[squashMessage.size() - 1] == '\n' && squashMessage[squashMessage.size() - 2] == '\n')
-    {
-        squashMessage.pop_back();
-        squashMessage.pop_back();
-    }
-    return squashMessage;
+    return rebaseFilesHelper.getMessageSqaushFile();
 }
 
 auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
@@ -368,7 +280,7 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     auto commits = Commits{ repo };
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
-    auto msgAndDesc = commitInfo.getMessage() + (commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription());
+    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
     rebaseFilesHelper.createCommitEditMsgFile(commitInfo.getMessage());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
 
@@ -388,7 +300,7 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
     auto commits = Commits{ repo };
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
-    auto msgAndDesc = commitInfo.getMessage() + (commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription());
+    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
 
     auto hashCommit = commits.getHeadCommitHash();
@@ -550,6 +462,81 @@ auto Rebase::continueEditImpl() const -> std::expected<std::string, Error>
     rebaseFilesHelper.removeAuthorScriptFile();
 
     return hashAfter;
+}
+
+auto Rebase::continueRewordImpl(const RebaseTodoCommand& lastDoneCommand, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+{
+    auto messageAndDesc = std::string{};
+
+    if (message.empty())
+    {
+        messageAndDesc = rebaseFilesHelper.getCommitEditMsgFile();
+    }
+    else
+    {
+        messageAndDesc = concatMessageAndDescription(message, description);
+    }
+
+    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
+    rebaseFilesHelper.appendRewrittenListFile(lastDoneCommand.hash, commitHash);
+
+    return commitHash;
+}
+
+auto Rebase::continueSquashImpl(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+{
+    auto messageAndDesc = std::string{};
+
+    if (message.empty())
+    {
+        messageAndDesc = rebaseFilesHelper.getMessageSqaushFile();
+    }
+    else
+    {
+        messageAndDesc = concatMessageAndDescription(message, description);
+    }
+
+    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
+    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
+    rebaseFilesHelper.appendRewrittenPendingFile(lastCommand->hash);
+    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(commitHash);
+    rebaseFilesHelper.removeCurrentFixupFile();
+    rebaseFilesHelper.removeMessageSqaushFile();
+
+    return commitHash;
+}
+
+auto Rebase::continueConflictImpl(const std::string_view stoppedSha) const -> std::expected<std::string, Error>
+{
+    auto commits = Commits{ repo };
+    auto _createCommit = _details::CreateCommit{ repo };
+    auto commitInfo = commits.getCommitInfo(stoppedSha);
+
+    auto envp = std::vector<std::string>{
+        "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
+        "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
+        "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
+    };
+
+    auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
+
+    auto hashAfter = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    rebaseFilesHelper.appendRewrittenListFile(stoppedSha, hashAfter);
+    rebaseFilesHelper.removeStoppedShaFile();
+
+    return hashAfter;
+}
+
+auto Rebase::concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string
+{
+    auto messageAndDesc = std::string{ message };
+    if (!description.empty())
+    {
+        messageAndDesc += "\n\n";
+        messageAndDesc += description;
+    }
+
+    return messageAndDesc;
 }
 
 } // namespace CppGit
