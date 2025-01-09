@@ -38,6 +38,7 @@ public:
 
     auto createAmendFile(const std::string_view hash) const -> void;
     auto getAmendFile() const -> std::string;
+    auto removeAmendFile() const -> void;
 
     auto createRebaseHeadFile(const std::string_view hash) const -> void;
     auto getRebaseHeadFile() const -> std::string;

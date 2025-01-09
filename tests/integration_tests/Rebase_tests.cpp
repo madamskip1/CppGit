@@ -1309,6 +1309,8 @@ TEST_F(RebaseTests, interactive_breakAfterEdit_noChanges)
                           + "break\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "author-script"));
     auto rewrittenListExpected = secondCommit + " " + commits.getHeadCommitHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
@@ -1359,11 +1361,13 @@ TEST_F(RebaseTests, interactive_breakAfterEdit_changes)
                           + "break\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "author-script"));
     auto rewrittenListExpected = secondCommit + " " + commits.getHeadCommitHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseTests, interactive_breakAfterConflictResolved)
+TEST_F(RebaseTests, interactive_breakAfterConflictResolvedDuringEdit)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -1420,6 +1424,8 @@ TEST_F(RebaseTests, interactive_breakAfterConflictResolved)
                           + "break\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "author-script"));
     auto rewrittenListExpected = thirdCommitHash + " " + commits.getHeadCommitHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }

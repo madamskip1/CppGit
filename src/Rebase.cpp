@@ -82,9 +82,9 @@ auto Rebase::continueRebase() const -> std::expected<std::string, Error>
 
         auto hashAfter = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
         rebaseFilesHelper.appendRewrittenListFile(stoppedHash, hashAfter);
+        rebaseFilesHelper.removeStoppedShaFile();
     }
 
-    rebaseFilesHelper.removeStoppedShaFile();
 
     auto processTodoListResult = processTodoList();
 
@@ -545,6 +545,9 @@ auto Rebase::continueEditImpl() const -> std::expected<std::string, Error>
     }
 
     rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
+    rebaseFilesHelper.removeAmendFile();
+    rebaseFilesHelper.removeStoppedShaFile();
+    rebaseFilesHelper.removeAuthorScriptFile();
 
     return hashAfter;
 }
