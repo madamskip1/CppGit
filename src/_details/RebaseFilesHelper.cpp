@@ -107,6 +107,12 @@ auto RebaseFilesHelper::getAmendFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "amend");
 }
 
+
+auto RebaseFilesHelper::removeAmendFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "amend");
+}
+
 auto RebaseFilesHelper::createRebaseHeadFile(const std::string_view hash) const -> void
 {
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "REBASE_HEAD", hash);
