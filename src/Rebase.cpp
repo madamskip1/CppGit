@@ -346,17 +346,11 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
 
     auto commits = Commits{ repo };
 
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
-
-    auto messageSquash = headCommitInfo.getMessage();
-    messageSquash += headCommitInfo.getDescription().empty() ? "" : "\n\n" + headCommitInfo.getDescription();
-    messageSquash += "\n\n" + commitInfo.getMessage();
-    messageSquash += commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription();
+    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
     rebaseFilesHelper.createMessageSquashFile(messageSquash);
-
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
-    auto newCommitHash = Commits{ repo }.amendCommit();
+
+    auto newCommitHash = commits.amendCommit();
     return Error::NO_ERROR;
 }
 
@@ -371,15 +365,8 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     }
     auto commits = Commits{ repo };
 
+    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
-
-    auto messageSquash = headCommitInfo.getMessage();
-    messageSquash += headCommitInfo.getDescription().empty() ? "" : "\n\n" + headCommitInfo.getDescription();
-    messageSquash += "\n\n" + commitInfo.getMessage();
-    messageSquash += commitInfo.getDescription().empty() ? "" : "\n\n" + commitInfo.getDescription();
     rebaseFilesHelper.createMessageSquashFile(messageSquash);
 
     if (!isNextCommandFixupOrSquash())
@@ -537,6 +524,21 @@ auto Rebase::concatMessageAndDescription(const std::string_view message, const s
     }
 
     return messageAndDesc;
+}
+
+auto Rebase::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string
+{
+    auto commits = Commits{ repo };
+
+    auto previousCommitInfo = commits.getCommitInfo(previousCommitHash);
+    auto currentCommitInfo = commits.getCommitInfo(currentCommitHash);
+
+    auto message = std::string{};
+    message += concatMessageAndDescription(previousCommitInfo.getMessage(), previousCommitInfo.getDescription());
+    message += "\n\n";
+    message += concatMessageAndDescription(currentCommitInfo.getMessage(), currentCommitInfo.getDescription());
+
+    return message;
 }
 
 } // namespace CppGit
