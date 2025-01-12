@@ -26,7 +26,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
 
             if (line.substr(0, 4) != "diff")
             {
-                throw std::runtime_error("Invalid diff format");
+                continue;
             }
             currentState = ParseState::HEADER;
             diffFile = DiffFile{};

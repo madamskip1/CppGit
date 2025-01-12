@@ -3,6 +3,7 @@
 #include "Index.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/IndexWorktree.hpp"
+#include "_details/Parser/DiffParser.hpp"
 
 #include <filesystem>
 
@@ -21,6 +22,19 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
     if (diff.empty())
     {
         return ApplyDiffResult::EMPTY_DIFF;
+    }
+
+    auto diffParser = DiffParser{};
+    auto diffFiles = diffParser.parse(diff);
+    auto index = repo.Index();
+    for (const auto& diffFile : diffFiles)
+    {
+        auto filePath = repo.getPath() / diffFile.fileA;
+        if (!std::filesystem::exists(filePath))
+        {
+            _details::FileUtility::createOrOverwriteFile(filePath, "");
+            index.add(diffFile.fileA);
+        }
     }
 
     _details::FileUtility::createOrOverwriteFile(patchDiffPath, diff);
