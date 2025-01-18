@@ -12,15 +12,13 @@ namespace CppGit {
 CherryPick::CherryPick(const Repository& repo)
     : repo(repo),
       _createCommit(repo),
-      _threeWayMerge(repo),
       _applyDiff(repo)
 {
 }
 
 auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>
 {
-    auto index = repo.Index();
-    if (index.isDirty())
+    if (repo.Index().isDirty())
     {
         return std::unexpected{ Error::DIRTY_WORKTREE };
     }
@@ -33,10 +31,7 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
     }
     if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
     {
-        auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
-        _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
         createCherryPickHeadFile(commitHash);
-
         return std::unexpected{ Error::CHERRY_PICK_CONFLICT };
     }
 
@@ -92,20 +87,6 @@ auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) con
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD", commitHash);
 }
 
-auto CherryPick::createConflictMsgFiles(const std::string_view message, const std::string_view description) const -> void
-{
-    _threeWayMerge.createMergeMsgFile(message, description);
-
-    auto commitEditMsgFile = std::ofstream(repo.getGitDirectoryPath() / "COMMIT_EDITMSG");
-    commitEditMsgFile << message;
-    if (!description.empty())
-    {
-        commitEditMsgFile << "\n\n"
-                          << description;
-    }
-    commitEditMsgFile.close();
-}
-
 auto CherryPick::getCherryPickHead() const -> std::string
 {
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
@@ -141,7 +122,6 @@ auto CppGit::CherryPick::processEmptyDiff(const std::string_view commitHash, Che
     case CherryPickEmptyCommitStrategy::STOP:
     default:
         createCherryPickHeadFile(commitHash);
-        // createConflictMsgFiles("", ""); // TODO
         return std::unexpected{ Error::CHERRY_PICK_EMPTY_COMMIT };
     }
 }

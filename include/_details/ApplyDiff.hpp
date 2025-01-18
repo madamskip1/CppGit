@@ -28,5 +28,6 @@ private:
     const std::filesystem::path patchDiffPath;
 
     auto getDiff(const std::string_view commitHash) const -> std::string;
+    auto createMissingFilesThatOccurInPatch(const std::string_view diff) const -> void;
 };
 } // namespace CppGit::_details
