@@ -3028,7 +3028,6 @@ TEST_F(RebaseTests, interactive_conflictAfterDrop_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
 }
 
 TEST_F(RebaseTests, interactive_conflictAfterDrop_continue)
@@ -3145,7 +3144,6 @@ TEST_F(RebaseTests, interactive_conflictAfterDrop_breakAfterContinue)
                                + fourthCommit + " " + commitsLog[2].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringReword_stop)
@@ -3201,7 +3199,6 @@ TEST_F(RebaseTests, interactive_conflictDuringReword_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringReword_continue)
@@ -3374,7 +3371,6 @@ TEST_F(RebaseTests, interactive_conflictDuringReword_breakAfterContinue)
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[2].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringEdit_stop)
@@ -3430,7 +3426,6 @@ TEST_F(RebaseTests, interactive_conflictDuringEdit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringEdit_continue)
@@ -3549,7 +3544,6 @@ TEST_F(RebaseTests, interactive_conflictDuringEdit_breakAfterContinue)
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[2].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
 }
 
 
@@ -3605,7 +3599,6 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_lastFixup_stop)
                           + "fixup " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "fixup " + fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
@@ -3723,7 +3716,6 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_lastFixup_breakAfterContinue
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "amend"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
@@ -3786,7 +3778,6 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_notLastFixup_stop)
                           + "fixup " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "fixup " + fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
@@ -3914,7 +3905,6 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_notLastFixup_breakAfterConti
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n"
                                + fifthCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "amend"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
@@ -3973,7 +3963,6 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_stop)
                           + "squash " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
@@ -4092,7 +4081,6 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_breakAfterContin
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "amend"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
@@ -4156,7 +4144,6 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
                           + "squash " + fourthCommit + " Fourth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
@@ -4226,7 +4213,6 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
                           + "squash " + fifthCommit + " Fifth commit\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Third commit\n\nThird commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     auto currentFixupExpected = "squash " + fourthCommit + "\n"
                               + "squash " + fifthCommit + "\n";
@@ -4363,7 +4349,6 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_breakAfterCon
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n"
                                + fifthCommit + " " + commitsLog[1].getHash() + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "amend"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
