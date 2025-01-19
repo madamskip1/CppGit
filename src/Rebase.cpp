@@ -351,15 +351,15 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
     {
         // TODO what to do when fixup has conflict
         rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
+        rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         return Error::REBASE_CONFLICT;
     }
-
-    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
     if (!isNextCommandFixupOrSquash())
     {
         if (rebaseFilesHelper.areAnySquashInCurrentFixup())
         {
+            rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
             rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
             return Error::REBASE_SQUASH;
         }
@@ -374,6 +374,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         }
     }
 
+    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
     auto commits = Commits{ repo };
 
     auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
