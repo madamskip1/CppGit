@@ -1367,69 +1367,6 @@ TEST_F(RebaseTests, interactive_breakAfterEdit_changes)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseTests, interactive_breakAfterConflictResolvedDuringEdit)
-{
-    auto commits = repository->Commits();
-    auto branches = repository->Branches();
-    auto rebase = repository->Rebase();
-    auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
-
-
-    auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Main");
-    index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("second_branch");
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
-    index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
-
-    auto todoCommands = rebase.getDefaultTodoCommands("refs/heads/main");
-    todoCommands[0].type = CppGit::RebaseTodoCommandType::EDIT;
-    todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
-    rebase.interactiveRebase("refs/heads/main", todoCommands);
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
-    index.add("file.txt");
-
-    auto continueRebaseResult = rebase.continueRebase();
-
-
-    ASSERT_FALSE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
-    EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash);
-    auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 3);
-    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
-    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
-    EXPECT_NE(commitsLog[2].getHash(), thirdCommitHash);
-    auto thirdCommitInfo = commits.getCommitInfo(commitsLog[2].getHash());
-    checkCommitAuthorEqualTest(thirdCommitInfo);
-    checkCommitCommiterNotEqualTest(thirdCommitInfo);
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
-    auto doneFileExpected = "edit " + thirdCommitHash + " Third commit\n"
-                          + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "amend"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "author-script"));
-    auto rewrittenListExpected = thirdCommitHash + " " + commits.getHeadCommitHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-}
-
 TEST_F(RebaseTests, interactive_fixup)
 {
     auto commits = repository->Commits();

@@ -206,6 +206,18 @@ auto RebaseFilesHelper::removeMessageSqaushFile() const -> void
     std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash");
 }
 
+
+auto RebaseFilesHelper::createMessageFile(const std::string_view message) const -> void
+{
+    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "message", message);
+}
+
+auto RebaseFilesHelper::getMessageFile() const -> std::string
+
+{
+    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "message");
+}
+
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
 {
     auto file = std::ofstream{ repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo" };
