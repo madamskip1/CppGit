@@ -55,11 +55,6 @@ private:
 
     auto isNextCommandFixupOrSquash() const -> bool;
 
-    auto continueEditImpl() const -> std::expected<std::string, Error>;
-    auto continueRewordImpl(const RebaseTodoCommand& lastDoneCommand, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>;
-    auto continueSquashImpl(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>;
-    auto continueConflictImpl(const std::string_view stoppedSha) const -> std::expected<std::string, Error>;
-
     auto concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string;
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
