@@ -3964,9 +3964,9 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_continue)
@@ -4011,7 +4011,8 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_continue)
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit\n\nFourth commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4046,7 +4047,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_breakAfterContin
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
-    todoCommands[2].type = CppGit::RebaseTodoCommandType::FIXUP;
+    todoCommands[2].type = CppGit::RebaseTodoCommandType::SQUASH;
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
     rebase.interactiveRebase(initialCommit, todoCommands); // now we are on conflict
@@ -4062,7 +4063,8 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_breakAfterContin
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit\n\nFourth commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4102,7 +4104,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
     auto secondCommit = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto thirdCommit = commits.createCommit("Third commit");
+    auto thirdCommit = commits.createCommit("Third commit", "Third commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
@@ -4127,6 +4129,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\n=======\nHello World 1, new!\n>>>>>>> " + fourthCommit + "\n");
@@ -4145,9 +4148,9 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLastSquash)
@@ -4195,7 +4198,8 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit\n\nFourth commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4220,7 +4224,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), rewrittenPendingExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFifth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd)
@@ -4269,7 +4273,8 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit\n\nFourth commit\n\nFifth commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit\n\nFifth commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4327,7 +4332,8 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_breakAfterCon
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit\n\nFourth commit\n\nFifth commit");
+    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit\n\nFifth commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
