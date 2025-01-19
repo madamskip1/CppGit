@@ -4218,8 +4218,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
-    auto currentFixupExpected = "squash " + fourthCommit + "\n"
-                              + "squash " + fifthCommit + "\n";
+    auto currentFixupExpected = "squash " + fifthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), currentFixupExpected);
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";

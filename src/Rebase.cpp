@@ -102,6 +102,11 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
             hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
         }
+
+        // We remove it because, for example, if a conflict occurs, we have already performed squash-like operations by naming commits.
+        // This ensures that if only fixups happen afterward (and no squash), the user won't be prompted to change the message.
+        rebaseFilesHelper.removeCurrentFixupFile();
+
         if (isNextCommandFixupOrSquash())
         {
             rebaseFilesHelper.appendRewrittenPendingFile(hashBefore);
