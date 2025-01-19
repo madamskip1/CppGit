@@ -57,6 +57,9 @@ public:
     auto getMessageSqaushFile() const -> std::string;
     auto removeMessageSqaushFile() const -> void;
 
+    auto createMessageFile(const std::string_view message) const -> void;
+    auto getMessageFile() const -> std::string;
+
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 
     auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;

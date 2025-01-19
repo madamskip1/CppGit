@@ -3,6 +3,8 @@
 #include "Index.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/IndexWorktree.hpp"
+#include "_details/Parser/DiffParser.hpp"
+#include "_details/ThreeWayMerge.hpp"
 
 #include <filesystem>
 
@@ -23,6 +25,8 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
         return ApplyDiffResult::EMPTY_DIFF;
     }
 
+    createMissingFilesThatOccurInPatch(diff);
+
     _details::FileUtility::createOrOverwriteFile(patchDiffPath, diff);
     auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", patchDiffPath);
     std::filesystem::remove(patchDiffPath);
@@ -37,9 +41,15 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
     }
     else
     {
-        if (applyOutput.return_code == 1 && applyOutput.stderr.find("conflicts") != std::string::npos)
+        if (applyOutput.return_code == 1 && applyOutput.stderr.contains("conflicts"))
         {
-            return ApplyDiffResult::CONFLICT;
+            auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails();
+            if (!unmergedFilesEntries.empty())
+            {
+                auto threeWayMerge = ThreeWayMerge{ repo };
+                threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+                return ApplyDiffResult::CONFLICT;
+            }
         }
 
         throw std::runtime_error("Failed to apply diff");
@@ -60,4 +70,20 @@ auto ApplyDiff::getDiff(const std::string_view commitHash) const -> std::string
     return std::move(output.stdout);
 }
 
+
+auto ApplyDiff::createMissingFilesThatOccurInPatch(const std::string_view diff) const -> void
+{
+    auto diffParser = DiffParser{};
+    auto diffFiles = diffParser.parse(diff);
+    auto index = repo.Index();
+    for (const auto& diffFile : diffFiles)
+    {
+        auto filePath = repo.getPath() / diffFile.fileA;
+        if (!std::filesystem::exists(filePath))
+        {
+            _details::FileUtility::createOrOverwriteFile(filePath, "");
+            index.add(diffFile.fileA);
+        }
+    }
+}
 } // namespace CppGit::_details
