@@ -102,11 +102,19 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
             hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
         }
-        rebaseFilesHelper.moveRewrittenPendingToRewrittenList(hashAfter);
-        rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
+        if (isNextCommandFixupOrSquash())
+        {
+            rebaseFilesHelper.appendRewrittenPendingFile(hashBefore);
+        }
+        else
+        {
+            rebaseFilesHelper.moveRewrittenPendingToRewrittenList(hashAfter);
+            rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
+            rebaseFilesHelper.removeCurrentFixupFile();
+        }
+
         rebaseFilesHelper.removeStoppedShaFile();
         rebaseFilesHelper.removeAuthorScriptFile();
-        rebaseFilesHelper.removeCurrentFixupFile();
         rebaseFilesHelper.removeMessageSqaushFile();
     }
 
@@ -389,12 +397,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 {
     rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
-    if (applyResult == _details::ApplyDiffResult::CONFLICT)
-    {
-        // TODO what to do when fixup has conflict
-        rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
-        return Error::REBASE_CONFLICT;
-    }
+
     auto commits = Commits{ repo };
 
     auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
@@ -402,9 +405,16 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     rebaseFilesHelper.createMessageSquashFile(messageSquash);
     rebaseFilesHelper.createMessageFile(messageSquash);
 
+    if (applyResult == _details::ApplyDiffResult::CONFLICT)
+    {
+        // TODO what to do when fixup has conflict
+        rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
+        return Error::REBASE_CONFLICT;
+    }
+
     if (!isNextCommandFixupOrSquash())
     {
-        rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
+        rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
         return Error::REBASE_SQUASH;
     }
 
