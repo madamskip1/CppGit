@@ -71,13 +71,13 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
     {
         auto commits = Commits{ repo };
         auto messageAndDesc = std::string{};
-        if (message.empty())
+        if (!message.empty())
         {
-            messageAndDesc = rebaseFilesHelper.getMessageFile();
+            messageAndDesc = concatMessageAndDescription(message, description);
         }
         else
         {
-            messageAndDesc = concatMessageAndDescription(message, description);
+            messageAndDesc = rebaseFilesHelper.getMessageFile();
         }
         auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
         auto hashAfter = std::string{};
@@ -97,11 +97,10 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         }
         else
         {
-            auto commitInfo = commits.getCommitInfo(hashBefore);
             auto authorScript = rebaseFilesHelper.getAuthorScriptFile(); // authorScript has struct like envp
             auto parent = commits.getHeadCommitHash();
 
-            hashAfter = _details::CreateCommit{ repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, authorScript);
+            hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
         }
         rebaseFilesHelper.moveRewrittenPendingToRewrittenList(hashAfter);
         rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
@@ -437,6 +436,7 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
 
         if (error == Error::CHERRY_PICK_CONFLICT)
         {
+            rebaseFilesHelper.createMessageFile(rebaseTodoCommand.message);
             return std::unexpected{ Error::REBASE_CONFLICT };
         }
         else
