@@ -120,7 +120,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
         rebaseFilesHelper.removeStoppedShaFile();
         rebaseFilesHelper.removeAuthorScriptFile();
-        rebaseFilesHelper.removeMessageSqaushFile();
+        rebaseFilesHelper.removeMessageFile();
     }
 
     if (auto processTodoListResult = processTodoList(); processTodoListResult != Error::NO_ERROR)
@@ -164,9 +164,9 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
     return rebaseCommands;
 }
 
-auto Rebase::getSquashMessage() const -> std::string
+auto Rebase::getStoppedMessage() const -> std::string
 {
-    return rebaseFilesHelper.getMessageSqaushFile();
+    return rebaseFilesHelper.getMessageFile();
 }
 
 auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
@@ -320,7 +320,7 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
     auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
-    rebaseFilesHelper.createCommitEditMsgFile(commitInfo.getMessage());
+    rebaseFilesHelper.createMessageFile(msgAndDesc);
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
@@ -342,7 +342,7 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 
     auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
-
+    rebaseFilesHelper.createMessageFile(msgAndDesc);
     auto hashCommit = commits.getHeadCommitHash();
     rebaseFilesHelper.createAmendFile(hashCommit);
     rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
@@ -388,13 +388,10 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
     }
 
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-    auto commits = Commits{ repo };
-
-    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
-    rebaseFilesHelper.createMessageSquashFile(messageSquash);
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-    auto newCommitHash = commits.amendCommit();
+    Commits{ repo }.amendCommit();
+
     return Error::NO_ERROR;
 }
 
@@ -407,7 +404,6 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-    rebaseFilesHelper.createMessageSquashFile(messageSquash);
     rebaseFilesHelper.createMessageFile(messageSquash);
 
     if (applyResult == _details::ApplyDiffResult::CONFLICT)

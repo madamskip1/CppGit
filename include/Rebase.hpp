@@ -32,7 +32,7 @@ public:
     auto isRebaseInProgress() const -> bool;
 
     auto getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>;
-    auto getSquashMessage() const -> std::string;
+    auto getStoppedMessage() const -> std::string;
 
 private:
     auto rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;

@@ -656,7 +656,6 @@ TEST_F(RebaseTests, interactive_reword_stop_fastForward)
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "COMMIT_EDITMSG"), "Second commit");
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
@@ -703,7 +702,6 @@ TEST_F(RebaseTests, interactive_reword_stop_noFastForward)
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "COMMIT_EDITMSG"), "Third commit");
     auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
     EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
@@ -1839,8 +1837,8 @@ TEST_F(RebaseTests, interactive_squash_stop)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    auto messageSquashExpected = "Second commit\n\nSecond commit description\n\nThird commit\n\nThird commit description";
-    EXPECT_EQ(rebase.getSquashMessage(), messageSquashExpected);
+    auto messageExpected = "Second commit\n\nSecond commit description\n\nThird commit\n\nThird commit description";
+    EXPECT_EQ(rebase.getStoppedMessage(), messageExpected);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -1862,7 +1860,7 @@ TEST_F(RebaseTests, interactive_squash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-pending"), rewrittenPendingExpected);
     auto currentFixupExpected = "squash " + thirdCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message-squash"), messageSquashExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
 TEST_F(RebaseTests, interactive_squash_twoInARow_stop)
@@ -1903,8 +1901,8 @@ TEST_F(RebaseTests, interactive_squash_twoInARow_stop)
     EXPECT_NE(commitsLog[1].getHash(), fourthCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commits.getHeadCommitHash(), commitsLog[1].getHash());
-    auto messageSquashExpected = "Second commit\n\nThird commit\n\nThird commit description\n\nFourth commit";
-    EXPECT_EQ(rebase.getSquashMessage(), messageSquashExpected);
+    auto messageExpected = "Second commit\n\nThird commit\n\nThird commit description\n\nFourth commit";
+    EXPECT_EQ(rebase.getStoppedMessage(), messageExpected);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -1928,7 +1926,7 @@ TEST_F(RebaseTests, interactive_squash_twoInARow_stop)
     auto currentFixupExpected = "squash " + thirdCommit + "\n"
                               + "squash " + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message-squash"), messageSquashExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
 TEST_F(RebaseTests, interactive_fixupSquash_stop)
@@ -1969,8 +1967,8 @@ TEST_F(RebaseTests, interactive_fixupSquash_stop)
     EXPECT_NE(commitsLog[1].getHash(), fourthCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commits.getHeadCommitHash(), commitsLog[1].getHash());
-    auto messageSquashExpected = "Second commit\n\nFourth commit";
-    EXPECT_EQ(rebase.getSquashMessage(), messageSquashExpected);
+    auto messageExpected = "Second commit\n\nFourth commit";
+    EXPECT_EQ(rebase.getStoppedMessage(), messageExpected);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -1994,7 +1992,7 @@ TEST_F(RebaseTests, interactive_fixupSquash_stop)
     auto currentFixupExpected = "fixup " + thirdCommit + "\n"
                               + "squash " + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message-squash"), messageSquashExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
 TEST_F(RebaseTests, interactive_squashFixup_stop)
@@ -2035,8 +2033,8 @@ TEST_F(RebaseTests, interactive_squashFixup_stop)
     EXPECT_NE(commitsLog[1].getHash(), fourthCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commits.getHeadCommitHash(), commitsLog[1].getHash());
-    auto messageSquashExpected = "Second commit\n\nThird commit\n\nThird commit description";
-    EXPECT_EQ(rebase.getSquashMessage(), messageSquashExpected);
+    auto messageExpected = "Second commit\n\nThird commit\n\nThird commit description";
+    EXPECT_EQ(rebase.getStoppedMessage(), messageExpected);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -2060,7 +2058,7 @@ TEST_F(RebaseTests, interactive_squashFixup_stop)
     auto currentFixupExpected = "squash " + thirdCommit + "\n"
                               + "fixup " + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message-squash"), messageSquashExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
 
@@ -2368,7 +2366,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_breakAfterSquash_withoutChangeMessage)
@@ -2432,7 +2430,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash_withoutChangeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_breakAfterSquash_twoInARow)
@@ -2499,7 +2497,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquash_twoInARow)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_breakAfterFixupSquash)
@@ -2566,7 +2564,7 @@ TEST_F(RebaseTests, interactive_breakAfterFixupSquash)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_breakAfterSquashFixup)
@@ -2633,7 +2631,7 @@ TEST_F(RebaseTests, interactive_breakAfterSquashFixup)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 
@@ -2700,7 +2698,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_squashAfterBreak_withoutChangeMessage)
@@ -2766,7 +2764,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak_withoutChangeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_squashAfterBreak_twoInARow)
@@ -2835,7 +2833,7 @@ TEST_F(RebaseTests, interactive_squashAfterBreak_twoInARow)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_fixupSquashAfterBreak)
@@ -2904,7 +2902,7 @@ TEST_F(RebaseTests, interactive_fixupSquashAfterBreak)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_squashFixupAfterBreak)
@@ -2973,7 +2971,7 @@ TEST_F(RebaseTests, interactive_squashFixupAfterBreak)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
 TEST_F(RebaseTests, interactive_conflictAfterDrop_stop)
@@ -3966,7 +3964,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_continue)
@@ -4086,7 +4084,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_breakAfterContin
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "amend"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "message-squash"));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "message"));
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
@@ -4150,7 +4148,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "amend"), commitsLog[1].getHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "current-fixup"), "squash " + fourthCommit + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLastSquash)
@@ -4223,7 +4221,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), rewrittenPendingExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFifth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFifth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd)
@@ -4492,7 +4490,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToSqua
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), rewrittenPendingExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message-squash"), "Third commit\n\nThird commit description\n\nFifth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFifth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToEnd)

@@ -66,16 +66,6 @@ auto RebaseFilesHelper::removeStoppedShaFile() const -> void
     std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
 }
 
-auto RebaseFilesHelper::createCommitEditMsgFile(const std::string_view message) const -> void
-{
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "COMMIT_EDITMSG", message);
-}
-
-auto RebaseFilesHelper::getCommitEditMsgFile() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "COMMIT_EDITMSG");
-}
-
 auto RebaseFilesHelper::createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void
 {
     auto authorScript = "GIT_AUTHOR_NAME=" + std::string{ authorName } + "\n"
@@ -191,22 +181,6 @@ auto RebaseFilesHelper::getCurrentFixupFile() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup");
 }
 
-auto RebaseFilesHelper::createMessageSquashFile(const std::string_view message) const -> void
-{
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash", message);
-}
-
-auto RebaseFilesHelper::getMessageSqaushFile() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash");
-}
-
-auto RebaseFilesHelper::removeMessageSqaushFile() const -> void
-{
-    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "message-squash");
-}
-
-
 auto RebaseFilesHelper::createMessageFile(const std::string_view message) const -> void
 {
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "message", message);
@@ -216,6 +190,12 @@ auto RebaseFilesHelper::getMessageFile() const -> std::string
 
 {
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "message");
+}
+
+
+auto RebaseFilesHelper::removeMessageFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "message");
 }
 
 auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void
