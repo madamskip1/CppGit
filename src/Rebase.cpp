@@ -216,12 +216,15 @@ auto Rebase::processTodoList() const -> Error
     auto todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     while (todoCommand)
     {
-        auto todoResult = processTodoCommand(todoCommand.value());
-        rebaseFilesHelper.appendDoneFile(todoCommand.value());
+        auto todoCommandValue = todoCommand.value();
+
+        rebaseFilesHelper.createRebaseHeadFile(todoCommandValue.hash);
+        auto todoResult = processTodoCommand(todoCommandValue);
+        rebaseFilesHelper.appendDoneFile(todoCommandValue);
 
         if (todoResult == Error::REBASE_CONFLICT)
         {
-            startConflict(todoCommand.value());
+            startConflict(todoCommandValue);
             return Error::REBASE_CONFLICT;
         }
 
@@ -230,6 +233,7 @@ auto Rebase::processTodoList() const -> Error
             return todoResult;
         }
 
+        rebaseFilesHelper.removeRebaseHeadFile();
         todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     }
 
@@ -278,7 +282,6 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto pickResult = pickCommit(rebaseTodoCommand);
 
     if (!pickResult.has_value())
@@ -301,7 +304,6 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, newCommitHash);
     }
 
-    rebaseFilesHelper.removeRebaseHeadFile();
     return Error::NO_ERROR;
 }
 
@@ -312,7 +314,6 @@ auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
 
 auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto pickResult = pickCommit(rebaseTodoCommand);
 
     if (!pickResult.has_value())
@@ -332,7 +333,6 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
 auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto pickResult = pickCommit(rebaseTodoCommand).error_or(Error::NO_ERROR);
 
     if (pickResult != Error::NO_ERROR)
@@ -358,7 +358,6 @@ auto Rebase::processDrop(const RebaseTodoCommand&) const -> Error
 
 auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
 
     if (applyResult == _details::ApplyDiffResult::CONFLICT)
@@ -398,7 +397,6 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
 
 auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
     auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
 
     auto commits = Commits{ repo };
