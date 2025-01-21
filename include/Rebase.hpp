@@ -1,9 +1,7 @@
 #pragma once
 
-#include "CherryPick.hpp"
-#include "Commit.hpp"
+#include "Commits.hpp"
 #include "Error.hpp"
-#include "Index.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
 #include "_details/ApplyDiff.hpp"
@@ -12,7 +10,6 @@
 #include "_details/Refs.hpp"
 
 #include <expected>
-#include <optional>
 
 namespace CppGit {
 
@@ -42,28 +39,27 @@ private:
     auto processTodoList() const -> Error;
     auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    auto processBreakCommand(const RebaseTodoCommand&) const -> Error;
+    static auto processBreakCommand(const RebaseTodoCommand&) -> Error;
     auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    static auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) -> Error;
     auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
     auto pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>;
 
-    auto startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
-
     auto isNextCommandFixupOrSquash() const -> bool;
 
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
+    auto removeAfterStepRebaseFiles() const -> void;
+
     const Repository& repo;
+    const Commits commits;
     const _details::Refs refs;
     const _details::IndexWorktree indexWorktree;
-    const CherryPick cherryPick;
     const _details::RebaseFilesHelper rebaseFilesHelper;
     const _details::ApplyDiff applyDiff;
-    const Index index;
 };
 
 } // namespace CppGit
