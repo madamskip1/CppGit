@@ -24,6 +24,7 @@ msg msg msg)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
     EXPECT_EQ(parsedCommit.getDescription(), "");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg msg msg");
 }
 
 TEST(CommitParserTests, parseCatfile_multiLineMsg)
@@ -48,6 +49,7 @@ msg2)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg\nmsg2");
     EXPECT_EQ(parsedCommit.getDescription(), "");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg\nmsg2");
 }
 
 TEST(CommitParserTests, parseCatfile_singleLineMsg_singleLineDesc)
@@ -73,6 +75,7 @@ desc)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg");
     EXPECT_EQ(parsedCommit.getDescription(), "desc");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg\n\ndesc");
 }
 
 TEST(CommitParserTests, parseCatfile_multiLineMsg_multiLineDesc)
@@ -100,6 +103,7 @@ desc2)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg\nmsg2");
     EXPECT_EQ(parsedCommit.getDescription(), "desc\ndesc2");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg\nmsg2\n\ndesc\ndesc2");
 }
 
 TEST(CommitParserTests, parseCatfile_withSingleParent)
@@ -126,6 +130,7 @@ msg msg msg)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
     EXPECT_EQ(parsedCommit.getDescription(), "");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg msg msg");
 }
 
 TEST(CommitParserTests, parseCatfile_withMultiParent)
@@ -154,6 +159,7 @@ msg msg msg)";
     EXPECT_EQ(parsedCommit.getCommitterDate(), "1722791195 +0200");
     EXPECT_EQ(parsedCommit.getMessage(), "msg msg msg");
     EXPECT_EQ(parsedCommit.getDescription(), "");
+    EXPECT_EQ(parsedCommit.getMessageAndDescription(), "msg msg msg");
 }
 
 
@@ -176,6 +182,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_fullCommit)
     EXPECT_EQ(commit.getCommitterDate(), "committerDate");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "description");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message\n\ndescription");
 }
 TEST(CommitParserTests, parseFormat_defaultFormat_fullCommit_multiLineDescription)
 {
@@ -196,6 +203,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_fullCommit_multiLineDescriptio
     EXPECT_EQ(commit.getCommitterDate(), "committerDate");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "description\nline1\nline2");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message\n\ndescription\nline1\nline2");
 }
 
 TEST(CommitParserTests, parseFormat_defaultFormat_fullCommit_singleParent)
@@ -216,6 +224,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_fullCommit_singleParent)
     EXPECT_EQ(commit.getCommitterDate(), "committerDate");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "description");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message\n\ndescription");
 }
 
 TEST(CommitParserTests, parseFormat_defaultFormat_noParents)
@@ -235,6 +244,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_noParents)
     EXPECT_EQ(commit.getCommitterDate(), "committerDate");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "description");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message\n\ndescription");
 }
 
 TEST(CommitParserTests, parseFormat_defaultFormat_noDescription)
@@ -256,6 +266,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_noDescription)
     EXPECT_EQ(commit.getCommitterDate(), "committerDate");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message");
 }
 
 TEST(CommitParserTests, parseFormat_defaultFormat_emptyCommit)
@@ -275,6 +286,7 @@ TEST(CommitParserTests, parseFormat_defaultFormat_emptyCommit)
     EXPECT_EQ(commit.getCommitterDate(), "");
     EXPECT_EQ(commit.getMessage(), "");
     EXPECT_EQ(commit.getDescription(), "");
+    EXPECT_EQ(commit.getMessageAndDescription(), "");
 }
 
 TEST(CommitParserTests, parseFormat_customFormat)
@@ -296,4 +308,5 @@ TEST(CommitParserTests, parseFormat_customFormat)
     EXPECT_EQ(commit.getCommitterDate(), "");
     EXPECT_EQ(commit.getMessage(), "message");
     EXPECT_EQ(commit.getDescription(), "");
+    EXPECT_EQ(commit.getMessageAndDescription(), "message");
 }

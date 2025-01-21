@@ -55,7 +55,6 @@ private:
 
     auto isNextCommandFixupOrSquash() const -> bool;
 
-    auto concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string;
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
     const Repository& repo;

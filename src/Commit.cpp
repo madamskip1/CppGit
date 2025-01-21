@@ -61,6 +61,16 @@ auto Commit::getDescription() const -> const std::string&
     return description;
 }
 
+auto Commit::getMessageAndDescription() const -> std::string
+{
+    if (description.empty())
+    {
+        return message;
+    }
+
+    return message + "\n\n" + description;
+}
+
 auto Commit::getTreeHash() const -> const std::string&
 {
     return treeHash;

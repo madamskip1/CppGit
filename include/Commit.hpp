@@ -39,6 +39,7 @@ public:
     auto getCommitterDate() const -> const std::string&;
     auto getMessage() const -> const std::string&;
     auto getDescription() const -> const std::string&;
+    auto getMessageAndDescription() const -> std::string;
     auto getTreeHash() const -> const std::string&;
 
 private:

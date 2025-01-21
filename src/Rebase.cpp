@@ -73,7 +73,11 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         auto messageAndDesc = std::string{};
         if (!message.empty())
         {
-            messageAndDesc = concatMessageAndDescription(message, description);
+            messageAndDesc = std::string{ message };
+            if (!description.empty())
+            {
+                messageAndDesc += "\n\n" + std::string{ description };
+            }
         }
         else
         {
@@ -319,8 +323,7 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     auto commits = Commits{ repo };
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
-    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
-    rebaseFilesHelper.createMessageFile(msgAndDesc);
+    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
@@ -339,10 +342,8 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 
     auto commits = Commits{ repo };
     auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-
-    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
     rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
-    rebaseFilesHelper.createMessageFile(msgAndDesc);
+    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
     auto hashCommit = commits.getHeadCommitHash();
     rebaseFilesHelper.createAmendFile(hashCommit);
     rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
@@ -402,8 +403,8 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     auto commits = Commits{ repo };
 
-    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
     rebaseFilesHelper.createMessageFile(messageSquash);
 
     if (applyResult == _details::ApplyDiffResult::CONFLICT)
@@ -473,18 +474,6 @@ auto Rebase::isNextCommandFixupOrSquash() const -> bool
     return peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH);
 }
 
-auto Rebase::concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string
-{
-    auto messageAndDesc = std::string{ message };
-    if (!description.empty())
-    {
-        messageAndDesc += "\n\n";
-        messageAndDesc += description;
-    }
-
-    return messageAndDesc;
-}
-
 auto Rebase::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string
 {
     auto commits = Commits{ repo };
@@ -492,12 +481,7 @@ auto Rebase::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_vi
     auto previousCommitInfo = commits.getCommitInfo(previousCommitHash);
     auto currentCommitInfo = commits.getCommitInfo(currentCommitHash);
 
-    auto message = std::string{};
-    message += concatMessageAndDescription(previousCommitInfo.getMessage(), previousCommitInfo.getDescription());
-    message += "\n\n";
-    message += concatMessageAndDescription(currentCommitInfo.getMessage(), currentCommitInfo.getDescription());
-
-    return message;
+    return previousCommitInfo.getMessageAndDescription() + "\n\n" + currentCommitInfo.getMessageAndDescription();
 }
 
 } // namespace CppGit
