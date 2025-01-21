@@ -65,9 +65,8 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
     auto continueResult = std::expected<std::string, Error>{};
 
-    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
 
-    if (lastCommand->type != RebaseTodoCommandType::BREAK)
+    if (auto lastCommand = rebaseFilesHelper.getLastDoneCommand(); lastCommand->type != RebaseTodoCommandType::BREAK)
     {
         auto commits = Commits{ repo };
         auto messageAndDesc = std::string{};
@@ -428,8 +427,9 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
 {
     auto commits = Commits{ repo };
     auto headCommitHash = commits.getHeadCommitHash();
+    auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
 
-    if (auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash); pickedCommitInfo.getParents()[0] == headCommitHash)
+    if (pickedCommitInfo.getParents()[0] == headCommitHash)
     {
         // can FastForward
         indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
@@ -447,7 +447,7 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
 
         if (error == Error::CHERRY_PICK_CONFLICT)
         {
-            rebaseFilesHelper.createMessageFile(rebaseTodoCommand.message);
+            rebaseFilesHelper.createMessageFile(pickedCommitInfo.getMessageAndDescription());
             return std::unexpected{ Error::REBASE_CONFLICT };
         }
         else

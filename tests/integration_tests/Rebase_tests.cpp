@@ -396,7 +396,7 @@ TEST_F(RebaseTests, rebaseConflict_resolveContinue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
+    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { initialCommitHash }, envp);
 
     rebase.rebase("main");
 
@@ -414,6 +414,7 @@ TEST_F(RebaseTests, rebaseConflict_resolveContinue)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[2].getDescription(), "Third commit description");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Resolved");
     auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
     checkCommitAuthorEqualTest(headCommitInfo);
@@ -3049,7 +3050,7 @@ TEST_F(RebaseTests, interactive_conflictAfterDrop_continue)
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -3070,8 +3071,10 @@ TEST_F(RebaseTests, interactive_conflictAfterDrop_continue)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
     EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
+    EXPECT_EQ(commitsLog[2].getDescription(), "Fourth commit description");
     EXPECT_NE(commitsLog[2].getHash(), fourthCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -3220,7 +3223,7 @@ TEST_F(RebaseTests, interactive_conflictDuringReword_continue)
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -3240,10 +3243,13 @@ TEST_F(RebaseTests, interactive_conflictDuringReword_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
     EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
+    EXPECT_EQ(commitsLog[2].getDescription(), "Fourth commit description");
     EXPECT_NE(commitsLog[2].getHash(), fourthCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -3447,7 +3453,7 @@ TEST_F(RebaseTests, interactive_conflictDuringEdit_continue)
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -3467,10 +3473,13 @@ TEST_F(RebaseTests, interactive_conflictDuringEdit_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
     EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
+    EXPECT_EQ(commitsLog[2].getDescription(), "Fourth commit description");
     EXPECT_NE(commitsLog[2].getHash(), fourthCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -3623,7 +3632,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_lastFixup_continue)
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -3643,8 +3652,10 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_lastFixup_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -3801,7 +3812,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_notLastFixup_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto fourthCommit = commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
     auto fifthCommit = commits.createCommit("Fifth commit");
@@ -3825,8 +3836,10 @@ TEST_F(RebaseTests, interactive_conflictDuringFixup_notLastFixup_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -3988,7 +4001,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_continue)
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -4008,9 +4021,10 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_lastSquash_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit\n\nFourth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4171,7 +4185,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto fourthCommit = commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
     auto fifthCommit = commits.createCommit("Fifth commit");
@@ -4195,9 +4209,10 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit\n\nFourth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4221,7 +4236,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToLas
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), rewrittenPendingExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFifth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFourth commit description\n\nFifth commit");
 }
 
 TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd)
@@ -4247,7 +4262,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd
     auto fourthCommit = commits.createCommit("Fourth commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    auto fifthCommit = commits.createCommit("Fifth commit");
+    auto fifthCommit = commits.createCommit("Fifth commit", "Fifth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -4271,7 +4286,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquash_notLastSquash_continueToEnd
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit\n\nFifth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fourth commit\n\nFifth commit\n\nFifth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4440,7 +4455,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToSqua
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto fourthCommit = commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
     auto fifthCommit = commits.createCommit("Fifth commit");
@@ -4464,6 +4479,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToSqua
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
@@ -4516,7 +4532,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToEnd)
     auto fourthCommit = commits.createCommit("Fourth commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    auto fifthCommit = commits.createCommit("Fifth commit");
+    auto fifthCommit = commits.createCommit("Fifth commit", "Fifth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -4538,9 +4554,10 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onFixup_continueToEnd)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Fifth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Fifth commit\n\nFifth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4718,7 +4735,7 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onSquash_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     index.add("file4.txt");
     index.add("file1.txt");
-    auto fifthCommit = commits.createCommit("Fifth commit");
+    auto fifthCommit = commits.createCommit("Fifth commit", "Fifth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -4739,9 +4756,10 @@ TEST_F(RebaseTests, interactive_conflictDuringFixupSquash_onSquash_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFifth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFifth commit\n\nFifth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
@@ -4911,12 +4929,12 @@ TEST_F(RebaseTests, interactive_conflictDuringSquashFixup_onFixup_continue)
     auto thirdCommit = commits.createCommit("Third commit", "Third commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file3.txt");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto fourthCommit = commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file1.txt");
     index.add("file4.txt");
-    auto fifthCommit = commits.createCommit("Fifth commit");
+    auto fifthCommit = commits.createCommit("Fifth commit", "Fifth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -4937,6 +4955,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquashFixup_onFixup_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
+    EXPECT_EQ(commitsLog[0].getDescription(), "");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "New msg");
     EXPECT_EQ(commitsLog[1].getDescription(), "New desc");
@@ -5105,10 +5124,10 @@ TEST_F(RebaseTests, interactive_conflictDuringSquashFixup_onSquash_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto fourthCommit = commits.createCommit("Fourth commit");
+    auto fourthCommit = commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    auto fifthCommit = commits.createCommit("Fifth commit");
+    auto fifthCommit = commits.createCommit("Fifth commit", "Fifth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -5131,7 +5150,7 @@ TEST_F(RebaseTests, interactive_conflictDuringSquashFixup_onSquash_continue)
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit");
+    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description\n\nFourth commit\n\nFourth commit description");
     EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
