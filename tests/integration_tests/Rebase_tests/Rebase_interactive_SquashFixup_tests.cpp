@@ -12,7 +12,7 @@ class RebaseInteractiveSquashFixupTest : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixup_stop)
+TEST_F(RebaseInteractiveSquashFixupTest, stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -78,7 +78,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixup_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixup_continue)
+TEST_F(RebaseInteractiveSquashFixupTest, continue_noChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -126,7 +126,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixup_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_breakAfterSquashFixup)
+TEST_F(RebaseInteractiveSquashFixupTest, breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -193,7 +193,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_breakAfterSquashFixup)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixupAfterBreak)
+TEST_F(RebaseInteractiveSquashFixupTest, squashFixupAfterBreak)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -262,7 +262,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_squashFixupAfterBreak)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onFixup_stop)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnFixup_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -329,7 +329,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_o
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), rewrittenPendingExpected);
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onFixup_continue)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnFixup_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -387,7 +387,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_o
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onFixup_breakAfterContinue)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnFixup_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -459,7 +459,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_o
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onSquash_stop)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnSquash_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -522,7 +522,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_o
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
 }
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onSquash_continue)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnSquash_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -580,7 +580,7 @@ TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_o
 }
 
 
-TEST_F(RebaseInteractiveSquashFixupTest, interactive_conflictDuringSquashFixup_onSquash_breakAfterContinue)
+TEST_F(RebaseInteractiveSquashFixupTest, conflictOnSquash_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

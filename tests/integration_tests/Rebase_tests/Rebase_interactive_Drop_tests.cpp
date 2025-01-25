@@ -12,7 +12,7 @@ class RebaseInteractiveDropTests : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveDropTests, interactive_drop)
+TEST_F(RebaseInteractiveDropTests, drop_commit)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -46,7 +46,7 @@ TEST_F(RebaseInteractiveDropTests, interactive_drop)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 
-TEST_F(RebaseInteractiveDropTests, interactive_conflictAfterDrop_stop)
+TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -100,7 +100,7 @@ TEST_F(RebaseInteractiveDropTests, interactive_conflictAfterDrop_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveDropTests, interactive_conflictAfterDrop_continue)
+TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -155,7 +155,7 @@ TEST_F(RebaseInteractiveDropTests, interactive_conflictAfterDrop_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveDropTests, interactive_conflictAfterDrop_breakAfterContinue)
+TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

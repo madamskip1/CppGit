@@ -13,7 +13,7 @@ class RebaseInteractiveEditTests : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveEditTests, interactive_edit_stop)
+TEST_F(RebaseInteractiveEditTests, stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -61,7 +61,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_edit_stop)
     EXPECT_EQ(authorScriptFileContent[2], envp[2]); // Author date
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_edit_continue_changes)
+TEST_F(RebaseInteractiveEditTests, continue_changes)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -105,7 +105,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_edit_continue_changes)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_edit_continue_noChanges)
+TEST_F(RebaseInteractiveEditTests, continue_noChanges)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -143,7 +143,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_edit_continue_noChanges)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello World!");
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_breakAfterEdit_noChanges)
+TEST_F(RebaseInteractiveEditTests, breakAfter_noChanges)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -192,7 +192,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_breakAfterEdit_noChanges)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_breakAfterEdit_changes)
+TEST_F(RebaseInteractiveEditTests, breakAfter_changes)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -244,7 +244,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_breakAfterEdit_changes)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_conflictDuringEdit_stop)
+TEST_F(RebaseInteractiveEditTests, conflict_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -299,7 +299,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_conflictDuringEdit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_conflictDuringEdit_continue)
+TEST_F(RebaseInteractiveEditTests, conflict_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -356,7 +356,7 @@ TEST_F(RebaseInteractiveEditTests, interactive_conflictDuringEdit_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveEditTests, interactive_conflictDuringEdit_breakAfterContinue)
+TEST_F(RebaseInteractiveEditTests, conflict_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

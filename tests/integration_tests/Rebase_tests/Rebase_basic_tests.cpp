@@ -57,7 +57,7 @@ TEST_F(RebaseBasicTests, simpleRebase)
     EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_firstCommit)
+TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -108,7 +108,7 @@ TEST_F(RebaseBasicTests, rebaseConflict_firstCommit)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_notFirstCommit)
+TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -160,7 +160,7 @@ TEST_F(RebaseBasicTests, rebaseConflict_notFirstCommit)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListFileExpected);
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_bothConflictAndNotFiles)
+TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -212,7 +212,7 @@ TEST_F(RebaseBasicTests, rebaseConflict_bothConflictAndNotFiles)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_conflictTwoFiles)
+TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -268,7 +268,7 @@ TEST_F(RebaseBasicTests, rebaseConflict_conflictTwoFiles)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_abort)
+TEST_F(RebaseBasicTests, conflict_abort)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -302,7 +302,7 @@ TEST_F(RebaseBasicTests, rebaseConflict_abort)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Second");
 }
 
-TEST_F(RebaseBasicTests, rebaseConflict_resolveContinue)
+TEST_F(RebaseBasicTests, conflict_continue)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();

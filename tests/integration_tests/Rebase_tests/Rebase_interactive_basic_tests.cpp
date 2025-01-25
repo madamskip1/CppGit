@@ -14,7 +14,7 @@ class RebaseInteractiveBasicTests : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveBasicTests, simpleTodoCommandsList)
+TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -50,7 +50,7 @@ TEST_F(RebaseInteractiveBasicTests, simpleTodoCommandsList)
     EXPECT_EQ(secondCommand.message, "Fourth commit");
 }
 
-TEST_F(RebaseInteractiveBasicTests, simpleTodoCommandsList_sameUpstream)
+TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -83,7 +83,7 @@ TEST_F(RebaseInteractiveBasicTests, simpleTodoCommandsList_sameUpstream)
 }
 
 
-TEST_F(RebaseInteractiveBasicTests, interactive_withAnotherUpstream)
+TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();
@@ -128,7 +128,7 @@ TEST_F(RebaseInteractiveBasicTests, interactive_withAnotherUpstream)
     EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveBasicTests, interactive_sameUpstream)
+TEST_F(RebaseInteractiveBasicTests, sameBranch)
 {
     auto commits = repository->Commits();
     auto branches = repository->Branches();

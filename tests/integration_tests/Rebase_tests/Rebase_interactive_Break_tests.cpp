@@ -14,7 +14,7 @@ class RebaseInteractiveBreakTests : public BaseRepositoryFixture
 };
 
 
-TEST_F(RebaseInteractiveBreakTests, interactive_break)
+TEST_F(RebaseInteractiveBreakTests, stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -59,7 +59,7 @@ TEST_F(RebaseInteractiveBreakTests, interactive_break)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
 }
 
-TEST_F(RebaseInteractiveBreakTests, interactive_break_continue)
+TEST_F(RebaseInteractiveBreakTests, continueRebase)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -103,7 +103,7 @@ TEST_F(RebaseInteractiveBreakTests, interactive_break_continue)
 }
 
 
-TEST_F(RebaseInteractiveBreakTests, interactive_breakAfterPick_fastForward)
+TEST_F(RebaseInteractiveBreakTests, fastForward_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -147,7 +147,7 @@ TEST_F(RebaseInteractiveBreakTests, interactive_breakAfterPick_fastForward)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
 }
 
-TEST_F(RebaseInteractiveBreakTests, interactive_breakAfterPick_noFastForward)
+TEST_F(RebaseInteractiveBreakTests, noFastForward_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

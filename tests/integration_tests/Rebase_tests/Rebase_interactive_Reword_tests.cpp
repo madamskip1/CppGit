@@ -14,7 +14,7 @@ class RebaseInteractiveRewordTests : public BaseRepositoryFixture
 };
 
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_stop_fastForward)
+TEST_F(RebaseInteractiveRewordTests, fastForward_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -58,7 +58,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_stop_fastForward)
     EXPECT_EQ(authorScriptFileContent[2], envp[2]); // Author date
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_stop_noFastForward)
+TEST_F(RebaseInteractiveRewordTests, noFastForward_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -105,7 +105,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_stop_noFastForward)
     EXPECT_EQ(authorScriptFileContent[2], envp[2]); // Author date
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_fastForward_changeMessage)
+TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -146,7 +146,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_fastForward_cha
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_fastForward_noChangeMessage)
+TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -186,7 +186,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_fastForward_noC
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_noFastForward_changeMessage)
+TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -229,7 +229,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_noFastForward_c
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_noFastForward_noChangeMessage)
+TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -272,7 +272,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_noFastForward_n
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_withDescription)
+TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -312,7 +312,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_withDescription
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_oldMessage)
+TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -351,7 +351,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_reword_continue_oldMessage)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_breakAfterReword)
+TEST_F(RebaseInteractiveRewordTests, breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -398,7 +398,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_breakAfterReword)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_stop)
+TEST_F(RebaseInteractiveRewordTests, conflict_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -453,7 +453,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_continue)
+TEST_F(RebaseInteractiveRewordTests, conflict_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -510,7 +510,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_continueWitChangeMsg)
+TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -564,7 +564,7 @@ TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_continueWi
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveRewordTests, interactive_conflictDuringReword_breakAfterContinue)
+TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

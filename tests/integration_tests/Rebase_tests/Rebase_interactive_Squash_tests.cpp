@@ -12,7 +12,7 @@ class RebaseInteractiveSquashTest : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squash_stop)
+TEST_F(RebaseInteractiveSquashTest, stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -73,7 +73,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squash_twoInARow_stop)
+TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -139,7 +139,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squash_twoInARow_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "message"), messageExpected);
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squash_continue)
+TEST_F(RebaseInteractiveSquashTest, continue_changeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -188,7 +188,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squash_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squash_continue_withoutChangeMessage)
+TEST_F(RebaseInteractiveSquashTest, continue_noChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -237,7 +237,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squash_continue_withoutChangeMes
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squash_twoInARow_continue)
+TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -285,7 +285,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squash_twoInARow_continue)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash)
+TEST_F(RebaseInteractiveSquashTest, breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -349,7 +349,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash_withoutChangeMessage)
+TEST_F(RebaseInteractiveSquashTest, breakAfter_noChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -413,7 +413,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash_withoutChangeMe
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash_twoInARow)
+TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -480,7 +480,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_breakAfterSquash_twoInARow)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak)
+TEST_F(RebaseInteractiveSquashTest, squashAfterBreak)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -546,7 +546,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak_withoutChangeMessage)
+TEST_F(RebaseInteractiveSquashTest, breakAfter_withoutChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -612,7 +612,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak_withoutChangeMe
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak_twoInARow)
+TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_afterBreak)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -681,7 +681,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_squashAfterBreak_twoInARow)
     EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_stop)
+TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -739,7 +739,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_continue)
+TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -793,7 +793,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_breakAfterContinue)
+TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -860,7 +860,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_lastSquash_
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "message"));
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSquash_stop)
+TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -924,7 +924,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSqua
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSquash_continueToLastSquash)
+TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToLastSquash)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -998,7 +998,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSqua
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "message"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFourth commit description\n\nFifth commit");
 }
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSquash_continueToEnd)
+TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToEnd)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -1057,7 +1057,7 @@ TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSqua
 }
 
 
-TEST_F(RebaseInteractiveSquashTest, interactive_conflictDuringSquash_notLastSquash_breakAfterContinue)
+TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();

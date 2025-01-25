@@ -14,7 +14,7 @@ class RebaseInteractiveFixupTest : public BaseRepositoryFixture
 {
 };
 
-TEST_F(RebaseInteractiveFixupTest, interactive_fixup)
+TEST_F(RebaseInteractiveFixupTest, fixupCommit)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -59,7 +59,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_fixup)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_fixup_twoInARow)
+TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -110,7 +110,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_fixup_twoInARow)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file4.txt"), "Hello World 4!");
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_breakAfterFixup_noRewrittenCommitsBefore)
+TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -179,7 +179,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_breakAfterFixup_noRewrittenCommit
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_breakAfterFixup_rewrittenCommitsBefore)
+TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -249,7 +249,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_breakAfterFixup_rewrittenCommitsB
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_noRewrittenCommitsBefore)
+TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_noRewrritenListsBefore)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -307,7 +307,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_noRewrittenCommit
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_rewrittenCommitsBefore)
+TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_rewrritenListsBefore)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -383,7 +383,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_rewrittenCommitsB
     EXPECT_EQ(splittedRewrittenList[2], fifthCommit + " " + commitsLog[2].getHash());
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_pickAsFirstRewritten)
+TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_pickAsFirstRewrriten)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -451,7 +451,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_fixupAfterBreak_pickAsFirstRewrit
     EXPECT_EQ(splittedRewrittenList[1], fourthCommit + " " + commitsLog[1].getHash());
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_stop)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -508,7 +508,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_sto
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_continue)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -562,7 +562,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_con
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_breakAfterContinue)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -627,7 +627,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_lastFixup_bre
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"));
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_notLastFixup_stop)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -689,7 +689,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_notLastFixup_
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "rebase-merge" / "rewritten-pending"), thirdCommit + "\n");
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_notLastFixup_continue)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -747,7 +747,7 @@ TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_notLastFixup_
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
 }
 
-TEST_F(RebaseInteractiveFixupTest, interactive_conflictDuringFixup_notLastFixup_breakAfterContinue)
+TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
