@@ -203,22 +203,24 @@ auto Rebase::processTodoList() const -> Error
     {
         auto todoCommandValue = todoCommand.value();
 
-        rebaseFilesHelper.createRebaseHeadFile(todoCommandValue.hash);
+        if (todoCommandValue.type != RebaseTodoCommandType::BREAK)
+        {
+            rebaseFilesHelper.createRebaseHeadFile(todoCommandValue.hash);
+        }
+
         auto todoResult = processTodoCommand(todoCommandValue);
         rebaseFilesHelper.appendDoneFile(todoCommandValue);
 
-        if (todoResult == Error::REBASE_CONFLICT)
-        {
-            rebaseFilesHelper.createStoppedShaFile(todoCommandValue.hash);
-            return Error::REBASE_CONFLICT;
-        }
-
         if (todoResult != Error::NO_ERROR)
         {
+            if (todoResult == Error::REBASE_CONFLICT)
+            {
+                rebaseFilesHelper.createStoppedShaFile(todoCommandValue.hash);
+            }
+
             return todoResult;
         }
 
-        rebaseFilesHelper.removeRebaseHeadFile();
         removeAfterStepRebaseFiles();
 
         todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
@@ -459,6 +461,7 @@ auto Rebase::removeAfterStepRebaseFiles() const -> void
 {
     rebaseFilesHelper.removeAuthorScriptFile();
     rebaseFilesHelper.removeMessageFile();
+    rebaseFilesHelper.removeRebaseHeadFile();
 }
 
 } // namespace CppGit

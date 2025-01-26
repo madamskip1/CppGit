@@ -18,7 +18,7 @@ auto RebaseFilesHelper::createRebaseDir() const -> void
 auto RebaseFilesHelper::deleteAllRebaseFiles() const -> void
 {
     std::filesystem::remove_all(repo.getGitDirectoryPath() / "rebase-merge");
-    // TODO: other files in .git dir related to rebase
+    removeRebaseHeadFile();
 }
 
 auto RebaseFilesHelper::createOntoFile(const std::string_view onto) const -> void
