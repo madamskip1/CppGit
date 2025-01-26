@@ -1,15 +1,15 @@
 
-#include "../BaseRepositoryFixture.hpp"
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
+#include "RebaseFixture.hpp"
 #include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
 
-class RebaseBasicTests : public BaseRepositoryFixture
+class RebaseBasicTests : public RebaseFixture
 {
 };
 
@@ -54,7 +54,7 @@ TEST_F(RebaseBasicTests, simpleRebase)
     checkCommitCommiterNotEqualTest(headCommitInfo);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
 }
 
 TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
@@ -95,17 +95,16 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + thirdCommitHash + "\n");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
     auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), todoFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), thirdCommitHash);
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
 }
 
 TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
@@ -146,18 +145,17 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + fourthCommit + "\n");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n"
                           + "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
     auto rewrittenListFileExpected = thirdCommitHash + " " + commitsLog[2].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListFileExpected);
 }
 
 TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
@@ -200,16 +198,15 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\nHello, World! Modified 1!\n=======\nHello, World! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World 2!");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), thirdCommitHash);
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
 }
 
 TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
@@ -256,16 +253,15 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\nHello, World! Modified 1!\n=======\nHello, World! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World 2! Modified 1!\n=======\nHello, World 2! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "onto"), secondCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "head-name"), "refs/heads/second_branch");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/second_branch");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), thirdCommitHash);
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "rewritten-list"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), thirdCommitHash);
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
 }
 
 TEST_F(RebaseBasicTests, conflict_abort)
@@ -293,8 +289,7 @@ TEST_F(RebaseBasicTests, conflict_abort)
 
 
     ASSERT_TRUE(rebaseAbortResult == CppGit::Error::NO_ERROR);
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     auto currentBranch = branches.getCurrentBranch();
     EXPECT_EQ(currentBranch, "refs/heads/second_branch");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), thirdCommitHash);
@@ -333,8 +328,7 @@ TEST_F(RebaseBasicTests, conflict_continue)
 
 
     ASSERT_TRUE(rebaseContinueResult.has_value());
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");

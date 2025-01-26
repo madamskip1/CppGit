@@ -1,14 +1,14 @@
-#include "../BaseRepositoryFixture.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
+#include "RebaseFixture.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
 
-class RebaseInteractiveDropTests : public BaseRepositoryFixture
+class RebaseInteractiveDropTests : public RebaseFixture
 {
 };
 
@@ -88,16 +88,15 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "stopped-sha"), fourthCommit);
+    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
@@ -152,7 +151,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "rebase-merge"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict)
@@ -204,16 +203,15 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    auto gitRebaseDir = repositoryPath / ".git" / "rebase-merge";
-    EXPECT_TRUE(std::filesystem::exists(gitRebaseDir));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "git-rebase-todo"), "");
+    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "pick " + fourthCommit + " Fourth commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[2].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(gitRebaseDir / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(gitRebaseDir / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
 }

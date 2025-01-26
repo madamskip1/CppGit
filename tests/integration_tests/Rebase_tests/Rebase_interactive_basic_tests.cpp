@@ -1,16 +1,16 @@
 
-#include "../BaseRepositoryFixture.hpp"
 #include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
 #include "Rebase.hpp"
+#include "RebaseFixture.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "_details/FileUtility.hpp"
 
 #include <gtest/gtest.h>
 
-class RebaseInteractiveBasicTests : public BaseRepositoryFixture
+class RebaseInteractiveBasicTests : public RebaseFixture
 {
 };
 
@@ -125,7 +125,7 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     checkCommitCommiterNotEqualTest(headCommitInfo);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
 }
 
 TEST_F(RebaseInteractiveBasicTests, sameBranch)
@@ -168,5 +168,5 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     EXPECT_EQ(commitsLog[3].getHash(), fourthCommitHash);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
-    EXPECT_FALSE(std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
 }
