@@ -639,7 +639,7 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
-    auto thirdCommithash = commits.createCommit("Third commit");
+    auto thirdCommitHash = commits.createCommit("Third commit");
     merge.mergeNoFastForward("main", "Merge commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
@@ -655,7 +655,7 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
     auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash.value());
     EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
     ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
-    EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommithash);
+    EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommitHash);
     EXPECT_EQ(mergeCommitInfo.getParents()[1], secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Merge resolved.");
 }

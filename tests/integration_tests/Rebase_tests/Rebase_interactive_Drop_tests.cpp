@@ -21,28 +21,28 @@ TEST_F(RebaseInteractiveDropTests, drop_commit)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommit }, envp);
-    auto thirdCommit = commits.createCommit("Third commit");
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
 
 
     ASSERT_TRUE(rebaseResult.has_value());
-    EXPECT_NE(rebaseResult.value(), thirdCommit);
-    EXPECT_NE(commits.getHeadCommitHash(), thirdCommit);
+    EXPECT_NE(rebaseResult.value(), thirdCommitHash);
+    EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash);
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
+    EXPECT_NE(commitsLog[1].getHash(), thirdCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
@@ -58,24 +58,24 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto thirdCommit = commits.createCommit("Third commit", "Third commit description");
+    auto thirdCommitHash = commits.createCommit("Third commit", "Third commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
+    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommitHash }, envp);
 
-    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommit, todoCommands);
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
 
 
     ASSERT_FALSE(rebaseResult.has_value());
@@ -83,31 +83,31 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
+    EXPECT_NE(commitsLog[1].getHash(), thirdCommitHash);
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\n=======\nHello World 1, new!\n>>>>>>> " + fourthCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\n=======\nHello World 1, new!\n>>>>>>> " + fourthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
-                          + "pick " + thirdCommit + " Third commit\n"
-                          + "pick " + fourthCommit + " Fourth commit\n";
+    auto doneFileExpected = "drop " + secondCommitHash + " Second commit\n"
+                          + "pick " + thirdCommitHash + " Third commit\n"
+                          + "pick " + fourthCommitHash + " Fourth commit\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Fourth commit\n\nFourth commit description");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommit + " " + commitsLog[1].getHash() + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
@@ -119,24 +119,24 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto thirdCommit = commits.createCommit("Third commit", "Third commit description");
+    auto thirdCommitHash = commits.createCommit("Third commit", "Third commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommit }, envp);
+    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommitHash }, envp);
 
-    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
 
-    rebase.interactiveRebase(initialCommit, todoCommands);
+    rebase.interactiveRebase(initialCommitHash, todoCommands);
 
     // Resolve conflict
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
@@ -150,13 +150,13 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
+    EXPECT_NE(commitsLog[1].getHash(), thirdCommitHash);
     EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
     EXPECT_EQ(commitsLog[2].getDescription(), "Fourth commit description");
-    EXPECT_NE(commitsLog[2].getHash(), fourthCommit);
+    EXPECT_NE(commitsLog[2].getHash(), fourthCommitHash);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -175,25 +175,25 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto thirdCommit = commits.createCommit("Third commit", "Third commit description");
+    auto thirdCommitHash = commits.createCommit("Third commit", "Third commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommit = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommit }, envp);
+    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
-    auto todoCommands = rebase.getDefaultTodoCommands(initialCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommit, todoCommands); // now we are on conflict
+    rebase.interactiveRebase(initialCommitHash, todoCommands); // now we are on conflict
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
 
@@ -205,22 +205,22 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_NE(commitsLog[1].getHash(), thirdCommit);
+    EXPECT_NE(commitsLog[1].getHash(), thirdCommitHash);
     EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
-    EXPECT_NE(commitsLog[2].getHash(), fourthCommit);
+    EXPECT_NE(commitsLog[2].getHash(), fourthCommitHash);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
-                          + "pick " + thirdCommit + " Third commit\n"
-                          + "pick " + fourthCommit + " Fourth commit\n"
+    auto doneFileExpected = "drop " + secondCommitHash + " Second commit\n"
+                          + "pick " + thirdCommitHash + " Third commit\n"
+                          + "pick " + fourthCommitHash + " Fourth commit\n"
                           + "break\n";
-    auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
-                               + fourthCommit + " " + commitsLog[2].getHash() + "\n";
+    auto rewrittenListExpected = thirdCommitHash + " " + commitsLog[1].getHash() + "\n"
+                               + fourthCommitHash + " " + commitsLog[2].getHash() + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -232,7 +232,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }

@@ -24,11 +24,11 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
@@ -59,17 +59,17 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
-    auto todoCommands = rebase.getDefaultTodoCommands(secondCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
 
     ASSERT_EQ(todoCommands.size(), 2);
     const auto& firstCommand = todoCommands[0];
@@ -93,18 +93,18 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
     auto todoCommands = rebase.getDefaultTodoCommands("main");
 
@@ -115,9 +115,9 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
     auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
@@ -140,19 +140,19 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommit = commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommit = commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
     auto envp = prepareCommitAuthorCommiterTestEnvp();
     auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
 
-    auto todoCommands = rebase.getDefaultTodoCommands(secondCommit);
+    auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
 
-    auto rebaseResult = rebase.interactiveRebase(secondCommit, todoCommands);
+    auto rebaseResult = rebase.interactiveRebase(secondCommitHash, todoCommands);
 
 
     ASSERT_TRUE(rebaseResult.has_value());
@@ -161,9 +161,9 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
     EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommit);
+    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getHash(), secondCommit);
+    EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[2].getHash(), thirdCommitHash);
     EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
