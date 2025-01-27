@@ -54,22 +54,22 @@ TEST_F(RebaseInteractiveSquashTest, stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file3.txt"));
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "squash " + thirdCommit + " Third commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
-    auto rewrittenPendingExpected = secondCommit + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), rewrittenPendingExpected);
-    auto currentFixupExpected = "squash " + thirdCommit + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), messageExpected);
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), secondCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), "squash " + thirdCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommit + " Fourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Second commit\n\nSecond commit description\n\nThird commit\n\nThird commit description");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), secondCommit + "\n");
 }
 
 TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_stop)
@@ -117,24 +117,28 @@ TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     auto rewrittenPendingExpected = secondCommit + "\n"
                                   + thirdCommit + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), rewrittenPendingExpected);
     auto currentFixupExpected = "squash " + thirdCommit + "\n"
                               + "squash " + fourthCommit + "\n";
+
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), currentFixupExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), messageExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Second commit\n\nThird commit\n\nThird commit description\n\nFourth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), rewrittenPendingExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, continue_changeMessage)
@@ -184,6 +188,7 @@ TEST_F(RebaseInteractiveSquashTest, continue_changeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 TEST_F(RebaseInteractiveSquashTest, continue_noChangeMessage)
@@ -233,6 +238,7 @@ TEST_F(RebaseInteractiveSquashTest, continue_noChangeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_continue)
@@ -281,6 +287,7 @@ TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_continue)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 TEST_F(RebaseInteractiveSquashTest, breakAfter)
@@ -327,23 +334,25 @@ TEST_F(RebaseInteractiveSquashTest, breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file3.txt"));
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto rewrittenListExpected = secondCommit + " " + commitsLog[1].getHash() + "\n"
                                + thirdCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommit + " Fourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, breakAfter_noChangeMessage)
@@ -390,23 +399,25 @@ TEST_F(RebaseInteractiveSquashTest, breakAfter_noChangeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file3.txt"));
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto rewrittenListExpected = secondCommit + " " + commitsLog[1].getHash() + "\n"
                                + thirdCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommit + " Fourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_breakAfter)
@@ -455,27 +466,30 @@ TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto rewrittenListExpected = secondCommit + " " + commitsLog[1].getHash() + "\n"
                                + thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
-TEST_F(RebaseInteractiveSquashTest, squashAfterBreak)
+TEST_F(RebaseInteractiveSquashTest, squashAfterBreak_breakAfter_changeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -521,26 +535,27 @@ TEST_F(RebaseInteractiveSquashTest, squashAfterBreak)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file3.txt"));
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "break\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
-    auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommit + " Fourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommit + " " + commitsLog[1].getHash() + "\n");
 }
 
-TEST_F(RebaseInteractiveSquashTest, breakAfter_withoutChangeMessage)
+TEST_F(RebaseInteractiveSquashTest, squashAfterBreak_breakAfter_noChangeMessage)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -586,26 +601,27 @@ TEST_F(RebaseInteractiveSquashTest, breakAfter_withoutChangeMessage)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file3.txt"));
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    auto todoFileExpected = "pick " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "break\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
-    auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommit + " Fourth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommit + " " + commitsLog[1].getHash() + "\n");
 }
 
-TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_afterBreak)
+TEST_F(RebaseInteractiveSquashTest, twoSquashInARowAfterBreak_breakAfter)
 {
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
@@ -653,24 +669,27 @@ TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_afterBreak)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommit);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     auto doneFileExpected = "pick " + secondCommit + " Second commit\n"
                           + "break\n"
                           + "squash " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_stop)
@@ -716,18 +735,23 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commitsLog[1].getHash());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), "squash " + fourthCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_continue)
@@ -782,6 +806,7 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_continue)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_breakAfter)
@@ -833,21 +858,26 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnLastSquash_breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
 
-    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_stop)
@@ -898,19 +928,23 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file4.txt"));
 
-    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
-    auto todoFileExpected = "squash " + fifthCommit + " Fifth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), todoFileExpected);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commitsLog[1].getHash());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), "squash " + fourthCommit + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "squash " + fifthCommit + " Fifth commit\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Third commit\n\nThird commit description\n\nFourth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommit);
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToLastSquash)
@@ -968,22 +1002,26 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToLastSquash
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file4.txt"), "Hello World 4!");
 
-    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n"
                           + "squash " + fifthCommit + " Fifth commit\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commitsLog[1].getHash());
-    auto currentFixupExpected = "squash " + fifthCommit + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), currentFixupExpected);
     auto rewrittenPendingExpected = thirdCommit + "\n"
                                   + fourthCommit + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), rewrittenPendingExpected);
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fifthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixup"), "squash " + fifthCommit + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Third commit\n\nThird commit description\n\nFourth commit\n\nFourth commit description\n\nFifth commit");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), rewrittenPendingExpected);
 }
 
 TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToEnd)
@@ -1042,6 +1080,7 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToEnd)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file4.txt"), "Hello World 4!");
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 
@@ -1100,20 +1139,26 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file3.txt"), "Hello World 3!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file4.txt"), "Hello World 4!");
 
-    EXPECT_TRUE(std::filesystem::exists(rebaseDirPath));
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     auto doneFileExpected = "drop " + secondCommit + " Second commit\n"
                           + "pick " + thirdCommit + " Third commit\n"
                           + "squash " + fourthCommit + " Fourth commit\n"
                           + "squash " + fifthCommit + " Fifth commit\n"
                           + "break\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     auto rewrittenListExpected = thirdCommit + " " + commitsLog[1].getHash() + "\n"
                                + fourthCommit + " " + commitsLog[1].getHash() + "\n"
                                + fifthCommit + " " + commitsLog[1].getHash() + "\n";
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommit);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
 }

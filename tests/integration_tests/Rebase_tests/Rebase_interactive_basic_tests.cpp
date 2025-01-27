@@ -125,7 +125,9 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     checkCommitCommiterNotEqualTest(headCommitInfo);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
 
 TEST_F(RebaseInteractiveBasicTests, sameBranch)
@@ -168,5 +170,7 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     EXPECT_EQ(commitsLog[3].getHash(), fourthCommitHash);
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
+
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
 }
