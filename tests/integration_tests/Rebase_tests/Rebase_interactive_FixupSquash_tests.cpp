@@ -286,8 +286,7 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnFixup_stop)
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { secondCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", secondCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");

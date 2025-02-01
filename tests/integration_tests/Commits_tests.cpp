@@ -4,7 +4,6 @@
 #include "CommitsHistory.hpp"
 #include "Diff.hpp"
 #include "Index.hpp"
-#include "_details/CreateCommit.hpp"
 #include "_details/FileUtility.hpp"
 
 #include <filesystem>
@@ -134,8 +133,7 @@ TEST_F(CommitsTests, amendCommit_noChanges)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    const auto& initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+    const auto& initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto amendedCommitHash = commits.amendCommit();
 
 
@@ -162,8 +160,8 @@ TEST_F(CommitsTests, amendCommit_changeMsg)
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    const auto& initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+
+    const auto& initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto amendedCommitHash = commits.amendCommit("Amended commit");
 
 
@@ -189,8 +187,8 @@ TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    const auto& initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", "Intial description", {}, envp);
+
+    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit", "Initial description");
     auto amendedCommitHash = commits.amendCommit("Amended commit");
 
 
@@ -215,8 +213,8 @@ TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    const auto& initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+
+    const auto& initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto amendedCommitHash = commits.amendCommit("Amended commit", "Amended description");
 
 
@@ -244,8 +242,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
     auto initialCommitHash = commits.createCommit("Initial commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
@@ -289,8 +286,7 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
     auto initialCommitHash = commits.createCommit("Initial commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
     auto amendedCommitHash = commits.amendCommit();
 
 

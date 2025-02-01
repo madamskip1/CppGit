@@ -26,8 +26,7 @@ TEST_F(CherryPickTests, simpleCherryPick)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
 
@@ -49,8 +48,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     auto cherryPick = repository->CherryPick();
 
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
 
 
@@ -72,8 +70,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
     auto cherryPick = repository->CherryPick();
 
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::DROP);
@@ -90,8 +87,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     auto cherryPick = repository->CherryPick();
 
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
@@ -110,8 +106,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
     auto cherryPick = repository->CherryPick();
 
 
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto initialCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Initial commit", {}, envp);
+    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
 
     cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
@@ -153,8 +148,7 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
@@ -185,8 +179,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
@@ -221,8 +214,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2");

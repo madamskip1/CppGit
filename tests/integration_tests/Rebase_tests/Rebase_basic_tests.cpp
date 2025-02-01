@@ -33,8 +33,7 @@ TEST_F(RebaseBasicTests, simpleRebase)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
 
@@ -78,8 +77,7 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { initialCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second2");
     index.add("file.txt");
     auto fourthCommitHash = commits.createCommit("Fourth commit");
@@ -134,8 +132,7 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
     auto thirdCommitHash = commits.createCommit("Third commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
 
@@ -194,8 +191,7 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
     index.add("file1.txt");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
 
@@ -255,8 +251,7 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 2!");
     index.add("file1.txt");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { initialCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
 
@@ -343,8 +338,7 @@ TEST_F(RebaseBasicTests, conflict_continue)
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { initialCommitHash }, envp);
+    createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
 
     rebase.rebase("main");
 

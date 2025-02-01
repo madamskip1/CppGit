@@ -26,8 +26,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupCommit)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
@@ -74,8 +73,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
@@ -128,8 +126,7 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1!");
     index.add("file1.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
@@ -211,8 +208,7 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
     auto fourthCommitHash = commits.createCommit("Fourth commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fifthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fifth commit", { fourthCommitHash }, envp);
+    auto fifthCommitHash = createCommitWithTestAuthorCommiter("Fifth commit", fourthCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -280,8 +276,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { secondCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[1].type = CppGit::RebaseTodoCommandType::FIXUP;
@@ -348,8 +343,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     auto fourthCommitHash = commits.createCommit("Fourth commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fifthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fifth commit", { fourthCommitHash }, envp);
+    auto fifthCommitHash = createCommitWithTestAuthorCommiter("Fifth commit", fourthCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -426,8 +420,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     auto thirdCommitHash = commits.createCommit("Third commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file3.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -499,8 +492,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { secondCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", secondCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
@@ -567,8 +559,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", "Fourth commit description", { thirdCommitHash }, envp);
+    createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -622,8 +613,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -688,8 +678,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
     index.add("file2.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", "Third commit description", { secondCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", secondCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, new!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");

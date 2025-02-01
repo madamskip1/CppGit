@@ -26,8 +26,7 @@ TEST_F(RebaseInteractiveBreakTests, stop)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
@@ -125,8 +124,7 @@ TEST_F(RebaseInteractiveBreakTests, fastForward_breakAfter)
 
 
     auto initialCommitHash = commits.createCommit("Initial commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto secondCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Second commit", { initialCommitHash }, envp);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
@@ -176,8 +174,7 @@ TEST_F(RebaseInteractiveBreakTests, noFastForward_breakAfter)
 
     auto initialCommitHash = commits.createCommit("Initial commit");
     auto secondCommitHash = commits.createCommit("Second commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto thirdCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Third commit", { secondCommitHash }, envp);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;

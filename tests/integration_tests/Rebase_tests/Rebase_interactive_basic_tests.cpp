@@ -34,8 +34,7 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands("main");
 
@@ -66,8 +65,7 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
 
@@ -103,8 +101,7 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands("main");
 
@@ -147,8 +144,7 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto envp = prepareCommitAuthorCommiterTestEnvp();
-    auto fourthCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit("Fourth commit", { thirdCommitHash }, envp);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
 
