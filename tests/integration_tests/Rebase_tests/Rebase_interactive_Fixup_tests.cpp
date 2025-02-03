@@ -258,12 +258,15 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     todoCommands.emplace(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands); // stopped at first break
-    auto rebaseResult = rebase.continueRebase();
-
-
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+
+    auto continueRebaseResult = rebase.continueRebase();
+
+
+    ASSERT_FALSE(continueRebaseResult.has_value());
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
     EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -325,12 +328,15 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     todoCommands.emplace(todoCommands.begin() + 3, CppGit::RebaseTodoCommandType::BREAK);
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands); // stopped at first break
-    auto rebaseResult = rebase.continueRebase();
-
-
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+
+    auto continueRebaseResult = rebase.continueRebase();
+
+
+    ASSERT_FALSE(continueRebaseResult.has_value());
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
     EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -401,12 +407,15 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     todoCommands.emplace(todoCommands.begin() + 2, CppGit::RebaseTodoCommandType::BREAK);
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands); // stopped at first break
-    auto rebaseResult = rebase.continueRebase();
-
-
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+
+    auto rebaseContinueResult = rebase.continueRebase();
+
+
+    ASSERT_FALSE(rebaseContinueResult.has_value());
+    EXPECT_EQ(rebaseContinueResult.error(), CppGit::Error::REBASE_BREAK);
     EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -537,12 +546,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
     todoCommands[2].type = CppGit::RebaseTodoCommandType::FIXUP;
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands);
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
 
-    // Resolve conflict
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
-
     auto continueRebaseResult = rebase.continueRebase();
 
 
@@ -591,11 +600,13 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
     todoCommands[2].type = CppGit::RebaseTodoCommandType::FIXUP;
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands); // now we are on conflict
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
-
-    auto continueRebaseResult = rebase.continueRebase(); // now we are on break
+    auto continueRebaseResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());
@@ -732,12 +743,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
     todoCommands[2].type = CppGit::RebaseTodoCommandType::FIXUP;
     todoCommands[3].type = CppGit::RebaseTodoCommandType::FIXUP;
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands);
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
 
-    // Resolve conflict
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
-
     auto continueRebaseResult = rebase.continueRebase();
 
 
@@ -791,11 +802,13 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue
     todoCommands[3].type = CppGit::RebaseTodoCommandType::FIXUP;
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    rebase.interactiveRebase(initialCommitHash, todoCommands); // now we are on conflict
+    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
-
-    auto continueRebaseResult = rebase.continueRebase(); // now we are on break
+    auto continueRebaseResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());

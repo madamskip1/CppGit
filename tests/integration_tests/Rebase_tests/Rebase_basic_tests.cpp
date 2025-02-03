@@ -301,7 +301,9 @@ TEST_F(RebaseBasicTests, conflict_abort)
     index.add("file.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
 
-    rebase.rebase("main");
+    auto rebaseResult = rebase.rebase("main");
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
 
     auto rebaseAbortResult = rebase.abortRebase();
 
@@ -337,13 +339,14 @@ TEST_F(RebaseBasicTests, conflict_continue)
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
-    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
+    createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
 
-    rebase.rebase("main");
+    auto rebaseResult = rebase.rebase("main");
+    ASSERT_FALSE(rebaseResult.has_value());
+    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
     index.add("file.txt");
-
     auto rebaseContinueResult = rebase.continueRebase();
 
 

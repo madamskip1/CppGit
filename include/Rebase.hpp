@@ -19,11 +19,11 @@ class Rebase
 public:
     explicit Rebase(const Repository& repo);
 
-    auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
-    auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
+    [[nodiscard]] auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
+    [[nodiscard]] auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
 
-    auto continueRebase() const -> std::expected<std::string, Error>;
-    auto continueRebase(const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
+    [[nodiscard]] auto continueRebase() const -> std::expected<std::string, Error>;
+    [[nodiscard]] auto continueRebase(const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
 
     auto abortRebase() const -> Error;
     auto isRebaseInProgress() const -> bool;
