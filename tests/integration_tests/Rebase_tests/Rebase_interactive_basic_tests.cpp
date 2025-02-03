@@ -100,7 +100,7 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
     createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands("main");
@@ -109,17 +109,18 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
 
     ASSERT_TRUE(rebaseResult.has_value());
     EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
+
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
-    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
     EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
+    EXPECT_EQ(commitsLog[2].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(commitsLog[2]);
     EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
-    auto headCommitInfo = commits.getCommitInfo(commits.getHeadCommitHash());
-    checkCommitAuthorEqualTest(headCommitInfo);
-    checkCommitCommiterNotEqualTest(headCommitInfo);
+    EXPECT_EQ(commitsLog[3].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(commitsLog[3]);
+
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 
@@ -144,7 +145,7 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = commits.createCommit("Third commit");
-    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
+    auto fourthCommitHash = commits.createCommit("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
 
@@ -153,17 +154,15 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
 
     ASSERT_TRUE(rebaseResult.has_value());
     EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/main");
+
     // We did just FasForward for all commits
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
-    EXPECT_EQ(commitsLog[0].getMessage(), "Initial commit");
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
     EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
-    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[2].getHash(), thirdCommitHash);
-    EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
     EXPECT_EQ(commitsLog[3].getHash(), fourthCommitHash);
+
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
 

@@ -30,6 +30,7 @@ target_link_libraries(${PROJECT_NAME}_integration_tests
     PRIVATE
         ${PROJECT_NAME}::${PROJECT_NAME}
         GTest::gtest_main
+        GTest::gmock
 )
 
 add_test(
