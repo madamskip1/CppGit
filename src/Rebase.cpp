@@ -1,7 +1,6 @@
 #include "Rebase.hpp"
 
 #include "Branches.hpp"
-#include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
@@ -408,10 +407,11 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
 auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>
 {
-    auto headCommitHash = commits.getHeadCommitHash();
     auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    const auto& pickedParent = pickedCommitInfo.getParents()[0];
+    auto headCommitHash = commits.getHeadCommitHash();
 
-    if (pickedCommitInfo.getParents()[0] == headCommitHash)
+    if (headCommitHash == pickedParent)
     {
         // can FastForward
         indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
@@ -421,20 +421,26 @@ auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std
         return rebaseTodoCommand.hash;
     }
 
-    auto cherryPickResult = CherryPick{ repo }.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP);
+    auto applyDiffResult = applyDiff.apply(rebaseTodoCommand.hash);
 
-    if (!cherryPickResult.has_value())
+    if (applyDiffResult == _details::ApplyDiffResult::EMPTY_DIFF || applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
-        if (cherryPickResult.error() == Error::CHERRY_PICK_CONFLICT)
-        {
-            rebaseFilesHelper.createMessageFile(pickedCommitInfo.getMessageAndDescription());
-            return std::unexpected{ Error::REBASE_CONFLICT };
-        }
-
-        throw std::runtime_error("Unexpected error during cherry-pick");
+        // TODO: what to do with empty commits?
     }
 
-    return cherryPickResult.value();
+    if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
+    {
+        rebaseFilesHelper.createMessageFile(pickedCommitInfo.getMessageAndDescription());
+        return std::unexpected{ Error::REBASE_CONFLICT };
+    }
+
+    auto envp = std::vector<std::string>{
+        "GIT_AUTHOR_NAME=" + pickedCommitInfo.getAuthor().name,
+        "GIT_AUTHOR_EMAIL=" + pickedCommitInfo.getAuthor().email,
+        "GIT_AUTHOR_DATE=" + pickedCommitInfo.getAuthorDate()
+    };
+
+    return _details::CreateCommit{ repo }.createCommit(pickedCommitInfo.getMessage(), pickedCommitInfo.getDescription(), { headCommitHash }, envp);
 }
 
 auto Rebase::isNextCommandFixupOrSquash() const -> bool
