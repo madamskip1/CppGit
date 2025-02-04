@@ -25,10 +25,6 @@ public:
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
     auto getOrigHead() const -> std::string;
 
-    auto createStoppedShaFile(const std::string_view hash) const -> void;
-    auto getStoppedShaFile() const -> std::string;
-    auto removeStoppedShaFile() const -> void;
-
     auto createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void;
     auto getAuthorScriptFile() const -> std::vector<std::string>;
     auto removeAuthorScriptFile() const -> void;

@@ -50,22 +50,6 @@ auto RebaseFilesHelper::getOrigHead() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "orig-head");
 }
 
-auto RebaseFilesHelper::createStoppedShaFile(const std::string_view hash) const -> void
-{
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha", hash);
-}
-
-auto RebaseFilesHelper::getStoppedShaFile() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
-}
-
-
-auto RebaseFilesHelper::removeStoppedShaFile() const -> void
-{
-    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "stopped-sha");
-}
-
 auto RebaseFilesHelper::createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void
 {
     auto authorScript = "GIT_AUTHOR_NAME=" + std::string{ authorName } + "\n"

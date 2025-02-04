@@ -48,7 +48,6 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_stop)
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
@@ -98,7 +97,6 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_stop)
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
@@ -423,7 +421,6 @@ TEST_F(RebaseInteractiveRewordTests, breakAfter)
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
@@ -491,7 +488,6 @@ TEST_F(RebaseInteractiveRewordTests, conflict_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "stopped-sha"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, conflict_continue)
@@ -682,7 +678,6 @@ TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixup"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "message"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
-    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "stopped-sha"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");

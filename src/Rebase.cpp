@@ -113,7 +113,6 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
         }
 
-        rebaseFilesHelper.removeStoppedShaFile();
         removeAfterStepRebaseFiles();
     }
 
@@ -213,11 +212,6 @@ auto Rebase::processTodoList() const -> Error
 
         if (todoResult != Error::NO_ERROR)
         {
-            if (todoResult == Error::REBASE_CONFLICT)
-            {
-                rebaseFilesHelper.createStoppedShaFile(todoCommandValue.hash);
-            }
-
             return todoResult;
         }
 
@@ -332,7 +326,6 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
     rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
-    rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
 
     return Error::REBASE_EDIT;
 }
