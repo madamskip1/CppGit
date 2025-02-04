@@ -133,13 +133,13 @@ auto RebaseFilesHelper::moveRewrittenPendingToRewrittenList(const std::string_vi
 
 auto RebaseFilesHelper::appendCurrentFixupFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void
 {
-    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup", rebaseTodoCommand.type.toStringFull(), " ", rebaseTodoCommand.hash, "\n");
+    _details::FileUtility::createOrAppendFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups", rebaseTodoCommand.type.toStringFull(), " ", rebaseTodoCommand.hash, "\n");
 }
 
 
 auto RebaseFilesHelper::areAnySquashInCurrentFixup() const -> bool
 {
-    auto currentFixup = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup");
+    auto currentFixup = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups");
     auto splittedCurrentFixup = Parser::splitToStringViewsVector(currentFixup, '\n');
 
     for (const auto& line : splittedCurrentFixup)
@@ -153,17 +153,11 @@ auto RebaseFilesHelper::areAnySquashInCurrentFixup() const -> bool
     return false;
 }
 
-
 auto RebaseFilesHelper::removeCurrentFixupFile() const -> void
 {
-    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup");
+    std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups");
 }
 
-
-auto RebaseFilesHelper::getCurrentFixupFile() const -> std::string
-{
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixup");
-}
 
 auto RebaseFilesHelper::createMessageFile(const std::string_view message) const -> void
 {

@@ -44,7 +44,6 @@ public:
     auto appendCurrentFixupFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
     auto areAnySquashInCurrentFixup() const -> bool;
     auto removeCurrentFixupFile() const -> void;
-    auto getCurrentFixupFile() const -> std::string;
 
     auto createMessageFile(const std::string_view message) const -> void;
     auto getMessageFile() const -> std::string;
