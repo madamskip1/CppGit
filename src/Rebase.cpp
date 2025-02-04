@@ -304,15 +304,15 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 {
     auto pickResult = pickCommit(rebaseTodoCommand);
 
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
+    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+
     if (!pickResult.has_value())
     {
         return pickResult.error();
     }
 
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-
-    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
-    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
     return Error::REBASE_REWORD;
@@ -322,13 +322,14 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 {
     auto pickResult = pickCommit(rebaseTodoCommand).error_or(Error::NO_ERROR);
 
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+
     if (pickResult != Error::NO_ERROR)
     {
         return pickResult;
     }
 
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
     rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
     rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
@@ -352,6 +353,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.createAmendFile(headCommitHash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
+        rebaseFilesHelper.createAuthorScriptFile(headCommitInfo.getAuthor().name, headCommitInfo.getAuthor().email, headCommitInfo.getAuthorDate());
 
         return Error::REBASE_CONFLICT;
     }
