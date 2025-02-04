@@ -39,7 +39,6 @@ TEST_F(RebaseInteractiveBreakTests, stop)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);

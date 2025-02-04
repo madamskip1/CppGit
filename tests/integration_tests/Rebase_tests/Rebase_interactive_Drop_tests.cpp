@@ -1,3 +1,4 @@
+#include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
@@ -115,6 +116,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -145,7 +147,11 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
 
 
     ASSERT_TRUE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.value(), commits.getHeadCommitHash());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);

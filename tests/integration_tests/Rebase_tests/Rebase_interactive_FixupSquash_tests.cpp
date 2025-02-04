@@ -1,3 +1,4 @@
+#include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
@@ -82,6 +83,7 @@ TEST_F(RebaseInteractiveFixupSquashTests, continueRebase)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -109,7 +111,11 @@ TEST_F(RebaseInteractiveFixupSquashTests, continueRebase)
 
 
     ASSERT_TRUE(squashContinueResult.has_value());
-    EXPECT_EQ(squashContinueResult.value(), commits.getHeadCommitHash());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), squashContinueResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), squashContinueResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -235,6 +241,7 @@ TEST_F(RebaseInteractiveFixupSquashTests, fixupSquashAfterBreak_breakAfter)
 
     ASSERT_FALSE(squashContinueResult.has_value());
     EXPECT_EQ(squashContinueResult.error(), CppGit::Error::REBASE_BREAK);
+
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
@@ -417,6 +424,7 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnFixup_continueToEnd)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -456,7 +464,11 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnFixup_continueToEnd)
 
 
     ASSERT_TRUE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.value(), commits.getHeadCommitHash());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -636,6 +648,7 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnSquash_continue)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -672,7 +685,11 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnSquash_continue)
 
 
     ASSERT_TRUE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.value(), commits.getHeadCommitHash());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);

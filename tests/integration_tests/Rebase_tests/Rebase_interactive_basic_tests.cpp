@@ -108,6 +108,11 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     auto rebaseResult = rebase.interactiveRebase("main", todoCommands);
 
     ASSERT_TRUE(rebaseResult.has_value());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
     EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -153,9 +158,12 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
 
 
     ASSERT_TRUE(rebaseResult.has_value());
-    EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/main");
 
-    // We did just FasForward for all commits
+    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
+
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);

@@ -39,7 +39,11 @@ TEST_F(RebaseBasicTests, simpleRebase)
 
 
     ASSERT_TRUE(rebaseResult.has_value());
-    EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
+
+    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
@@ -308,11 +312,12 @@ TEST_F(RebaseBasicTests, conflict_abort)
     auto rebaseAbortResult = rebase.abortRebase();
 
 
-    ASSERT_TRUE(rebaseAbortResult == CppGit::Error::NO_ERROR);
+    ASSERT_EQ(rebaseAbortResult, CppGit::Error::NO_ERROR);
+
+    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
     auto currentBranch = branches.getCurrentBranch();
     EXPECT_EQ(currentBranch, "refs/heads/second_branch");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), thirdCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Second");
 
@@ -351,6 +356,11 @@ TEST_F(RebaseBasicTests, conflict_continue)
 
 
     ASSERT_TRUE(rebaseContinueResult.has_value());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), rebaseContinueResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseContinueResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);

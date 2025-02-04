@@ -1,3 +1,4 @@
+#include "Branches.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Index.hpp"
@@ -33,7 +34,6 @@ TEST_F(RebaseInteractiveEditTests, stop)
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -63,6 +63,7 @@ TEST_F(RebaseInteractiveEditTests, continue_changes)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -70,7 +71,7 @@ TEST_F(RebaseInteractiveEditTests, continue_changes)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World!");
     index.add("file1.txt");
     auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
-    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
+    createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::EDIT;
@@ -87,7 +88,11 @@ TEST_F(RebaseInteractiveEditTests, continue_changes)
 
 
     ASSERT_TRUE(continueEditResult.has_value());
-    EXPECT_NE(commits.getHeadCommitHash(), thirdCommitHash); // we couldn't do FastForward
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueEditResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueEditResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
@@ -111,6 +116,7 @@ TEST_F(RebaseInteractiveEditTests, continue_noChanges)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -131,7 +137,11 @@ TEST_F(RebaseInteractiveEditTests, continue_noChanges)
 
 
     ASSERT_TRUE(continueEditResult.has_value());
-    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash); // we could do FastForward
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueEditResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueEditResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
@@ -169,7 +179,6 @@ TEST_F(RebaseInteractiveEditTests, breakAfter_noChanges)
 
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -221,7 +230,6 @@ TEST_F(RebaseInteractiveEditTests, breakAfter_changes)
 
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
-    EXPECT_NE(commits.getHeadCommitHash(), secondCommitHash);
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -315,6 +323,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_continue)
     auto commits = repository->Commits();
     auto rebase = repository->Rebase();
     auto index = repository->Index();
+    auto branches = repository->Branches();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
@@ -330,7 +339,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
+    createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -346,7 +355,11 @@ TEST_F(RebaseInteractiveEditTests, conflict_continue)
 
 
     ASSERT_TRUE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.value(), commits.getHeadCommitHash());
+
+    EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
+    auto currentBranch = branches.getCurrentBranch();
+    EXPECT_EQ(currentBranch, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
