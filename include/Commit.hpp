@@ -7,8 +7,12 @@
 
 namespace CppGit {
 
+class Commits;
+
 class Commit
 {
+    friend Commits;
+
 public:
     Commit(const std::string& hash,
            const std::vector<std::string>& parents,
@@ -39,6 +43,7 @@ public:
     auto getCommitterDate() const -> const std::string&;
     auto getMessage() const -> const std::string&;
     auto getDescription() const -> const std::string&;
+    auto getMessageAndDescription() const -> std::string;
     auto getTreeHash() const -> const std::string&;
 
 private:

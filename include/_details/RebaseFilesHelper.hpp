@@ -25,13 +25,6 @@ public:
     auto createOrigHeadFiles(const std::string_view origHead) const -> void;
     auto getOrigHead() const -> std::string;
 
-    auto createStoppedShaFile(const std::string_view hash) const -> void;
-    auto getStoppedShaFile() const -> std::string;
-    auto removeStoppedShaFile() const -> void;
-
-    auto createCommitEditMsgFile(const std::string_view message) const -> void;
-    auto getCommitEditMsgFile() const -> std::string;
-
     auto createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void;
     auto getAuthorScriptFile() const -> std::vector<std::string>;
     auto removeAuthorScriptFile() const -> void;
@@ -51,14 +44,10 @@ public:
     auto appendCurrentFixupFile(const RebaseTodoCommand& rebaseTodoCommand) const -> void;
     auto areAnySquashInCurrentFixup() const -> bool;
     auto removeCurrentFixupFile() const -> void;
-    auto getCurrentFixupFile() const -> std::string;
-
-    auto createMessageSquashFile(const std::string_view message) const -> void;
-    auto getMessageSqaushFile() const -> std::string;
-    auto removeMessageSqaushFile() const -> void;
 
     auto createMessageFile(const std::string_view message) const -> void;
     auto getMessageFile() const -> std::string;
+    auto removeMessageFile() const -> void;
 
     auto generateTodoFile(const std::vector<RebaseTodoCommand>& rebaseTodoCommands) const -> void;
 

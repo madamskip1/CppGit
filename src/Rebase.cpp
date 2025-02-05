@@ -1,26 +1,23 @@
 #include "Rebase.hpp"
 
 #include "Branches.hpp"
-#include "CherryPick.hpp"
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
+#include "Index.hpp"
 #include "_details/CreateCommit.hpp"
-#include "_details/FileUtility.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <vector>
 
 namespace CppGit {
 Rebase::Rebase(const Repository& repo)
-    : repo(repo),
-      refs(repo),
-      indexWorktree(repo),
-      cherryPick(repo),
-      rebaseFilesHelper(repo),
-      applyDiff(repo),
-      index(repo)
+    : repo{ repo },
+      commits{ repo },
+      refs{ repo },
+      indexWorktree{ repo },
+      rebaseFilesHelper{ repo },
+      applyDiff{ repo }
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
@@ -33,7 +30,6 @@ auto Rebase::interactiveRebase(const std::string_view upstream, const std::vecto
 {
     return rebaseImpl(upstream, rebaseCommands);
 }
-
 
 auto Rebase::abortRebase() const -> Error
 {
@@ -63,17 +59,16 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
     }
 
-    auto continueResult = std::expected<std::string, Error>{};
-
-    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
-
-    if (lastCommand->type != RebaseTodoCommandType::BREAK)
+    if (auto lastCommand = rebaseFilesHelper.getLastDoneCommand(); lastCommand->type != RebaseTodoCommandType::BREAK)
     {
-        auto commits = Commits{ repo };
         auto messageAndDesc = std::string{};
         if (!message.empty())
         {
-            messageAndDesc = concatMessageAndDescription(message, description);
+            messageAndDesc = std::string{ message };
+            if (!description.empty())
+            {
+                messageAndDesc += "\n\n" + std::string{ description };
+            }
         }
         else
         {
@@ -84,13 +79,13 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
         if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
         {
-            if (lastCommand->type != RebaseTodoCommandType::EDIT || index.areAnyStagedFiles())
+            if (lastCommand->type == RebaseTodoCommandType::EDIT && !Index{ repo }.areAnyStagedFiles())
             {
-                hashAfter = commits.amendCommit(messageAndDesc);
+                hashAfter = commits.getHeadCommitHash();
             }
             else
             {
-                hashAfter = commits.getHeadCommitHash();
+                hashAfter = commits.amendCommit(messageAndDesc);
             }
 
             rebaseFilesHelper.removeAmendFile();
@@ -101,6 +96,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             auto parent = commits.getHeadCommitHash();
 
             hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
+            rebaseFilesHelper.removeAuthorScriptFile();
         }
 
         // We remove it because, for example, if a conflict occurs, we have already performed squash-like operations by naming commits.
@@ -115,12 +111,10 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         {
             rebaseFilesHelper.moveRewrittenPendingToRewrittenList(hashAfter);
             rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
-            rebaseFilesHelper.removeCurrentFixupFile();
         }
 
-        rebaseFilesHelper.removeStoppedShaFile();
-        rebaseFilesHelper.removeAuthorScriptFile();
-        rebaseFilesHelper.removeMessageSqaushFile();
+        rebaseFilesHelper.removeMessageFile();
+        rebaseFilesHelper.removeRebaseHeadFile();
     }
 
     if (auto processTodoListResult = processTodoList(); processTodoListResult != Error::NO_ERROR)
@@ -145,28 +139,23 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
         throw std::runtime_error("Failed to find merge base");
     }
 
-    const auto& rebaseBaseSha = rebaseBase.stdout;
-
     auto commitsHistory = repo.CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
-    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(rebaseBaseSha, "HEAD");
+    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(rebaseBase.stdout, "HEAD");
 
     auto rebaseCommands = std::vector<RebaseTodoCommand>{};
 
     for (const auto& commit : commitsToRebase)
     {
-        auto commitHash = commit.getHash();
-        auto commitMessage = commit.getMessage();
-
-        rebaseCommands.emplace_back(RebaseTodoCommandType::PICK, commitHash, commitMessage);
+        rebaseCommands.emplace_back(RebaseTodoCommandType::PICK, commit.getHash(), commit.getMessage());
     }
 
     return rebaseCommands;
 }
 
-auto Rebase::getSquashMessage() const -> std::string
+auto Rebase::getStoppedMessage() const -> std::string
 {
-    return rebaseFilesHelper.getMessageSqaushFile();
+    return rebaseFilesHelper.getMessageFile();
 }
 
 auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
@@ -212,19 +201,22 @@ auto Rebase::processTodoList() const -> Error
     auto todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     while (todoCommand)
     {
-        auto todoResult = processTodoCommand(todoCommand.value());
-        rebaseFilesHelper.appendDoneFile(todoCommand.value());
+        auto todoCommandValue = todoCommand.value();
 
-        if (todoResult == Error::REBASE_CONFLICT)
+        if (todoCommandValue.type != RebaseTodoCommandType::BREAK)
         {
-            startConflict(todoCommand.value());
-            return Error::REBASE_CONFLICT;
+            rebaseFilesHelper.createRebaseHeadFile(todoCommandValue.hash);
         }
+
+        auto todoResult = processTodoCommand(todoCommandValue);
+        rebaseFilesHelper.appendDoneFile(todoCommandValue);
 
         if (todoResult != Error::NO_ERROR)
         {
             return todoResult;
         }
+
+        rebaseFilesHelper.removeRebaseHeadFile();
 
         todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     }
@@ -274,54 +266,46 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
-    auto pickResult = pickCommit(rebaseTodoCommand);
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    auto pickResult = pickCommit(commitInfo);
 
     if (!pickResult.has_value())
     {
-        auto commits = Commits{ repo };
-        auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+        rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
         return pickResult.error();
     }
-
-    const auto& newCommitHash = pickResult.value();
 
     if (isNextCommandFixupOrSquash())
     {
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
-        auto commitInfo = Commits{ repo }.getCommitInfo(rebaseTodoCommand.hash);
     }
-    else if (rebaseTodoCommand.hash != newCommitHash)
+    else if (const auto& newCommitHash = pickResult.value(); rebaseTodoCommand.hash != newCommitHash)
     {
         rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, newCommitHash);
     }
 
-    rebaseFilesHelper.removeRebaseHeadFile();
     return Error::NO_ERROR;
 }
 
-auto Rebase::processBreakCommand(const RebaseTodoCommand&) const -> Error
+auto Rebase::processBreakCommand(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> Error
 {
     return Error::REBASE_BREAK;
 }
 
 auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
-    auto pickResult = pickCommit(rebaseTodoCommand);
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    auto pickResult = pickCommit(commitInfo);
+
+    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
 
     if (!pickResult.has_value())
     {
+        rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         return pickResult.error();
     }
 
-    auto commits = Commits{ repo };
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-
-    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
-    rebaseFilesHelper.createCommitEditMsgFile(commitInfo.getMessage());
-    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
     return Error::REBASE_REWORD;
@@ -329,145 +313,132 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
 auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
-    auto pickResult = pickCommit(rebaseTodoCommand).error_or(Error::NO_ERROR);
+    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    auto pickResult = pickCommit(commitInfo);
 
-    if (pickResult != Error::NO_ERROR)
+    rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
+
+    if (!pickResult.has_value())
     {
-        return pickResult;
+        rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
+        return pickResult.error();
     }
 
-    auto commits = Commits{ repo };
-    auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
-
-    auto msgAndDesc = concatMessageAndDescription(commitInfo.getMessage(), commitInfo.getDescription());
-    rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
-
-    auto hashCommit = commits.getHeadCommitHash();
-    rebaseFilesHelper.createAmendFile(hashCommit);
-    rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
+    rebaseFilesHelper.createAmendFile(pickResult.value());
 
     return Error::REBASE_EDIT;
 }
 
-auto Rebase::processDrop(const RebaseTodoCommand&) const -> Error
+auto Rebase::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> Error
 {
     return Error::NO_ERROR;
 }
 
 auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
-    auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
-
-    if (applyResult == _details::ApplyDiffResult::CONFLICT)
+    if (auto applyResult = applyDiff.apply(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
     {
-        // TODO what to do when fixup has conflict
-        rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
+        auto headCommitHash = commits.getHeadCommitHash();
+        auto headCommitInfo = commits.getCommitInfo(headCommitHash);
+        rebaseFilesHelper.createAmendFile(headCommitHash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+        rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
+
         return Error::REBASE_CONFLICT;
     }
 
-    if (!isNextCommandFixupOrSquash())
+    if (isNextCommandFixupOrSquash())
     {
-        if (rebaseFilesHelper.areAnySquashInCurrentFixup())
-        {
-            rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-            rebaseFilesHelper.createAmendFile(Commits{ repo }.getHeadCommitHash());
-            return Error::REBASE_SQUASH;
-        }
-        else
-        {
-            auto newCommitHash = Commits{ repo }.amendCommit();
-            rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+        rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+        rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-            rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
-            rebaseFilesHelper.removeCurrentFixupFile();
-            return Error::NO_ERROR;
-        }
+        commits.amendCommit();
+
+        return Error::NO_ERROR;
     }
 
-    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-    auto commits = Commits{ repo };
+    if (rebaseFilesHelper.areAnySquashInCurrentFixup())
+    {
+        auto headCommitHash = commits.getHeadCommitHash();
+        auto headCommitInfo = commits.getCommitInfo(headCommitHash);
+        rebaseFilesHelper.createAmendFile(headCommitHash);
+        rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+        rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
 
-    auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
-    rebaseFilesHelper.createMessageSquashFile(messageSquash);
-    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+        return Error::REBASE_SQUASH;
+    }
 
     auto newCommitHash = commits.amendCommit();
+    rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
+    rebaseFilesHelper.removeCurrentFixupFile();
+
     return Error::NO_ERROR;
 }
 
 auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
-    rebaseFilesHelper.createRebaseHeadFile(rebaseTodoCommand.hash);
-    auto applyResult = applyDiff.apply(rebaseTodoCommand.hash);
-
-    auto commits = Commits{ repo };
-
     auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
-    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
-    rebaseFilesHelper.createMessageSquashFile(messageSquash);
-    rebaseFilesHelper.createMessageFile(messageSquash);
 
-    if (applyResult == _details::ApplyDiffResult::CONFLICT)
+    if (auto applyResult = applyDiff.apply(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
     {
-        // TODO what to do when fixup has conflict
         rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
+        rebaseFilesHelper.createMessageFile(messageSquash);
+        rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+
         return Error::REBASE_CONFLICT;
     }
 
     if (!isNextCommandFixupOrSquash())
     {
         rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
+        rebaseFilesHelper.createMessageFile(messageSquash);
+
         return Error::REBASE_SQUASH;
     }
 
-    auto newCommitHash = commits.amendCommit(messageSquash);
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
+    rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
+
+    commits.amendCommit(messageSquash);
 
     return Error::NO_ERROR;
 }
 
-auto Rebase::pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>
+auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::string, Error>
 {
-    auto commits = Commits{ repo };
+    const auto& pickedParent = commitInfo.getParents()[0];
     auto headCommitHash = commits.getHeadCommitHash();
 
-    if (auto pickedCommitInfo = commits.getCommitInfo(rebaseTodoCommand.hash); pickedCommitInfo.getParents()[0] == headCommitHash)
+    if (headCommitHash == pickedParent)
     {
         // can FastForward
-        indexWorktree.resetIndexToTree(rebaseTodoCommand.hash);
+        indexWorktree.resetIndexToTree(commitInfo.getHash());
         indexWorktree.copyForceIndexToWorktree();
-        refs.detachHead(rebaseTodoCommand.hash);
+        refs.detachHead(commitInfo.getHash());
 
-        return rebaseTodoCommand.hash;
+        return commitInfo.getHash();
     }
 
-    auto cherryPickResult = cherryPick.cherryPickCommit(rebaseTodoCommand.hash, CherryPickEmptyCommitStrategy::KEEP);
+    auto applyDiffResult = applyDiff.apply(commitInfo.getHash());
 
-    if (!cherryPickResult.has_value())
+    if (applyDiffResult == _details::ApplyDiffResult::EMPTY_DIFF || applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
-        auto error = cherryPickResult.error();
-
-        if (error == Error::CHERRY_PICK_CONFLICT)
-        {
-            rebaseFilesHelper.createMessageFile(rebaseTodoCommand.message);
-            return std::unexpected{ Error::REBASE_CONFLICT };
-        }
-        else
-        {
-            throw std::runtime_error("Unexpected error during cherry-pick");
-        }
+        // TODO: what to do with empty commits?
     }
 
-    return cherryPickResult.value();
-}
+    if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
+    {
+        return std::unexpected{ Error::REBASE_CONFLICT };
+    }
 
+    auto envp = std::vector<std::string>{
+        "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
+        "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
+        "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
+    };
 
-auto Rebase::startConflict(const RebaseTodoCommand& rebaseTodoCommand) const -> void
-{
-    rebaseFilesHelper.createStoppedShaFile(rebaseTodoCommand.hash);
+    return _details::CreateCommit{ repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
 }
 
 auto Rebase::isNextCommandFixupOrSquash() const -> bool
@@ -477,118 +448,11 @@ auto Rebase::isNextCommandFixupOrSquash() const -> bool
     return peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH);
 }
 
-auto Rebase::continueEditImpl() const -> std::expected<std::string, Error>
-{
-    auto commits = Commits{ repo };
-    auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
-    auto hashAfter = hashBefore;
-
-    if (index.areAnyNotStagedTrackedFiles())
-    {
-        return std::unexpected{ Error::DIRTY_WORKTREE };
-    }
-
-    if (index.areAnyStagedFiles())
-    {
-        hashAfter = commits.amendCommit();
-    }
-
-    rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
-    rebaseFilesHelper.removeAmendFile();
-    rebaseFilesHelper.removeStoppedShaFile();
-    rebaseFilesHelper.removeAuthorScriptFile();
-
-    return hashAfter;
-}
-
-auto Rebase::continueRewordImpl(const RebaseTodoCommand& lastDoneCommand, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
-{
-    auto messageAndDesc = std::string{};
-
-    if (message.empty())
-    {
-        messageAndDesc = rebaseFilesHelper.getCommitEditMsgFile();
-    }
-    else
-    {
-        messageAndDesc = concatMessageAndDescription(message, description);
-    }
-
-    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
-    rebaseFilesHelper.appendRewrittenListFile(lastDoneCommand.hash, commitHash);
-
-    return commitHash;
-}
-
-auto Rebase::continueSquashImpl(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
-{
-    auto messageAndDesc = std::string{};
-
-    if (message.empty())
-    {
-        messageAndDesc = rebaseFilesHelper.getMessageSqaushFile();
-    }
-    else
-    {
-        messageAndDesc = concatMessageAndDescription(message, description);
-    }
-
-    auto commitHash = Commits{ repo }.amendCommit(messageAndDesc);
-    auto lastCommand = rebaseFilesHelper.getLastDoneCommand();
-    rebaseFilesHelper.appendRewrittenPendingFile(lastCommand->hash);
-    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(commitHash);
-    rebaseFilesHelper.removeCurrentFixupFile();
-    rebaseFilesHelper.removeMessageSqaushFile();
-
-    return commitHash;
-}
-
-auto Rebase::continueConflictImpl(const std::string_view stoppedSha) const -> std::expected<std::string, Error>
-{
-    auto commits = Commits{ repo };
-    auto _createCommit = _details::CreateCommit{ repo };
-    auto commitInfo = commits.getCommitInfo(stoppedSha);
-
-    auto envp = std::vector<std::string>{
-        "GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name,
-        "GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email,
-        "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
-    };
-
-    auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
-
-    auto hashAfter = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
-    rebaseFilesHelper.appendRewrittenListFile(stoppedSha, hashAfter);
-    rebaseFilesHelper.removeStoppedShaFile();
-
-    return hashAfter;
-}
-
-auto Rebase::concatMessageAndDescription(const std::string_view message, const std::string_view description) const -> std::string
-{
-    auto messageAndDesc = std::string{ message };
-    if (!description.empty())
-    {
-        messageAndDesc += "\n\n";
-        messageAndDesc += description;
-    }
-
-    return messageAndDesc;
-}
-
 auto Rebase::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string
 {
-    auto commits = Commits{ repo };
-
     auto previousCommitInfo = commits.getCommitInfo(previousCommitHash);
     auto currentCommitInfo = commits.getCommitInfo(currentCommitHash);
 
-    auto message = std::string{};
-    message += concatMessageAndDescription(previousCommitInfo.getMessage(), previousCommitInfo.getDescription());
-    message += "\n\n";
-    message += concatMessageAndDescription(currentCommitInfo.getMessage(), currentCommitInfo.getDescription());
-
-    return message;
+    return previousCommitInfo.getMessageAndDescription() + "\n\n" + currentCommitInfo.getMessageAndDescription();
 }
-
 } // namespace CppGit
