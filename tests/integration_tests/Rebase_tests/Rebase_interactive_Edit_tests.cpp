@@ -46,12 +46,12 @@ TEST_F(RebaseInteractiveEditTests, stop)
     EXPECT_EQ(rebase.getStoppedMessage(), expectedMessage);
 
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixups"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-pending"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), secondCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), "edit " + secondCommitHash + " Second commit\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");

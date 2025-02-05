@@ -507,10 +507,10 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
                           + "pick " + thirdCommitHash + " Third commit\n"
                           + "fixup " + fourthCommitHash + " Fourth commit\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), "fixup " + fourthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
@@ -705,10 +705,10 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
                           + "pick " + thirdCommitHash + " Third commit\n"
                           + "fixup " + fourthCommitHash + " Fourth commit\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), "fixup " + fourthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "fixup " + fifthCommitHash + " Fifth commit\n");

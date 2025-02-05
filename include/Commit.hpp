@@ -7,8 +7,12 @@
 
 namespace CppGit {
 
+class Commits;
+
 class Commit
 {
+    friend Commits;
+
 public:
     Commit(const std::string& hash,
            const std::vector<std::string>& parents,

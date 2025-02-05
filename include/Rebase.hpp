@@ -46,13 +46,11 @@ private:
     auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
 
-    auto pickCommit(const RebaseTodoCommand& rebaseTodoCommand) const -> std::expected<std::string, Error>;
+    auto pickCommit(const Commit& commitInfo) const -> std::expected<std::string, Error>;
 
     auto isNextCommandFixupOrSquash() const -> bool;
 
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
-
-    auto removeAfterStepRebaseFiles() const -> void;
 
     const Repository& repo;
     const Commits commits;

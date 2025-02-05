@@ -58,10 +58,10 @@ TEST_F(RebaseInteractiveSquashTest, stop)
                           + "squash " + thirdCommitHash + " Third commit\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixups"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), secondCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), "squash " + thirdCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "pick " + fourthCommitHash + " Fourth commit\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
@@ -120,14 +120,12 @@ TEST_F(RebaseInteractiveSquashTest, twoSquashInARow_stop)
                           + "squash " + fourthCommitHash + " Fourth commit\n";
     auto rewrittenPendingExpected = secondCommitHash + "\n"
                                   + thirdCommitHash + "\n";
-    auto currentFixupExpected = "squash " + thirdCommitHash + "\n"
-                              + "squash " + fourthCommitHash + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), currentFixupExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), "squash " + thirdCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
@@ -1039,10 +1037,10 @@ TEST_F(RebaseInteractiveSquashTest, conflictOnNotLastSquash_continueToLastSquash
                                   + fourthCommitHash + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "current-fixups"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fifthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), "squash " + fifthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");

@@ -335,10 +335,10 @@ TEST_F(RebaseInteractiveSquashFixupTest, conflictOnFixup_stop)
     auto rewrittenPendingExpected = thirdCommitHash + "\n"
                                   + fourthCommitHash + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
+    EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "author-script"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "rewritten-list"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "REBASE_HEAD"), fifthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "amend"), commits.getHeadCommitHash());
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "author-script"), expectedAuthorScript); // Czy tu nie powinno nie byc tego pliku?
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "current-fixups"), currentFixupExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "done"), doneFileExpected);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "git-rebase-todo"), "");

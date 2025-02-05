@@ -65,7 +65,9 @@ auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit
         throw std::runtime_error("Failed to get commit info");
     }
 
-    return CommitParser::parseCommit_CatFile(output.stdout);
+    auto parsedCommit = CommitParser::parseCommit_CatFile(output.stdout);
+    parsedCommit.hash = std::string{ commitHash };
+    return parsedCommit;
 }
 
 } // namespace CppGit
