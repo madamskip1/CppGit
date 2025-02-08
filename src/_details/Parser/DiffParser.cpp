@@ -1,7 +1,14 @@
 #include "_details/Parser/DiffParser.hpp"
 
+#include "DiffFile.hpp"
+
 #include <charconv>
+#include <cstddef>
 #include <regex>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 namespace CppGit {
 
@@ -24,7 +31,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
                 continue;
             }
 
-            if (line.substr(0, 4) != "diff")
+            if (!line.starts_with("diff"))
             {
                 continue;
             }
@@ -40,11 +47,10 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
         }
         case ParseState::HEADER: {
             auto lastHeaderLineType = headersLines.empty() ? HeaderLineType::NO_LINE : headersLines.back().type;
-            auto headerLine = parseHeaderLine(line, lastHeaderLineType);
 
-            if (headerLine.type == HeaderLineType::END_HEADER)
+            if (auto headerLine = parseHeaderLine(line, lastHeaderLineType); headerLine.type == HeaderLineType::END_HEADER)
             {
-                if (line.substr(0, 4) == "diff")
+                if (line.starts_with("diff"))
                 {
                     currentState = ParseState::WAITING_FOR_DIFF;
                     --iterator;
@@ -64,7 +70,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             {
                 if (headerLine.type == HeaderLineType::INDEX)
                 {
-                    auto [indicesBeforeSV, indexAfter, mode] = std::get<std::tuple<std::string_view, std::string_view, int>>(headerLine.value);
+                    const auto& [indicesBeforeSV, indexAfter, mode] = std::get<std::tuple<std::string_view, std::string_view, int>>(headerLine.value);
                     auto indicesBefore = splitToStringViewsVector(indicesBeforeSV, ',');
                     for (auto indexBefore : indicesBefore)
                     {
@@ -135,11 +141,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
                 {
                     diffFile.newMode = std::get<int>(headerLine.value);
                 }
-                else if (diffFile.diffStatus == DiffStatus::RENAMED)
-                {
-                    diffFile.fileB = std::get<std::string_view>(headerLine.value);
-                }
-                else if (diffFile.diffStatus == DiffStatus::COPIED)
+                else if (diffFile.diffStatus == DiffStatus::RENAMED || diffFile.diffStatus == DiffStatus::COPIED)
                 {
                     diffFile.fileB = std::get<std::string_view>(headerLine.value);
                 }
@@ -150,7 +152,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
         }
         case ParseState::HUNK_FILE_A: {
             auto fileA = splitToStringViewsVector(line, ' ')[1];
-            if (fileA.substr(0, 2) == "a/")
+            if (fileA.starts_with("a/"))
             {
                 fileA.remove_prefix(2);
             }
@@ -160,7 +162,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
         }
         case ParseState::HUNK_FILE_B: {
             auto fileB = splitToStringViewsVector(line, ' ')[1];
-            if (fileB.substr(0, 2) == "b/")
+            if (fileB.starts_with("b/"))
             {
                 fileB.remove_prefix(2);
             }
@@ -178,7 +180,7 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             break;
         }
         case ParseState::HUNK_CONTENT:
-            if (line.substr(0, 4) == "diff")
+            if (line.starts_with("diff"))
             {
                 diffFiles.push_back(std::move(diffFile));
                 currentState = ParseState::WAITING_FOR_DIFF;
@@ -220,75 +222,75 @@ auto DiffParser::parseHeaderLine(const std::string_view line, const HeaderLineTy
     case HeaderLineType::NO_LINE:
         if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ indexPattern }))
         {
-            return HeaderLine{ HeaderLineType::INDEX, std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
+            return HeaderLine{ .type = HeaderLineType::INDEX, .value = std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
         }
         else if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ newFilePattern }))
         {
-            return HeaderLine{ HeaderLineType::NEW_FILE, getIntFromStringViewMatch(match, 1) };
+            return HeaderLine{ .type = HeaderLineType::NEW_FILE, .value = getIntFromStringViewMatch(match, 1) };
         }
         else if (std::regex_match(line.begin(), line.end(), match, std::regex{ deletedFilePattern }))
         {
-            return HeaderLine{ HeaderLineType::DELETED_FILE, getIntFromStringViewMatch(match, 1) };
+            return HeaderLine{ .type = HeaderLineType::DELETED_FILE, .value = getIntFromStringViewMatch(match, 1) };
         }
         else if (std::regex_match(line.begin(), line.end(), match, std::regex{ similarityIndexPattern }))
         {
-            return HeaderLine{ HeaderLineType::SIMILARITY_INDEX, getIntFromStringViewMatch(match, 1) };
+            return HeaderLine{ .type = HeaderLineType::SIMILARITY_INDEX, .value = getIntFromStringViewMatch(match, 1) };
         }
         else if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ oldModePattern }))
         {
-            return HeaderLine{ HeaderLineType::OLD_MODE, getIntFromStringViewMatch(match, 1) };
+            return HeaderLine{ .type = HeaderLineType::OLD_MODE, .value = getIntFromStringViewMatch(match, 1) };
         }
         break;
 
     case HeaderLineType::SIMILARITY_INDEX:
         if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ renamedFromPattern }))
         {
-            return HeaderLine{ HeaderLineType::RENAME_FROM, string_viewIteratorToString_view(match[1].first, match[1].second) };
+            return HeaderLine{ .type = HeaderLineType::RENAME_FROM, .value = string_viewIteratorToString_view(match[1].first, match[1].second) };
         }
         else if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ copyFromPattern }))
         {
-            return HeaderLine{ HeaderLineType::COPY_FROM, string_viewIteratorToString_view(match[1].first, match[1].second) };
+            return HeaderLine{ .type = HeaderLineType::COPY_FROM, .value = string_viewIteratorToString_view(match[1].first, match[1].second) };
         }
         break;
 
     case HeaderLineType::RENAME_FROM:
         std::regex_match(line.cbegin(), line.cend(), match, std::regex{ renamedToPattern });
 
-        return HeaderLine{ HeaderLineType::RENAME_TO, string_viewIteratorToString_view(match[1].first, match[1].second) };
+        return HeaderLine{ .type = HeaderLineType::RENAME_TO, .value = string_viewIteratorToString_view(match[1].first, match[1].second) };
 
     case HeaderLineType::COPY_FROM:
         std::regex_match(line.cbegin(), line.cend(), match, std::regex{ copyToPattern });
 
-        return HeaderLine{ HeaderLineType::COPY_TO, string_viewIteratorToString_view(match[1].first, match[1].second) };
+        return HeaderLine{ .type = HeaderLineType::COPY_TO, .value = string_viewIteratorToString_view(match[1].first, match[1].second) };
 
     case HeaderLineType::OLD_MODE: {
         std::regex_match(line.cbegin(), line.cend(), match, std::regex{ newModePattern });
 
-        return HeaderLine{ HeaderLineType::NEW_MODE, getIntFromStringViewMatch(match, 1) };
+        return HeaderLine{ .type = HeaderLineType::NEW_MODE, .value = getIntFromStringViewMatch(match, 1) };
     }
     case HeaderLineType::RENAME_TO:
     case HeaderLineType::COPY_TO:
     case HeaderLineType::NEW_MODE:
         if (std::regex_match(line.cbegin(), line.cend(), match, std::regex{ indexPattern }))
         {
-            return HeaderLine{ HeaderLineType::INDEX, std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
+            return HeaderLine{ .type = HeaderLineType::INDEX, .value = std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
         }
-        return HeaderLine{ HeaderLineType::END_HEADER, 0 };
+        return HeaderLine{ .type = HeaderLineType::END_HEADER, .value = 0 };
 
     case HeaderLineType::NEW_FILE:
     case HeaderLineType::DELETED_FILE: {
         std::regex_match(line.cbegin(), line.cend(), match, std::regex{ indexPattern });
 
-        return HeaderLine{ HeaderLineType::INDEX, std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
+        return HeaderLine{ .type = HeaderLineType::INDEX, .value = std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntFromStringViewMatch(match, 3)) };
     }
     case HeaderLineType::INDEX:
-        return HeaderLine{ HeaderLineType::END_HEADER, 0 };
+        return HeaderLine{ .type = HeaderLineType::END_HEADER, .value = 0 };
 
     case HeaderLineType::END_HEADER:
         break;
     }
 
-    return HeaderLine();
+    return {};
 }
 
 auto DiffParser::getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int
@@ -357,7 +359,7 @@ auto DiffParser::parseDiffLine(const std::string_view line) -> DiffLine
     }
 
     auto fileA = string_viewIteratorToString_view(match[2].first, match[2].second);
-    if (fileA.substr(0, 2) == "a/")
+    if (fileA.starts_with("a/"))
     {
         fileA.remove_prefix(2);
     }
@@ -366,13 +368,13 @@ auto DiffParser::parseDiffLine(const std::string_view line) -> DiffLine
     if (match[3].matched)
     {
         fileB = string_viewIteratorToString_view(match[2].first, match[2].second);
-        if (fileB.substr(0, 2) == "a/")
+        if (fileB.starts_with("a/"))
         {
             fileB.remove_prefix(2);
         }
     }
 
-    return DiffLine{ isCombined, fileA, fileB };
+    return DiffLine{ .isCombined = isCombined, .fileA = fileA, .fileB = fileB };
 }
 
 } // namespace CppGit

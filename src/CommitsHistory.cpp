@@ -1,7 +1,16 @@
 #include "CommitsHistory.hpp"
 
+#include "Commit.hpp"
+#include "Repository.hpp"
 #include "_details/Parser/CommitParser.hpp"
 #include "_details/Parser/Parser.hpp"
+
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
 
 namespace CppGit {
 CommitsHistory::CommitsHistory(const Repository& repo)
@@ -123,12 +132,12 @@ auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, con
 
     if (maxCount_ != -1)
     {
-        arguments.emplace_back("--max-count=" + std::to_string(maxCount_));
+        arguments.emplace_back(std::format("--max-count={}", maxCount_));
     }
 
     if (skip_ != -1)
     {
-        arguments.emplace_back("--skip=" + std::to_string(skip_));
+        arguments.emplace_back(std::format("--skip={}", skip_));
     }
 
     if (logMerges_ == LOG_MERGES::NO_MERGES)
@@ -195,7 +204,6 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
         throw std::runtime_error("Error while getting commits log hashes");
     }
 
-    auto hashes = std::vector<std::string>();
     auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
 
     return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };

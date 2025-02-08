@@ -1,6 +1,12 @@
 #include "Diff.hpp"
 
+#include "DiffFile.hpp"
+#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Parser/DiffParser.hpp"
+
+#include <filesystem>
+#include <stdexcept>
+#include <vector>
 
 namespace CppGit {
 auto Diff::getDiff() const -> std::vector<DiffFile>

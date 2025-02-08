@@ -1,6 +1,10 @@
 #include "_details/Parser/BranchesParser.hpp"
 
+#include "Branch.hpp"
+
 #include <string>
+#include <string_view>
+
 namespace CppGit {
 
 auto BranchesParser::parseBranch(std::string_view line) -> Branch
@@ -16,7 +20,7 @@ auto BranchesParser::parseBranch(std::string_view line) -> Branch
 
 auto BranchesParser::isLocalBranch(std::string_view refName) -> bool
 {
-    return refName.find("refs/heads/") == 0;
+    return refName.starts_with("refs/heads/");
 }
 
 } // namespace CppGit

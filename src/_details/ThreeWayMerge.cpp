@@ -1,7 +1,17 @@
 #include "_details/ThreeWayMerge.hpp"
 
+#include "Index.hpp"
+#include "Repository.hpp"
+
 #include <filesystem>
 #include <fstream>
+#include <ios>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace CppGit::_details {
 
@@ -27,9 +37,9 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
             baseTempFile = "/dev/null";
         }
 
-        auto mergeFileOutput = repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
+        repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
 
-        auto checkoutIndexOutput = repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
+        repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
 
         auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
 
@@ -100,7 +110,7 @@ auto ThreeWayMerge::unpackFile(const std::string_view fileBlob) const -> std::st
     return std::move(output.stdout);
 }
 
-auto ThreeWayMerge::createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>
+auto ThreeWayMerge::createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>
 {
     std::unordered_map<std::string, UnmergedFileBlobs> unmergedFiles;
 

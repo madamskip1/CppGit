@@ -1,7 +1,18 @@
 #include "_details/RebaseFilesHelper.hpp"
 
+#include "RebaseTodoCommand.hpp"
+#include "Repository.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/Parser/Parser.hpp"
+
+#include <algorithm>
+#include <cstddef>
+#include <filesystem>
+#include <ios>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace CppGit::_details {
 
@@ -142,15 +153,9 @@ auto RebaseFilesHelper::areAnySquashInCurrentFixup() const -> bool
     auto currentFixup = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups");
     auto splittedCurrentFixup = Parser::splitToStringViewsVector(currentFixup, '\n');
 
-    for (const auto& line : splittedCurrentFixup)
-    {
-        if (line.starts_with("squash"))
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return std::ranges::any_of(splittedCurrentFixup, [](const auto& line) {
+        return line.starts_with("squash");
+    });
 }
 
 auto RebaseFilesHelper::removeCurrentFixupFile() const -> void
@@ -250,11 +255,11 @@ auto RebaseFilesHelper::getLastDoneCommand() const -> std::optional<RebaseTodoCo
     auto doneFile = std::ifstream{ repo.getGitDirectoryPath() / "rebase-merge" / "done", std::ios::in | std::ios::ate };
 
     doneFile.seekg(-2, std::ios::end); // -2, because we always have '\n' after each command
-    char c;
+    char fileChar{ 0 };
     while (doneFile.tellg() > 0)
     {
-        doneFile.get(c);
-        if (c == '\n')
+        doneFile.get(fileChar);
+        if (fileChar == '\n')
         {
             break;
         }

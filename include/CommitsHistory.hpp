@@ -3,6 +3,7 @@
 #include "Commit.hpp"
 #include "Repository.hpp"
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -12,14 +13,14 @@ namespace CppGit {
 class CommitsHistory
 {
 public:
-    enum class LOG_MERGES
+    enum class LOG_MERGES : uint8_t
     {
         NO_MERGES,
         ONLY_MERGES,
         ALL
     };
 
-    enum class Order
+    enum class Order : uint8_t
     {
         CHRONOLOGICAL,
         REVERSE,

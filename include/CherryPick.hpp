@@ -5,13 +5,14 @@
 #include "_details/ApplyDiff.hpp"
 #include "_details/CreateCommit.hpp"
 
+#include <cstdint>
 #include <expected>
 #include <string>
 #include <string_view>
 
 namespace CppGit {
 
-enum class CherryPickEmptyCommitStrategy
+enum class CherryPickEmptyCommitStrategy : uint8_t
 {
     STOP,
     DROP,

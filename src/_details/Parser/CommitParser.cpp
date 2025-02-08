@@ -1,7 +1,12 @@
 #include "_details/Parser/CommitParser.hpp"
 
+#include "Commit.hpp"
+
+#include <cstddef>
 #include <regex>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace CppGit {
@@ -18,8 +23,19 @@ auto CommitParser::parseCommit_CatFile(std::string_view commitLog) -> Commit
         throw std::runtime_error("Invalid commit log");
     }
 
-    auto treeHash = match[1].str();
-    auto parentStr = match[2].str();
+    constexpr auto treeHashIndex = std::size_t{ 1 };
+    constexpr auto parentIndex = std::size_t{ 2 };
+    constexpr auto authorNameIndex = std::size_t{ 3 };
+    constexpr auto authorEmailIndex = std::size_t{ 4 };
+    constexpr auto authorDateIndex = std::size_t{ 5 };
+    constexpr auto committerNameIndex = std::size_t{ 6 };
+    constexpr auto committerEmailIndex = std::size_t{ 7 };
+    constexpr auto committerDateIndex = std::size_t{ 8 };
+    constexpr auto messageIndex = std::size_t{ 9 };
+    constexpr auto descriptionIndex = std::size_t{ 10 };
+
+    auto treeHash = match[treeHashIndex].str();
+    auto parentStr = match[parentIndex].str();
     auto parentSV = splitToStringViewsVector(parentStr, "parent ");
     auto parents = std::vector<std::string>{};
     for (auto parent : parentSV)
@@ -30,16 +46,16 @@ auto CommitParser::parseCommit_CatFile(std::string_view commitLog) -> Commit
             parents.emplace_back(parent);
         }
     }
-    auto authorName = match[3].str();
-    auto authorEmail = match[4].str();
-    auto authorDate = match[5].str();
-    auto committerName = match[6].str();
-    auto committerEmail = match[7].str();
-    auto committerDate = match[8].str();
-    auto message = match[9].str();
-    auto description = match[10].str();
+    auto authorName = match[authorNameIndex].str();
+    auto authorEmail = match[authorEmailIndex].str();
+    auto authorDate = match[authorDateIndex].str();
+    auto committerName = match[committerNameIndex].str();
+    auto committerEmail = match[committerEmailIndex].str();
+    auto committerDate = match[committerDateIndex].str();
+    auto message = match[messageIndex].str();
+    auto description = match[descriptionIndex].str();
 
-    return Commit("", parents, authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, message, description, treeHash);
+    return { "", parents, authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, message, description, treeHash };
 }
 
 
@@ -128,7 +144,7 @@ auto CommitParser::parseCommit_PrettyFormat(std::string_view commitLog, std::str
         }
     }
 
-    return Commit(hash, parents, authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, message, description, treeHash);
+    return { hash, parents, authorName, authorEmail, authorDate, committerName, committerEmail, committerDate, message, description, treeHash };
 }
 auto CommitParser::isHashToken(std::string_view token) -> bool
 {

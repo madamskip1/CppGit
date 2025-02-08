@@ -1,9 +1,19 @@
 #include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 
+#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+
+#include <array>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <fcntl.h>
 #include <stdexcept>
+#include <string>
+#include <string_view>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <vector>
 
 namespace CppGit {
 
@@ -20,12 +30,8 @@ auto GitCommandExecutorUnix::executeImpl(const std::vector<std::string>& environ
     {
         childProcess(environmentVariables, repoPath, command, args);
     }
-    else
-    {
-        return parentProcess();
-    }
 
-    return GitCommandOutput();
+    return parentProcess();
 }
 
 auto GitCommandExecutorUnix::createPipes() -> void
@@ -51,7 +57,7 @@ auto GitCommandExecutorUnix::parentProcess() -> GitCommandOutput
         throw std::runtime_error("Failed to waitpid.");
     }
 
-    int returnCode = WEXITSTATUS(status);
+    const int returnCode = WEXITSTATUS(status);
 
     constexpr int bufferSize = 256;
     std::array<char, bufferSize> buffer{};
@@ -90,7 +96,7 @@ auto GitCommandExecutorUnix::parentProcess() -> GitCommandOutput
         stderrStr.pop_back();
     }
 
-    return GitCommandOutput{ returnCode, stdoutStr, stderrStr };
+    return GitCommandOutput{ .return_code = returnCode, .stdout = stdoutStr, .stderr = stderrStr };
 }
 
 auto GitCommandExecutorUnix::childProcess(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> void
@@ -108,7 +114,8 @@ auto GitCommandExecutorUnix::childProcess(const std::vector<std::string>& enviro
 
     std::vector<const char*> argv;
 
-    argv.reserve(args.size() + 5);
+    constexpr auto ARGV_ADDITIONAL_SIZE = 5;
+    argv.reserve(args.size() + ARGV_ADDITIONAL_SIZE);
     argv.emplace_back(GIT_EXECUTABLE);
     argv.emplace_back("-C");
     argv.push_back(repoPath.data());
@@ -132,7 +139,7 @@ auto GitCommandExecutorUnix::childProcess(const std::vector<std::string>& enviro
     {
         std::vector<const char*> envp;
 
-        for (char** env = environ; *env != nullptr; ++env)
+        for (char* const* env = environ; *env != nullptr; ++env)
         {
             envp.push_back(*env);
         }

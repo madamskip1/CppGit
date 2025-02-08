@@ -2,13 +2,19 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
+#include "Error.hpp"
+#include "Index.hpp"
 #include "Repository.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Refs.hpp"
 
+#include <expected>
 #include <filesystem>
-#include <fstream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 namespace CppGit {

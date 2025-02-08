@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
 namespace CppGit {
-enum class RebaseTodoCommandType
+enum class RebaseTodoCommandType : uint8_t
 {
     PICK,
     REWORD,
@@ -24,7 +25,7 @@ enum class RebaseTodoCommandType
 class RebaseTodoCommandTypeWrapper
 {
 public:
-    RebaseTodoCommandType type;
+    RebaseTodoCommandType type; // NOLINT(misc-non-private-member-variables-in-classes)
 
     explicit(false) RebaseTodoCommandTypeWrapper(const RebaseTodoCommandType type)
         : type{ type }
@@ -67,7 +68,7 @@ public:
             return "merge";
         case RebaseTodoCommandType::UPDATE_REF:
             return "update_ref";
-        default:
+        [[unlikely]] default:
             throw std::invalid_argument("Unknown rebase todo command");
         }
     }
@@ -100,7 +101,7 @@ public:
             return "m";
         case RebaseTodoCommandType::UPDATE_REF:
             return "u";
-        default:
+        [[unlikely]] default:
             throw std::invalid_argument("Unknown rebase todo command");
         }
     }
@@ -163,9 +164,11 @@ public:
 class RebaseTodoCommand
 {
 public:
+    // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
     RebaseTodoCommandTypeWrapper type;
     std::string hash;
     std::string message;
+    // NOLINTEND(misc-non-private-member-variables-in-classes)
 
     RebaseTodoCommand(const RebaseTodoCommandType type, const std::string& hash, const std::string& message)
         : type{ type },
@@ -187,10 +190,8 @@ public:
         {
             return type.toStringFull();
         }
-        else
-        {
-            return type.toStringFull() + " " + hash + " " + message;
-        }
+
+        return type.toStringFull() + " " + hash + " " + message;
     }
 };
 

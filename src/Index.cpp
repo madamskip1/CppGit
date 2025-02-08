@@ -2,9 +2,18 @@
 
 #include "Commit.hpp"
 #include "Commits.hpp"
+#include "Error.hpp"
+#include "Repository.hpp"
 #include "_details/Parser/IndexParser.hpp"
+#include "_details/Parser/Parser.hpp"
 
+#include <algorithm>
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 namespace CppGit {
 
@@ -30,10 +39,12 @@ auto Index::add(const std::string_view filePattern) const -> Error
     // `git add` can also remove deleted files from index
     args.emplace_back("--remove");
 
-    for (auto&& file : filesList)
-    {
-        args.emplace_back(std::move(file));
-    }
+    std::transform(std::make_move_iterator(filesList.begin()),
+                   std::make_move_iterator(filesList.end()),
+                   std::back_inserter(args),
+                   [](auto&& file) {
+                       return std::forward<decltype(file)>(file);
+                   });
 
     auto output = repo.executeGitCommand("update-index", args);
 
@@ -66,10 +77,12 @@ auto Index::remove(const std::string_view filePattern, bool force) const -> Erro
         args.emplace_back("--remove");
     }
 
-    for (auto&& file : filesList)
-    {
-        args.emplace_back(std::move(file));
-    }
+    std::transform(std::make_move_iterator(filesList.begin()),
+                   std::make_move_iterator(filesList.end()),
+                   std::back_inserter(args),
+                   [](auto&& file) {
+                       return std::forward<decltype(file)>(file);
+                   });
 
     auto output = repo.executeGitCommand("update-index", args);
 
@@ -174,10 +187,10 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
     std::vector<std::string> untrackedFilesList;
     untrackedFilesList.reserve(splittedList_SV.size());
 
-    for (const auto file : splittedList_SV)
-    {
-        untrackedFilesList.emplace_back(file);
-    }
+    std::ranges::transform(splittedList_SV, std::back_inserter(untrackedFilesList),
+                           [](std::string_view file) {
+                               return std::string{ file };
+                           });
 
     return untrackedFilesList;
 }

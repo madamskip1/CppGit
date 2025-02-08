@@ -1,8 +1,13 @@
 #include "_details/CreateCommit.hpp"
 
+#include "Repository.hpp"
 #include "_details/Refs.hpp"
 
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 namespace CppGit::_details {
 
@@ -48,7 +53,7 @@ auto CreateCommit::writeTree() const -> std::string
 auto CreateCommit::commitTree(std::string&& treeHash, const std::string_view message, const std::string_view description, const std::vector<std::string>& parents, const std::vector<std::string>& envp) const -> std::string
 {
     auto commitArgs = std::vector<std::string>{};
-    commitArgs.reserve(1 + 2 * parents.size() + 4); // treeHash + parents*2 + message + description
+    commitArgs.reserve(1 + (2 * parents.size()) + 4); // treeHash + parents*2 + message + description
 
     commitArgs.push_back(std::move(treeHash));
 

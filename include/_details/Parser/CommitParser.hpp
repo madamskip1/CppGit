@@ -7,7 +7,7 @@
 
 namespace CppGit {
 
-class CommitParser : protected Parser
+class CommitParser final : protected Parser
 {
 public:
     static constexpr const char* const COMMIT_LOG_DEFAULT_FORMAT = "%H;%P;%an;%ae;%at;%cn;%ce;%ct;%s;%b";

@@ -34,7 +34,7 @@ private:
     const Repository& repo;
 
     auto unpackFile(const std::string_view fileBlob) const -> std::string;
-    auto createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) const -> std::unordered_map<std::string, UnmergedFileBlobs>;
+    static auto createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>;
 };
 
 } // namespace CppGit::_details

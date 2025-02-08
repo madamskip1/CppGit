@@ -39,7 +39,7 @@ private:
     auto processTodoList() const -> Error;
     auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    static auto processBreakCommand(const RebaseTodoCommand&) -> Error;
+    static auto processBreakCommand(const RebaseTodoCommand& /*unused*/) -> Error;
     auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
     static auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) -> Error;

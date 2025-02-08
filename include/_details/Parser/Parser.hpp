@@ -11,8 +11,6 @@ namespace CppGit {
 class Parser
 {
 public:
-    virtual ~Parser() = default;
-
     template <typename T>
     static auto splitToStringViewsVector(const std::string_view line, const T& delimiter) -> std::vector<std::string_view>
     {
@@ -54,9 +52,9 @@ private:
     {
         const auto delimiterSize = getDelimiterSize(delimiter);
 
-        std::vector<ReturnT> result;
-        std::size_t start = 0;
-        std::size_t end = line.find(delimiter);
+        auto result = std::vector<ReturnT>{};
+        auto start = std::size_t{ 0 };
+        auto end = line.find(delimiter);
 
         while (end != std::string::npos)
         {

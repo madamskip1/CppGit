@@ -1,5 +1,10 @@
 #include "_details/IndexWorktree.hpp"
 
+#include "Repository.hpp"
+
+#include <stdexcept>
+#include <string_view>
+
 namespace CppGit::_details {
 
 IndexWorktree::IndexWorktree(const Repository& repo)

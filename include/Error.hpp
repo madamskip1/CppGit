@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
+
 namespace CppGit {
 
-enum class Error
+enum class Error : uint8_t
 {
     NO_ERROR,
     DIRTY_WORKTREE,
@@ -32,7 +34,7 @@ enum class Error
     PATH_IS_NOT_A_DIRECTORY,
     PATH_DIR_IS_NOT_EMPTY,
     FAILED_TO_CREATE_DIRECTORIES,
-    CLONE_FAILED
+    CLONE_FAILED,
 };
 
 } // namespace CppGit

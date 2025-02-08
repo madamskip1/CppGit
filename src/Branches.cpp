@@ -1,11 +1,17 @@
 #include "Branches.hpp"
 
+#include "Branch.hpp"
+#include "Error.hpp"
 #include "Index.hpp"
+#include "Repository.hpp"
 #include "_details/Parser/BranchesParser.hpp"
 
-#include <expected>
-#include <fstream>
+#include <cstddef>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 namespace CppGit {
 
@@ -52,7 +58,7 @@ auto Branches::getCurrentBranch() const -> std::string
 
 auto Branches::changeCurrentBranch(const std::string_view branchName) const -> Error
 {
-    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
 
     return changeHEAD(branchNameWithPrefix);
 }
@@ -69,7 +75,7 @@ auto Branches::detachHead(const std::string_view commitHash) const -> Error
 
 auto Branches::branchExists(const std::string_view branchName, bool remote) const -> bool
 {
-    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
+    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, remote);
 
     return refs.refExists(branchNameWithPrefix);
 }
@@ -82,19 +88,19 @@ auto Branches::branchExists(const Branch& branch) const -> bool
 
 auto Branches::deleteBranch(const std::string_view branchName) const -> void
 {
-    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
 
     refs.deleteRef(branchNameWithPrefix);
 }
 
 auto Branches::deleteBranch(const Branch& branch) const -> void
 {
-    return deleteBranch(branch.getRefName());
+    deleteBranch(branch.getRefName());
 }
 
 auto Branches::getHashBranchRefersTo(const std::string_view branchName, bool remote) const -> std::string
 {
-    auto branchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, remote);
+    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, remote);
 
     return refs.getRefHash(branchNameWithPrefix);
 }
@@ -107,7 +113,7 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
 
 auto Branches::createBranch(const std::string_view branchName, const std::string_view startRef) const -> void
 {
-    auto newBranchNameWithPrefix = refs.getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto newBranchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
     refs.createRef(newBranchNameWithPrefix, startRef);
 }
 
@@ -118,8 +124,8 @@ auto Branches::createBranch(const Branch& branch, const std::string_view startRe
 
 auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>
 {
-    const auto* argLocal = local ? refs.LOCAL_BRANCH_PREFIX : "";
-    const auto* argRemote = remote ? refs.REMOTE_BRANCH_PREFIX : "";
+    const auto* argLocal = local ? _details::Refs::LOCAL_BRANCH_PREFIX : "";
+    const auto* argRemote = remote ? _details::Refs::REMOTE_BRANCH_PREFIX : "";
 
     auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
 
@@ -153,17 +159,15 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
 
 auto Branches::changeHEAD(const std::string_view target) const -> Error
 {
-    auto index = repo.Index();
 
-    if (index.isDirty())
+    if (auto index = repo.Index(); index.isDirty())
     {
         return Error::DIRTY_WORKTREE;
     }
 
-    auto HEADFileContent = std::string{};
     auto hash = std::string{};
 
-    if (target.substr(0, 5) == "refs/")
+    if (target.starts_with("refs/"))
     {
         hash = getHashBranchRefersTo(target);
         refs.updateSymbolicRef("HEAD", target);

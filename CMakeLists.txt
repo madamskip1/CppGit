@@ -32,6 +32,7 @@ target_sources(${PROJECT_NAME}
         src/_details/Parser/IndexParser.cpp
         src/_details/Parser/DiffParser.cpp
 
+        src/_details/GitCommandExecutor/GitCommandExecutor.cpp
         src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
 
         src/_details/CreateCommit.cpp
@@ -45,6 +46,13 @@ target_sources(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/
+)
+
+target_compile_options(${PROJECT_NAME}
+PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
 )
 
 add_subdirectory(tests)

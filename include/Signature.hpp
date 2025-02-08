@@ -11,8 +11,11 @@ struct Signature
     {
     }
     Signature() = default;
+
+    // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
     std::string name;
     std::string email;
+    // NOLINTEND(misc-non-private-member-variables-in-classes)
 };
 
 } // namespace CppGit

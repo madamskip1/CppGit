@@ -1,0 +1,8 @@
+analyze:
+  - --skip=codechecker_skipfile.txt
+  - -j=2
+  - --analyzer-config=clang-tidy:take-config-from-directory=true
+  - --enable-all
+  - --disable=cppcheck-missingIncludeSystem
+  - --disable=cppcheck-noExplicitConstructor # clang-tidy has better checks for this
+  # - --disable=cppcheck-normalCheckLevelMaxBranches # https://github.com/Ericsson/codechecker/issues/4446 -> but it cant be disabled yet

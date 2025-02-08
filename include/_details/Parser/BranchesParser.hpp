@@ -7,7 +7,7 @@
 
 namespace CppGit {
 
-class BranchesParser : protected Parser
+class BranchesParser final : protected Parser
 {
 public:
     static constexpr const char* const BRANCHES_FORMAT = "%(refname);%(upstream);%(push)";

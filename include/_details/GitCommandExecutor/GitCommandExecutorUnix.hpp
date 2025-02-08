@@ -11,8 +11,8 @@ namespace CppGit {
 class GitCommandExecutorUnix : public GitCommandExecutor
 {
 public:
+    static constexpr const char* const GIT_EXECUTABLE = "git";
     GitCommandExecutorUnix() = default;
-    ~GitCommandExecutorUnix() override = default;
 
 private:
     auto executeImpl(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput override;

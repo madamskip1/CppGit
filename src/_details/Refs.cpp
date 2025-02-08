@@ -1,6 +1,12 @@
 #include "_details/Refs.hpp"
 
+#include "Repository.hpp"
+
 #include <fstream>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace CppGit::_details {
 

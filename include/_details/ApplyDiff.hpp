@@ -2,13 +2,14 @@
 
 #include "Repository.hpp"
 
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <string_view>
 
 namespace CppGit::_details {
 
-enum class ApplyDiffResult
+enum class ApplyDiffResult : uint8_t
 {
     APPLIED,
     EMPTY_DIFF,

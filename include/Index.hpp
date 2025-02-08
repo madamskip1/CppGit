@@ -2,6 +2,7 @@
 #include "Error.hpp"
 #include "Repository.hpp"
 
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -17,7 +18,7 @@ struct IndexEntry
     std::filesystem::path path;
 };
 
-enum class DiffIndexStatus
+enum class DiffIndexStatus : uint8_t
 {
     ADDED,        // A
     DELETED,      // D
@@ -35,7 +36,7 @@ struct DiffIndexEntry
     DiffIndexStatus status;
 };
 
-enum class LsFilesStatus
+enum class LsFilesStatus : uint8_t
 {
     TRACKED_NOT_UNMERGED_NOT_SKIP_WORKTREE, // H
     TRACKED_SKIP_WORKTREE,                  // S

@@ -4,10 +4,20 @@
 #include "Commit.hpp"
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
+#include "Error.hpp"
 #include "Index.hpp"
+#include "RebaseTodoCommand.hpp"
+#include "Repository.hpp"
+#include "_details/ApplyDiff.hpp"
 #include "_details/CreateCommit.hpp"
 
+#include <algorithm>
+#include <expected>
 #include <filesystem>
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace CppGit {
@@ -77,7 +87,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
         auto hashAfter = std::string{};
 
-        if (auto amend = rebaseFilesHelper.getAmendFile(); amend != "")
+        if (auto amend = rebaseFilesHelper.getAmendFile(); !amend.empty())
         {
             if (lastCommand->type == RebaseTodoCommandType::EDIT && !Index{ repo }.areAnyStagedFiles())
             {
@@ -145,10 +155,11 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
 
     auto rebaseCommands = std::vector<RebaseTodoCommand>{};
 
-    for (const auto& commit : commitsToRebase)
-    {
-        rebaseCommands.emplace_back(RebaseTodoCommandType::PICK, commit.getHash(), commit.getMessage());
-    }
+    std::ranges::transform(commitsToRebase,
+                           std::back_inserter(rebaseCommands),
+                           [](const auto& commit) {
+                               return RebaseTodoCommand{ RebaseTodoCommandType::PICK, commit.getHash(), commit.getMessage() };
+                           });
 
     return rebaseCommands;
 }

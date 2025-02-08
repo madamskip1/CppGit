@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace CppGit {
 
-enum class DiffStatus
+enum class DiffStatus : uint8_t
 {
     UNKNOWN,
     NEW,
@@ -21,7 +22,7 @@ enum class DiffStatus
     BINARY_CHANGED
 };
 
-enum class DiffType
+enum class DiffType : uint8_t
 {
     NORMAL,
     COMBINED

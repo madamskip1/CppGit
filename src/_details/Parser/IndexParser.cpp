@@ -1,7 +1,14 @@
 #include "_details/Parser/IndexParser.hpp"
 
+#include "Index.hpp"
+
+#include <algorithm>
+#include <iterator>
 #include <regex>
+#include <stdexcept>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace CppGit {
 
@@ -14,7 +21,7 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
     {
         throw std::runtime_error("Invalid index entry line");
     }
-    return IndexEntry{ match[1].str(), match[2].str(), std::stoi(match[3].str()), match[4].str() };
+    return IndexEntry{ .fileMode = match[1].str(), .objectHash = match[2].str(), .stageNumber = std::stoi(match[3].str()), .path = match[4].str() };
 }
 
 auto IndexParser::parseStageDetailedList(const std::string_view indexContent) -> std::vector<IndexEntry>
@@ -102,7 +109,7 @@ auto IndexParser::parseDiffIndexWithStatusEntry(const std::string_view diffIndex
         throw std::runtime_error("Invalid diff index entry line");
     }
 
-    return DiffIndexEntry{ match[2].str(), getDiffIndexStatus(match[1].str()) };
+    return DiffIndexEntry{ .path = match[2].str(), .status = getDiffIndexStatus(match[1].str()) };
 }
 
 auto IndexParser::parseDiffIndexWithStatus(const std::string_view diffIndexContent) -> std::vector<DiffIndexEntry>
@@ -116,10 +123,9 @@ auto IndexParser::parseDiffIndexWithStatus(const std::string_view diffIndexConte
     auto result = std::vector<DiffIndexEntry>{};
     result.reserve(splitDiffIndexContent.size());
 
-    for (const auto& diffIndexLine : splitDiffIndexContent)
-    {
-        result.push_back(parseDiffIndexWithStatusEntry(diffIndexLine));
-    }
+    std::ranges::transform(splitDiffIndexContent, std::back_inserter(result), [](const auto diffIndexLine) {
+        return parseDiffIndexWithStatusEntry(diffIndexLine);
+    });
 
     return result;
 }
@@ -172,7 +178,7 @@ auto IndexParser::parseLsFilesEntry(const std::string_view lsFilesLine) -> LsFil
         throw std::runtime_error("Invalid ls-files entry line");
     }
 
-    return LsFilesEntry{ match[2].str(), getLsFilesStatus(match[1].str()) };
+    return LsFilesEntry{ .path = match[2].str(), .status = getLsFilesStatus(match[1].str()) };
 }
 
 auto IndexParser::parseLsFilesList(const std::string_view lsFilesContent) -> std::vector<LsFilesEntry>
@@ -186,10 +192,9 @@ auto IndexParser::parseLsFilesList(const std::string_view lsFilesContent) -> std
     auto result = std::vector<LsFilesEntry>{};
     result.reserve(splitLsFilesContent.size());
 
-    for (const auto& lsFilesLine : splitLsFilesContent)
-    {
-        result.push_back(parseLsFilesEntry(lsFilesLine));
-    }
+    std::ranges::transform(splitLsFilesContent, std::back_inserter(result), [](const auto& lsFilesLine) {
+        return parseLsFilesEntry(lsFilesLine);
+    });
 
     return result;
 }

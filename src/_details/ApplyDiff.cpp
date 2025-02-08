@@ -1,12 +1,16 @@
 #include "_details/ApplyDiff.hpp"
 
 #include "Index.hpp"
+#include "Repository.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/Parser/DiffParser.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
 #include <filesystem>
+#include <stdexcept>
+#include <string_view>
+#include <utility>
 
 namespace CppGit::_details {
 

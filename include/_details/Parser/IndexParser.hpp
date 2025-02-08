@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace CppGit {
-class IndexParser : protected Parser
+class IndexParser final : protected Parser
 {
 public:
     static auto parseStageDetailedEntry(const std::string_view indexEntryLine) -> IndexEntry;

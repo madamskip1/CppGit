@@ -1,11 +1,19 @@
 #include "CherryPick.hpp"
 
 #include "Commits.hpp"
+#include "Error.hpp"
 #include "Index.hpp"
+#include "Repository.hpp"
+#include "_details/ApplyDiff.hpp"
 #include "_details/FileUtility.hpp"
 
+#include <cstddef>
 #include <expected>
 #include <filesystem>
+#include <fstream>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace CppGit {
 
@@ -99,9 +107,8 @@ auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
         return std::unexpected{ Error::NO_CHERRY_PICK_IN_PROGRESS };
     }
 
-    auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails();
 
-    if (!unmergedFilesEntries.empty())
+    if (auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails(); !unmergedFilesEntries.empty())
     {
         return std::unexpected{ Error::CHERRY_PICK_CONFLICT };
     }
@@ -115,14 +122,17 @@ auto CppGit::CherryPick::processEmptyDiff(const std::string_view commitHash, Che
 {
     switch (emptyCommitStrategy)
     {
-    case CherryPickEmptyCommitStrategy::DROP:
-        return std::string(40, '0');
+    case CherryPickEmptyCommitStrategy::DROP: {
+        constexpr auto HASH_LENGTH = std::size_t{ 40 };
+        return std::string(HASH_LENGTH, '0');
+    }
     case CherryPickEmptyCommitStrategy::KEEP:
         return commitCherryPicked(commitHash);
     case CherryPickEmptyCommitStrategy::STOP:
-    default:
         createCherryPickHeadFile(commitHash);
         return std::unexpected{ Error::CHERRY_PICK_EMPTY_COMMIT };
+    [[unlikely]] default:
+        throw std::logic_error{ "Unknown CherryPickEmptyCommitStrategy" };
     }
 }
 

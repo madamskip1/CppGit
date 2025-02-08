@@ -1,5 +1,7 @@
 #include "Branch.hpp"
 
+#include <string>
+
 namespace CppGit {
 
 Branch::Branch(const std::string& refName, const std::string& upstreamPull, const std::string& upstreamPush, bool isLocalBranch)

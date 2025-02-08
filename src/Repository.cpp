@@ -5,12 +5,19 @@
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Diff.hpp"
+#include "Error.hpp"
 #include "Index.hpp"
 #include "Merge.hpp"
 #include "Rebase.hpp"
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 namespace CppGit {
 
@@ -87,7 +94,7 @@ auto Repository::getTopLevelPath() const -> std::filesystem::path
         output.stdout.replace(output.stdout.find('\n'), 1, "");
     }
 
-    return std::filesystem::path(output.stdout);
+    return { output.stdout };
 }
 
 auto Repository::getGitDirectoryPath() const -> std::filesystem::path
@@ -210,7 +217,6 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
         if (!std::filesystem::is_directory(path))
         {
             throw std::runtime_error("Path is not a directory");
-            return false;
         }
 
         if (bare)
@@ -218,7 +224,6 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
             if (!std::filesystem::is_empty(path))
             {
                 throw std::runtime_error("Directory is not empty");
-                return false;
             }
         }
         else
@@ -226,7 +231,6 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
             if (std::filesystem::exists(gitDir))
             {
                 throw std::runtime_error("Git directory already exists");
-                return false;
             }
         }
     }
@@ -234,49 +238,43 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
     if (!std::filesystem::create_directories(gitDir))
     {
         throw std::runtime_error("Failed to create git directory");
-        return false;
     }
 
     if (auto objectsDir = gitDir / "objects"; !std::filesystem::create_directories(objectsDir))
     {
         throw std::runtime_error("Failed to create objects directory");
-        return false;
     }
 
     auto refsDir = gitDir / "refs";
     if (!std::filesystem::create_directories(refsDir))
     {
         throw std::runtime_error("Failed to create refs directory");
-        return false;
     }
 
     if (!std::filesystem::create_directory(refsDir / "heads")
         || !std::filesystem::create_directory(refsDir / "tags"))
     {
         throw std::runtime_error("Failed to create heads or tags directory");
-        return false;
     }
 
     std::ofstream headFile(gitDir / "HEAD");
     if (!headFile.is_open())
     {
         throw std::runtime_error("Failed to create HEAD file");
-        return false;
     }
     headFile << "ref: refs/heads/" << mainBranchName;
     headFile.close();
 
-    std::string configContent = std::string{ "[core]\n" }
-                              + "\trepositoryformatversion = 0\n"
-                              + "\tfilemode = true\n"
-                              + "\tbare = " + std::string{ bare ? "true" : "false" }
-                              + std::string{ bare ? "" : "\n\tlogallrefupdates = true\n" };
+    const auto configContent = std::string{ "[core]\n" }
+                             + "\trepositoryformatversion = 0\n"
+                             + "\tfilemode = true\n"
+                             + "\tbare = " + std::string{ bare ? "true" : "false" }
+                             + std::string{ bare ? "" : "\n\tlogallrefupdates = true\n" };
 
     std::ofstream config(gitDir / "config");
     if (!config.is_open())
     {
         throw std::runtime_error("Failed to create config file");
-        return false;
     }
     config << configContent;
     config.close();
@@ -294,7 +292,7 @@ auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
     }
     if (remote_output.stdout.empty())
     {
-        return std::unordered_set<std::string>();
+        return {};
     }
 
     std::istringstream iss(remote_output.stdout);
@@ -318,7 +316,7 @@ auto Repository::getConfig() const -> std::vector<GitConfigEntry>
     }
     if (config_output.stdout.empty())
     {
-        return std::vector<GitConfigEntry>();
+        return {};
     }
 
     std::istringstream iss(config_output.stdout);
@@ -372,7 +370,7 @@ auto Repository::getDescription() const -> std::string
     if (auto unnamedPos = description.find("Unnamed repository");
         unnamedPos == 0)
     {
-        return std::string();
+        return {};
     }
 
     return description;

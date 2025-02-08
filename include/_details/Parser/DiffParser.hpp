@@ -3,6 +3,7 @@
 #include "DiffFile.hpp"
 #include "Parser.hpp"
 
+#include <cstdint>
 #include <regex>
 #include <tuple>
 #include <utility>
@@ -11,15 +12,13 @@
 
 namespace CppGit {
 
-class DiffParser : protected Parser
+class DiffParser final : protected Parser
 {
 public:
-    DiffParser() = default;
-
     auto parse(const std::string_view diffContent) -> std::vector<DiffFile>;
 
 private:
-    enum class ParseState
+    enum class ParseState : uint8_t
     {
         WAITING_FOR_DIFF,
         HEADER,
@@ -29,7 +28,7 @@ private:
         HUNK_CONTENT
     };
 
-    enum class HeaderLineType
+    enum class HeaderLineType : uint8_t
     {
         NO_LINE,
         OLD_MODE,

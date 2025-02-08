@@ -1,8 +1,14 @@
 #include "Commits.hpp"
 
+#include "Repository.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Parser/CommitParser.hpp"
 #include "_details/Refs.hpp"
+
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace CppGit {
 
@@ -29,8 +35,8 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     envp.emplace_back("GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email);
     envp.emplace_back("GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate());
 
-    auto newCommitMessage = (message == "" ? commitInfo.getMessage() : std::string{ message });
-    auto newCommitDescription = (message == "" ? commitInfo.getDescription() : std::string{ description });
+    auto newCommitMessage = (message.empty() ? commitInfo.getMessage() : std::string{ message });
+    auto newCommitDescription = (message.empty() ? commitInfo.getDescription() : std::string{ description });
 
     return _createCommit.createCommit(newCommitMessage, newCommitDescription, commitInfo.getParents(), envp);
 }
