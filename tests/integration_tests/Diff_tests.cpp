@@ -64,7 +64,7 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
     auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -103,7 +103,7 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
     auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -131,7 +131,7 @@ TEST_F(DiffTests, fileModdified)
     auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile.fileA, "test.txt");
     EXPECT_EQ(diffFile.fileB, "test.txt");
@@ -194,7 +194,7 @@ TEST_F(DiffTests, multipleFile)
     ASSERT_NE(test1DiffFile, nullptr);
     ASSERT_NE(test2DiffFile, nullptr);
 
-    EXPECT_EQ(test1DiffFile->isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(test1DiffFile->isCombined, false);
     EXPECT_EQ(test1DiffFile->diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(test1DiffFile->fileA, "test1.txt");
     EXPECT_EQ(test1DiffFile->fileB, "test1.txt");
@@ -212,7 +212,7 @@ TEST_F(DiffTests, multipleFile)
     }
     EXPECT_TRUE(foundAddedLine);
 
-    EXPECT_EQ(test2DiffFile->isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(test2DiffFile->isCombined, false);
     EXPECT_EQ(test2DiffFile->diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(test2DiffFile->fileA, "/dev/null");
     EXPECT_EQ(test2DiffFile->fileB, "test2.txt");
@@ -242,7 +242,7 @@ TEST_F(DiffTests, getGivenFileDiff)
     auto diffFiles = diff.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -295,7 +295,7 @@ TEST_F(DiffTests, givenCommitDiff)
     auto diffFiles = diff.getDiff(secondCommitHash);
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -325,7 +325,7 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
     auto diffFiles = diff.getDiff("HEAD~1");
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -355,7 +355,7 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
     auto diffFiles = diff.getDiff("HEAD^");
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");
@@ -402,7 +402,7 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
     ASSERT_NE(test1DiffFile, nullptr);
     ASSERT_NE(test2DiffFile, nullptr);
 
-    EXPECT_EQ(test1DiffFile->isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(test1DiffFile->isCombined, false);
     EXPECT_EQ(test1DiffFile->diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(test1DiffFile->fileA, "test1.txt");
     EXPECT_EQ(test1DiffFile->fileB, "test1.txt");
@@ -420,7 +420,7 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
     }
     EXPECT_TRUE(foundAddedLine);
 
-    EXPECT_EQ(test2DiffFile->isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(test2DiffFile->isCombined, false);
     EXPECT_EQ(test2DiffFile->diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(test2DiffFile->fileA, "/dev/null");
     EXPECT_EQ(test2DiffFile->fileB, "test2.txt");
@@ -452,7 +452,7 @@ TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
     auto diffFiles = diff.getDiffFile(firstCommithash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "test2.txt");

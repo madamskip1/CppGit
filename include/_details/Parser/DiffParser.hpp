@@ -4,7 +4,6 @@
 #include "Parser.hpp"
 
 #include <cstdint>
-#include <regex>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -22,6 +21,7 @@ private:
     {
         WAITING_FOR_DIFF,
         HEADER,
+        BINARY_FILE,
         HUNK_FILE_A,
         HUNK_FILE_B,
         HUNK_HEADER,
@@ -41,7 +41,6 @@ private:
         RENAME_TO,
         SIMILARITY_INDEX,
         INDEX,
-        END_HEADER
     };
 
     struct HeaderLine
@@ -60,11 +59,16 @@ private:
     ParseState currentState{ ParseState::WAITING_FOR_DIFF };
 
     static auto parseHeaderLine(const std::string_view line, const HeaderLineType headerLineBefore) -> HeaderLine;
+    static auto parseHunkFileLine(const std::string_view line, const std::string_view prefix) -> std::string;
     static auto parseHunkHeader(const std::string_view line) -> std::pair<std::vector<std::pair<int, int>>, std::pair<int, int>>;
     static auto parseHunkHeaderRange(const std::string_view range) -> std::pair<int, int>;
     static auto parseDiffLine(const std::string_view line) -> DiffLine;
-    static auto getIntFromStringViewMatch(const std::match_results<std::string_view::const_iterator>& match, std::size_t index) -> int;
-};
 
+    static auto processHeaderLine(const HeaderLine& headerLine, DiffFile& diffFile) -> void;
+
+    static auto peakNextLine(std::vector<std::string_view>::const_iterator iterator, const std::vector<std::string_view>::const_iterator endIterator) -> std::string_view;
+
+    static auto removePrefixFromFileIfStartsWith(std::string_view& file, const std::string_view prefix) -> void;
+};
 
 } // namespace CppGit

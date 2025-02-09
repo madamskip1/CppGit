@@ -23,7 +23,7 @@ index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "0000000");
     EXPECT_EQ(diffFile.indexAfter, "180cf8328022becee9aaa2577a8f84ea2b9f3827");
@@ -58,7 +58,7 @@ index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "0000000000000000000000000000000000000000");
     EXPECT_EQ(diffFile.indexAfter, "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
@@ -95,7 +95,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::DELETED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "0000000");
@@ -130,7 +130,7 @@ index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..00000000000000000000000000000000
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::DELETED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
     EXPECT_EQ(diffFile.indexAfter, "0000000000000000000000000000000000000000");
@@ -166,7 +166,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -204,7 +204,7 @@ rename to new_name.txt)";
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::RENAMED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 0);
@@ -242,7 +242,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::RENAMED_AND_MODIFIED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -279,7 +279,7 @@ copy to copied_file.txt)";
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::COPIED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 0);
@@ -319,7 +319,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::COPIED_AND_MODIFIED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -355,7 +355,7 @@ new mode 100755)";
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::TYPE_CHANGED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 0);
     EXPECT_EQ(diffFile.indexAfter, "");
     EXPECT_EQ(diffFile.oldMode, 100'644);
@@ -391,7 +391,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::TYPE_CHANGED_SYMLINK);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -434,7 +434,7 @@ index 6fefc78134f4d22c90a778f555c4137feded408e,1d89a1850b82787e2766aa3c724048fc7
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::COMBINED);
+    EXPECT_EQ(diffFile.isCombined, true);
     ASSERT_EQ(diffFile.indicesBefore.size(), 2);
     EXPECT_EQ(diffFile.indicesBefore[0], "6fefc78134f4d22c90a778f555c4137feded408e");
     EXPECT_EQ(diffFile.indicesBefore[1], "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -495,7 +495,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
     auto diffFile1 = diffFiles[0];
 
     EXPECT_EQ(diffFile1.diffStatus, CppGit::DiffStatus::MODDIFIED);
-    EXPECT_EQ(diffFile1.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile1.isCombined, false);
     ASSERT_EQ(diffFile1.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile1.indicesBefore[0], "3406f99e1a810bac7e2f890286787350ce2601d3");
     EXPECT_EQ(diffFile1.indexAfter, "6fefc78134f4d22c90a778f555c4137feded408e");
@@ -518,7 +518,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
     auto diffFile2 = diffFiles[1];
 
     EXPECT_EQ(diffFile2.diffStatus, CppGit::DiffStatus::NEW);
-    EXPECT_EQ(diffFile2.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile2.isCombined, false);
     ASSERT_EQ(diffFile2.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile2.indicesBefore[0], "0000000000000000000000000000000000000000");
     EXPECT_EQ(diffFile2.indexAfter, "180cf8328022becee9aaa2577a8f84ea2b9f3827");
@@ -538,7 +538,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
     auto diffFile3 = diffFiles[2];
 
     EXPECT_EQ(diffFile3.diffStatus, CppGit::DiffStatus::NEW);
-    EXPECT_EQ(diffFile3.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile3.isCombined, false);
     ASSERT_EQ(diffFile3.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile3.indicesBefore[0], "0000000000000000000000000000000000000000");
     EXPECT_EQ(diffFile3.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");
@@ -570,7 +570,7 @@ Binary files differ)";
     auto diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::BINARY_CHANGED);
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     ASSERT_EQ(diffFile.indicesBefore.size(), 1);
     EXPECT_EQ(diffFile.indicesBefore[0], "180cf8328022becee9aaa2577a8f84ea2b9f3827");
     EXPECT_EQ(diffFile.indexAfter, "1d89a1850b82787e2766aa3c724048fc74ea4fbc");

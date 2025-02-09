@@ -22,15 +22,9 @@ enum class DiffStatus : uint8_t
     BINARY_CHANGED
 };
 
-enum class DiffType : uint8_t
-{
-    NORMAL,
-    COMBINED
-};
-
 struct DiffFile
 {
-    DiffType isCombined;
+    bool isCombined{ false };
     DiffStatus diffStatus{ DiffStatus::UNKNOWN };
 
     std::string fileA;

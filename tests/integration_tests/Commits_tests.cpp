@@ -272,7 +272,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     auto diffFile = diffFiles[0];
-    EXPECT_EQ(diffFile.isCombined, CppGit::DiffType::NORMAL);
+    EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "file.txt");
