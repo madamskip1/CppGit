@@ -110,10 +110,10 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     ASSERT_TRUE(rebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
-    EXPECT_EQ(branches.getCurrentBranch(), "refs/heads/second_branch");
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/second_branch");
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
@@ -160,9 +160,9 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     ASSERT_TRUE(rebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);

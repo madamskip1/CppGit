@@ -22,7 +22,7 @@ public:
     auto getRemoteBranches() const -> std::vector<Branch>;
     auto getLocalBranches() const -> std::vector<Branch>;
 
-    auto getCurrentBranch() const -> std::string;
+    auto getCurrentBranchName() const -> std::string;
     auto getCurrentBranchInfo() const -> Branch;
 
     auto changeCurrentBranch(const std::string_view branchName) const -> Error;

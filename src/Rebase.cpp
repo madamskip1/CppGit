@@ -187,7 +187,7 @@ auto Rebase::startRebase(const std::string_view upstream, const std::vector<Reba
     auto upstreamHash = refs.getRefHash(upstream);
 
     rebaseFilesHelper.createRebaseDir();
-    rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranch());
+    rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranchName());
     rebaseFilesHelper.createOntoFile(upstreamHash);
     rebaseFilesHelper.createOrigHeadFiles(refs.getRefHash("HEAD"));
     rebaseFilesHelper.generateTodoFile(rebaseCommands);

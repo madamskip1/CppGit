@@ -41,9 +41,9 @@ TEST_F(RebaseBasicTests, simpleRebase)
     ASSERT_TRUE(rebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 4);
@@ -323,9 +323,9 @@ TEST_F(RebaseBasicTests, conflict_abort)
     ASSERT_EQ(rebaseAbortResult, CppGit::Error::NO_ERROR);
 
     EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), thirdCommitHash);
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), thirdCommitHash);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Second");
 
@@ -366,9 +366,9 @@ TEST_F(RebaseBasicTests, conflict_continue)
     ASSERT_TRUE(rebaseContinueResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), rebaseContinueResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), rebaseContinueResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseContinueResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);

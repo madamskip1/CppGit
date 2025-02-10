@@ -142,9 +142,9 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -186,9 +186,9 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -233,9 +233,9 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -280,9 +280,9 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -325,9 +325,9 @@ TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -370,9 +370,9 @@ TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
     ASSERT_TRUE(continueRewordResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRewordResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRewordResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRewordResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -538,9 +538,9 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue)
     ASSERT_TRUE(continueRebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
@@ -599,9 +599,9 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
     ASSERT_TRUE(continueRebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);

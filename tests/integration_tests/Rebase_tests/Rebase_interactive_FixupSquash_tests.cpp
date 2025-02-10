@@ -113,9 +113,9 @@ TEST_F(RebaseInteractiveFixupSquashTests, continueRebase)
     ASSERT_TRUE(squashContinueResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), squashContinueResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), squashContinueResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), squashContinueResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -469,9 +469,9 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnFixup_continueToEnd)
     ASSERT_TRUE(continueRebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -691,9 +691,9 @@ TEST_F(RebaseInteractiveFixupSquashTests, conflictOnSquash_continue)
     ASSERT_TRUE(continueRebaseResult.has_value());
 
     EXPECT_EQ(commits.getHeadCommitHash(), continueRebaseResult.value());
-    auto currentBranch = branches.getCurrentBranch();
-    EXPECT_EQ(currentBranch, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranch), continueRebaseResult.value());
+    auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(currentBranchName, "refs/heads/main");
+    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);

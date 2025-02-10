@@ -39,8 +39,8 @@ auto Branches::getLocalBranches() const -> std::vector<Branch>
 
 auto Branches::getCurrentBranchInfo() const -> Branch
 {
-    auto currentBranch = getCurrentBranch();
-    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranch));
+    auto currentBranchName = getCurrentBranchName();
+    auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchName));
 
     if (output.return_code != 0)
     {
@@ -51,7 +51,7 @@ auto Branches::getCurrentBranchInfo() const -> Branch
     return branch;
 }
 
-auto Branches::getCurrentBranch() const -> std::string
+auto Branches::getCurrentBranchName() const -> std::string
 {
     return refs.getSymbolicRef("HEAD");
 }
