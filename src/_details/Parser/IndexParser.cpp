@@ -3,6 +3,7 @@
 #include "Index.hpp"
 
 #include <algorithm>
+#include <charconv>
 #include <iterator>
 #include <regex>
 #include <stdexcept>
@@ -21,7 +22,10 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
     {
         throw std::runtime_error("Invalid index entry line");
     }
-    return IndexEntry{ .fileMode = match[1].str(), .objectHash = match[2].str(), .stageNumber = std::stoi(match[3].str()), .path = match[4].str() };
+
+    auto fileMode = 0;
+    std::from_chars(match[1].first, match[1].second, fileMode);
+    return IndexEntry{ .fileMode = fileMode, .stageNumber = std::stoi(match[3].str()), .objectHash = match[2].str(), .path = match[4].str() };
 }
 
 auto IndexParser::parseStageDetailedList(const std::string_view indexContent) -> std::vector<IndexEntry>

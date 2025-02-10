@@ -12,9 +12,9 @@ namespace CppGit {
 
 struct IndexEntry
 {
-    std::string fileMode;
-    std::string objectHash;
+    int fileMode;
     int stageNumber;
+    std::string objectHash;
     std::filesystem::path path;
 };
 

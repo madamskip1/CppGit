@@ -118,7 +118,7 @@ TEST_F(IndexTests, addExecutableFile)
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
-    EXPECT_EQ(indexFiles[0].fileMode, "100755");
+    EXPECT_EQ(indexFiles[0].fileMode, 100'755);
     EXPECT_EQ(indexFiles[0].path, "file.sh");
     stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
@@ -145,7 +145,7 @@ TEST_F(IndexTests, addSymlink)
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 1);
-    EXPECT_EQ(indexFiles[0].fileMode, "120000");
+    EXPECT_EQ(indexFiles[0].fileMode, 120'000);
     EXPECT_EQ(indexFiles[0].path, "file-symlink.txt");
     stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
