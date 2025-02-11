@@ -14,6 +14,9 @@ namespace CppGit {
 class DiffParser final : protected Parser
 {
 public:
+    /// @brief Parse the diff content
+    /// @param diffContent Diff content
+    /// @return Parsed diff files
     auto parse(const std::string_view diffContent) -> std::vector<DiffFile>;
 
 private:

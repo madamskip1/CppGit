@@ -6,20 +6,22 @@
 #include <string_view>
 
 namespace CppGit {
+
+/// @brief Type of rebase todo command
 enum class RebaseTodoCommandType : uint8_t
 {
-    PICK,
-    REWORD,
-    EDIT,
-    SQUASH,
-    FIXUP,
-    EXEC,
-    BREAK,
-    DROP,
-    LABEL,
-    RESET,
-    MERGE,
-    UPDATE_REF
+    PICK,      ///< Pick commit
+    REWORD,    ///< Stop to edit commit message
+    EDIT,      ///< Stop to edit commit
+    SQUASH,    ///< Squash commit with previous commit and stop to edit commit message
+    FIXUP,     ///< Fixup commit with previous commit
+    EXEC,      ///< Execute shell command. NOT IMPLEMENTED
+    BREAK,     ///< Stop for a break
+    DROP,      ///< Drop commit
+    LABEL,     ///< Label commit. NOT IMPLEMENTED
+    RESET,     ///< Reset to label(?) NOT IMPLEMENTED
+    MERGE,     ///< Merge commit. NOT IMPLEMENTED
+    UPDATE_REF ///< Update ref. NOT IMPLEMENTED
 };
 
 class RebaseTodoCommandTypeWrapper
@@ -27,6 +29,7 @@ class RebaseTodoCommandTypeWrapper
 public:
     RebaseTodoCommandType type; // NOLINT(misc-non-private-member-variables-in-classes)
 
+    /// @param type Type of the command
     explicit(false) RebaseTodoCommandTypeWrapper(const RebaseTodoCommandType type)
         : type{ type }
     {
@@ -40,6 +43,8 @@ public:
         return lhs.type == rhs;
     }
 
+    /// @brief Convert the command type to a string representation
+    /// @return The representation of the command type
     auto toStringFull() const -> std::string
     {
         switch (type)
@@ -73,6 +78,8 @@ public:
         }
     }
 
+    /// @brief Convert the command type to a short string representation
+    /// @return The short representation of the command type
     auto toStringShort() const -> std::string
     {
         switch (type)
@@ -106,6 +113,9 @@ public:
         }
     }
 
+    /// @brief Convert a string representation of a command to a RebaseTodoCommandTypeWrapper
+    /// @param command The string representation of the command
+    /// @return The RebaseTodoCommandTypeWrapper representing the command
     static auto fromString(const std::string_view command) -> RebaseTodoCommandTypeWrapper
     {
         if (command == "pick" || command == "p")
@@ -170,6 +180,10 @@ public:
     std::string message;
     // NOLINTEND(misc-non-private-member-variables-in-classes)
 
+    /// @brief Construct a new RebaseTodoCommand object
+    /// @param type Type of the command
+    /// @param hash Hash of the commit
+    /// @param message Message of the commit
     RebaseTodoCommand(const RebaseTodoCommandType type, const std::string& hash, const std::string& message)
         : type{ type },
           hash{ hash },
@@ -177,6 +191,8 @@ public:
     {
     }
 
+    /// @brief Construct a new RebaseTodoCommand object
+    /// @param type Type of the command
     explicit(false) RebaseTodoCommand(const RebaseTodoCommandType type)
         : type{ type }
     {
@@ -184,6 +200,8 @@ public:
 
     auto operator==(const RebaseTodoCommand& rhs) const -> bool = default;
 
+    /// @brief Convert the command to a string representation
+    /// @return The representation of the command
     auto toString() const -> std::string
     {
         if (hash.empty())

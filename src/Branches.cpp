@@ -58,7 +58,7 @@ auto Branches::getCurrentBranchName() const -> std::string
 
 auto Branches::changeCurrentBranch(const std::string_view branchName) const -> Error
 {
-    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto branchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, false);
 
     return changeHEAD(branchNameWithPrefix);
 }
@@ -75,7 +75,7 @@ auto Branches::detachHead(const std::string_view commitHash) const -> Error
 
 auto Branches::branchExists(const std::string_view branchName, bool remote) const -> bool
 {
-    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, remote);
+    auto branchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, remote);
 
     return refs.refExists(branchNameWithPrefix);
 }
@@ -88,7 +88,7 @@ auto Branches::branchExists(const Branch& branch) const -> bool
 
 auto Branches::deleteBranch(const std::string_view branchName) const -> void
 {
-    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto branchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, false);
 
     refs.deleteRef(branchNameWithPrefix);
 }
@@ -100,7 +100,7 @@ auto Branches::deleteBranch(const Branch& branch) const -> void
 
 auto Branches::getHashBranchRefersTo(const std::string_view branchName, bool remote) const -> std::string
 {
-    auto branchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, remote);
+    auto branchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, remote);
 
     return refs.getRefHash(branchNameWithPrefix);
 }
@@ -113,7 +113,7 @@ auto Branches::getHashBranchRefersTo(const Branch& branch) const -> std::string
 
 auto Branches::createBranch(const std::string_view branchName, const std::string_view startRef) const -> void
 {
-    auto newBranchNameWithPrefix = _details::Refs::getRefWithAddedPrefixIfNeeded(branchName, false);
+    auto newBranchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, false);
     refs.createRef(newBranchNameWithPrefix, startRef);
 }
 

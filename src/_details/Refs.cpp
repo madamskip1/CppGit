@@ -103,7 +103,7 @@ auto Refs::detachHead(std::string_view commitHash) const -> void
     HEADFile.close();
 }
 
-auto Refs::getRefWithAddedPrefixIfNeeded(std::string_view refName, bool remote) -> std::string
+auto Refs::appendPrefixToRefIfNeeded(std::string_view refName, bool remote) -> std::string
 {
     if (refName == "HEAD")
     {

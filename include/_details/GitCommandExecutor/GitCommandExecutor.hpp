@@ -15,6 +15,13 @@ class GitCommandExecutor
 public:
     virtual ~GitCommandExecutor() = default;
 
+    /// @brief Execute a git command
+    /// @tparam Args Types of the arguments
+    /// @param environmentVariables Environment variables to set before executing the command
+    /// @param repoPath Path to the repository
+    /// @param command Command to execute
+    /// @param args Arguments to pass to the command
+    /// @return Output of the command
     template <typename... Args>
     auto execute(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, Args&&... args)
         -> GitCommandOutput
@@ -35,6 +42,12 @@ public:
         }
     }
 
+    /// @brief Execute a git command
+    /// @param environmentVariables Environment variables to set before executing the command
+    /// @param repoPath Path to the repository
+    /// @param command Command to execute
+    /// @param args Arguments to pass to the command
+    /// @return Output of the command
     auto execute(const std::vector<std::string>& environmentVariables, const std::string_view repoPath, const std::string_view command, const std::vector<std::string>& args) -> GitCommandOutput;
 
 protected:

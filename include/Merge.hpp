@@ -16,23 +16,65 @@ namespace CppGit {
 class Merge
 {
 public:
+    /// @param repo The repository to work with
     explicit Merge(const Repository& repo);
 
+    /// @brief Merge source branch onto current branch using fast-forward merge
+    ///    Will fail if merge fast-forward is not possible
+    /// @param sourceBranch Source branch name to merge
+    /// @return Source branch's commit hash if merge FF is successful, otherwise error code
     auto mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, Error>;
+
+    /// @brief Merge source branch onto target branch using fast-forward
+    ///     Will fail if merge fast-forward is not possible
+    /// @param sourceBranch Source branch name to merge
+    /// @param targetBranch Target branch name to merge onto
+    /// @return Source branch's commit hash if merge FF is successful, otherwise error code
     auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>;
 
+    /// @brief Merge source branch onto current branch using no-fast-forward merge
+    /// @param sourceBranch Source branch name to merge
+    /// @param message Merge commit message
+    /// @param description Merge commit description (optional)
+    /// @return Merge commit hash if merge No-FF is successful, otherwise error code
     auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") -> std::expected<std::string, Error>;
 
+    /// @brief Check whether fast-forward merge source branch onto current branch is possible
+    /// @param sourceBranch Source branch name that would be merged
+    /// @return True if fast-forward merge is possible, otherwise false
     auto canFastForward(const std::string_view sourceBranch) const -> bool;
+
+    /// @brief Check whether fast-forward merge source branch onto target branch is possible
+    /// @param sourceBranch Source branch name that would be merged
+    /// @param targetBranch Target branch name that would be merged onto
+    /// @return True if fast-forward merge is possible, otherwise false
     auto canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
 
+    /// @brief Check whether there is anything to merge from source branch onto current branch
+    /// @param sourceBranch Source branch name that would be merged
+    /// @return True if there is anything to merge, otherwise false
     auto isAnythingToMerge(const std::string_view sourceBranch) const -> bool;
+
+    /// @brief Check whether there is anything to merge from source branch onto target branch
+    /// @param sourceBranch Source branch name that would be merged
+    /// @param targetBranch Target branch name that would be merged onto
+    /// @return True if there is anything to merge, otherwise false
     auto isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
 
+    /// @brief Check whether there is a merge in progress
+    /// @return True if there is a merge in progress, otherwise false
     auto isMergeInProgress() const -> bool;
+
+    /// @brief Check whether there is any conflict in current merge
+    /// @return True if there is any conflict, otherwise false
     auto isThereAnyConflict() const -> std::expected<bool, Error>;
 
+    /// @brief Abort current merge in progress
+    /// @return Error code if there is no merge in progress, otherwise no error
     auto abortMerge() const -> Error;
+
+    /// @brief Continue current merge in progress
+    /// @return Merge commit hash if merge is successful, otherwise error code
     auto continueMerge() const -> std::expected<std::string, Error>;
 
 private:

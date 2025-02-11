@@ -124,7 +124,7 @@ auto RebaseFilesHelper::appendRewrittenPendingFile(const std::string_view hash) 
 }
 
 
-auto RebaseFilesHelper::moveRewrittenPendingToRewrittenList(const std::string_view newHash) const -> void
+auto RebaseFilesHelper::appendRewrittenListWithRewrittenPending(const std::string_view newHash) const -> void
 {
     auto rewrittenPending = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending");
 

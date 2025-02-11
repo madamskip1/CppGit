@@ -5,6 +5,11 @@
 
 namespace CppGit::_details::FileUtility {
 
+/// @brief Create or overwrite file with given content
+/// @tparam T File path type
+/// @tparam Args Content types
+/// @param path File path
+/// @param args Content
 template <typename T, typename... Args>
 inline auto createOrOverwriteFile(T&& path, Args&&... args) -> void
 {
@@ -13,6 +18,11 @@ inline auto createOrOverwriteFile(T&& path, Args&&... args) -> void
     file.close();
 }
 
+/// @brief Create or append file with given content
+/// @tparam T File path type
+/// @tparam Args Content types
+/// @param path File path
+/// @param args Content
 template <typename T, typename... Args>
 inline auto createOrAppendFile(T&& path, Args&&... args) -> void
 {
@@ -21,6 +31,10 @@ inline auto createOrAppendFile(T&& path, Args&&... args) -> void
     file.close();
 }
 
+/// @brief Read file content
+/// @tparam T File path type
+/// @param path File path
+/// @return File content
 template <typename T>
 inline auto readFile(T&& path)
 {

@@ -22,12 +22,25 @@ enum class CherryPickEmptyCommitStrategy : uint8_t
 class CherryPick
 {
 public:
+    /// @param repo The repository to work with
     explicit CherryPick(const Repository& repo);
 
+    /// @brief Cherry pick a commit
+    /// @param commitHash The commit hash to cherry pick
+    /// @param emptyCommitStrategy The strategy to use when cherry picking an empty commit
+    /// @return The hash of the cherry picked commit or an error code
     auto cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::expected<std::string, Error>;
+
+    /// @brief Continue cherry picking after stopping on an empty commit
+    /// @return The hash of the cherry picked commit or an error code
     auto commitEmptyCherryPickedCommit() const -> std::expected<std::string, Error>;
+
+    /// @brief Continue cherry picking after stopping on a conflict
+    /// @return The hash of the cherry picked commit or an error code
     auto cherryPickContinue() const -> std::expected<std::string, Error>;
 
+    /// @brief Check whether a cherry pick is in progress
+    /// @return True if a cherry pick is in progress, false otherwise
     auto isCherryPickInProgress() const -> bool;
 
 private:

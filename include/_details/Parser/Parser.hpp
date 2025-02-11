@@ -11,18 +11,32 @@ namespace CppGit {
 class Parser
 {
 public:
+    /// @brief Split content by delimiter
+    /// @tparam T Type of delimiter
+    /// @param line String view to split
+    /// @param delimiter Delimiter
+    /// @return Splitted string views vector
     template <typename T>
     static auto splitToStringViewsVector(const std::string_view line, const T& delimiter) -> std::vector<std::string_view>
     {
         return splitImpl<std::string_view>(line, delimiter);
     }
 
+    /// @brief Split content by delimiter
+    /// @tparam T Type of delimiter
+    /// @param line String view to split
+    /// @param delimiter Delimiter
+    /// @return Splitted strings vector
     template <typename T>
     static auto splitToStringsVector(const std::string_view line, const T& delimiter) -> std::vector<std::string>
     {
         return splitImpl<std::string>(line, delimiter);
     }
 
+    /// @brief Get size of delimiter
+    /// @tparam T Type of delimiter
+    /// @param delimiter Delimiter
+    /// @return Size of delimiter
     template <typename T>
     static auto getDelimiterSize(const T& delimiter) -> std::size_t
     {
@@ -40,6 +54,10 @@ public:
         }
     }
 
+    /// @brief Convert string_view iterator range to string_view
+    /// @param begin Begin string_view iterator
+    /// @param end End string_view iterator
+    /// @return String_view
     static auto string_viewIteratorToString_view(const std::string_view::const_iterator& begin, const std::string_view::const_iterator& end) -> std::string_view
     {
         auto count = static_cast<std::string_view::size_type>(end - begin);

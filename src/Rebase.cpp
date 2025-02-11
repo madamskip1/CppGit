@@ -119,7 +119,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         }
         else
         {
-            rebaseFilesHelper.moveRewrittenPendingToRewrittenList(hashAfter);
+            rebaseFilesHelper.appendRewrittenListWithRewrittenPending(hashAfter);
             rebaseFilesHelper.appendRewrittenListFile(hashBefore, hashAfter);
         }
 
@@ -381,7 +381,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
 
     auto newCommitHash = commits.amendCommit();
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
-    rebaseFilesHelper.moveRewrittenPendingToRewrittenList(newCommitHash);
+    rebaseFilesHelper.appendRewrittenListWithRewrittenPending(newCommitHash);
     rebaseFilesHelper.removeCurrentFixupFile();
 
     return Error::NO_ERROR;
