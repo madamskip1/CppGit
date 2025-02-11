@@ -18,8 +18,7 @@ protected:
 
     static constexpr auto* const AUTHOR_NAME = "TestAuthor";
     static constexpr auto* const AUTHOR_EMAIL = "test@email.com";
-    static constexpr auto* const AUTHOR_DATE_WITH_TIMEZONE = "1730738278 +0100";
-    static constexpr auto* const AUTHOR_DATE_WITHOUT_TIMEZONE = "1730738278"; // TODO Fix CommitsHistory::getCommitsLogDetailed to handle timezones
+    static constexpr auto* const AUTHOR_DATE = "1730738278 +0100";
 
     auto createCommitWithTestAuthorCommiter(const std::string_view& message, const std::string_view description, std::string parentHash) const -> std::string;
     auto createCommitWithTestAuthorCommiter(const std::string_view& message, std::string parentHash) const -> std::string;

@@ -215,7 +215,7 @@ auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, c
     auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
     arguments.push_back(std::move(formatString));
     arguments.emplace_back("--no-commit-header");
-
+    arguments.emplace_back("--date=raw");
 
     auto output = repo_.executeGitCommand("rev-list", arguments);
 
