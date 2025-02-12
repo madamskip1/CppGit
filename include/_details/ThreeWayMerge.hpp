@@ -42,7 +42,7 @@ public:
 
     /// @brief Get the content of the MERGE_MSG file
     /// @return The content of the MERGE_MSG file
-    auto getMergeMsg() const -> std::string;
+    [[nodiscard]] auto getMergeMsg() const -> std::string;
 
 private:
     const Repository& repo;

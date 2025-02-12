@@ -32,7 +32,7 @@ public:
 
     /// @brief Get head name file content
     ///     Branch name that was checked out before the rebase started
-    auto getHeadName() const -> std::string;
+    [[nodiscard]] auto getHeadName() const -> std::string;
 
     /// @brief Create orig head files
     /// @param origHead Commit hash of the branch that was checked out before the rebase started
@@ -40,7 +40,7 @@ public:
 
     /// @brief Get orig head file content
     /// @return Commit hash of the branch that was checked out before the rebase started
-    auto getOrigHead() const -> std::string;
+    [[nodiscard]] auto getOrigHead() const -> std::string;
 
     /// @brief Create author script file
     /// @param authorName Author name
@@ -50,7 +50,7 @@ public:
 
     /// @brief Get author script file content
     /// @return Author name, email and date
-    auto getAuthorScriptFile() const -> std::vector<std::string>;
+    [[nodiscard]] auto getAuthorScriptFile() const -> std::vector<std::string>;
 
     /// @brief Remove author script file
     auto removeAuthorScriptFile() const -> void;
@@ -61,7 +61,7 @@ public:
 
     /// @brief Get amend file content
     /// @return Commit hash that will be amended
-    auto getAmendFile() const -> std::string;
+    [[nodiscard]] auto getAmendFile() const -> std::string;
 
     /// @brief Remove amend file
     auto removeAmendFile() const -> void;
@@ -72,7 +72,7 @@ public:
 
     /// @brief Get rebase head file content
     /// @return Commit hash that will be rebased
-    auto getRebaseHeadFile() const -> std::string;
+    [[nodiscard]] auto getRebaseHeadFile() const -> std::string;
 
     /// @brief Remove rebase head file
     auto removeRebaseHeadFile() const -> void;
@@ -96,7 +96,7 @@ public:
 
     /// @brief Check whether there are any squash in current fixup
     /// @return True if there are any squash, false otherwise
-    auto areAnySquashInCurrentFixup() const -> bool;
+    [[nodiscard]] auto areAnySquashInCurrentFixup() const -> bool;
 
     /// @brief Remove current fixup file
     auto removeCurrentFixupFile() const -> void;
@@ -107,7 +107,7 @@ public:
 
     /// @brief Get message file content
     /// @return Commit message
-    auto getMessageFile() const -> std::string;
+    [[nodiscard]] auto getMessageFile() const -> std::string;
 
     /// @brief Remove message file
     auto removeMessageFile() const -> void;
@@ -118,7 +118,7 @@ public:
 
     /// @brief Peek todo file
     /// @return Next rebase todo command
-    auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
+    [[nodiscard]] auto peekTodoFile() const -> std::optional<RebaseTodoCommand>;
 
     /// @brief Pop todo file
     ///     Remove first line from todo file
@@ -127,7 +127,7 @@ public:
     /// @brief Peek and pop todo file
     ///     Peek first line from todo file and remove it
     /// @return Next rebase todo command
-    auto peakAndPopTodoFile() const -> std::optional<RebaseTodoCommand>;
+    [[nodiscard]] auto peakAndPopTodoFile() const -> std::optional<RebaseTodoCommand>;
 
     /// @brief Append done file
     /// @param rebaseTodoCommand Done rebase todo command
@@ -135,7 +135,7 @@ public:
 
     /// @brief Get last done command
     /// @return Last done rebase todo command
-    auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
+    [[nodiscard]] auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
 
 private:
     const Repository& repo;

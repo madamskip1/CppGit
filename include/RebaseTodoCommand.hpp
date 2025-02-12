@@ -45,7 +45,7 @@ public:
 
     /// @brief Convert the command type to a string representation
     /// @return The representation of the command type
-    auto toStringFull() const -> std::string
+    [[nodiscard]] auto toStringFull() const -> std::string
     {
         switch (type)
         {
@@ -80,7 +80,7 @@ public:
 
     /// @brief Convert the command type to a short string representation
     /// @return The short representation of the command type
-    auto toStringShort() const -> std::string
+    [[nodiscard]] auto toStringShort() const -> std::string
     {
         switch (type)
         {
@@ -116,7 +116,7 @@ public:
     /// @brief Convert a string representation of a command to a RebaseTodoCommandTypeWrapper
     /// @param command The string representation of the command
     /// @return The RebaseTodoCommandTypeWrapper representing the command
-    static auto fromString(const std::string_view command) -> RebaseTodoCommandTypeWrapper
+    [[nodiscard]] static auto fromString(const std::string_view command) -> RebaseTodoCommandTypeWrapper
     {
         if (command == "pick" || command == "p")
         {
@@ -202,7 +202,7 @@ public:
 
     /// @brief Convert the command to a string representation
     /// @return The representation of the command
-    auto toString() const -> std::string
+    [[nodiscard]] auto toString() const -> std::string
     {
         if (hash.empty())
         {

@@ -14,14 +14,14 @@ TEST_F(MergeTests, canFastForward_emptyRepo_sameBranch)
 {
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.canFastForward("main"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(merge.canFastForward("main")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(MergeTests, canFastForward_emptyRepo_head)
 {
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.canFastForward("HEAD"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(merge.canFastForward("HEAD")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(MergeTests, canFastForward_sameBranch)
@@ -111,14 +111,14 @@ TEST_F(MergeTests, anythingToMerge_emptyRepo_sameBranch)
 {
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.isAnythingToMerge("main"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(merge.isAnythingToMerge("main")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(MergeTests, anythingToMerge_emptyRepo_head)
 {
     auto merge = repository->Merge();
 
-    EXPECT_THROW(merge.isAnythingToMerge("HEAD"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(merge.isAnythingToMerge("HEAD")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(MergeTests, anythingToMerge_sameBranch)

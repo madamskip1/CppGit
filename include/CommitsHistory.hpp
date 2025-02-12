@@ -38,25 +38,25 @@ public:
     /// @brief Get the commit hashes of the commits in the log
     /// @param ref The reference to start from (default: HEAD)
     /// @return Vector of commit hashes
-    auto getCommitsLogHashesOnly(const std::string_view ref = "HEAD") const -> std::vector<std::string>;
+    [[nodiscard]] auto getCommitsLogHashesOnly(const std::string_view ref = "HEAD") const -> std::vector<std::string>;
 
     /// @brief Get the commit hashes of the commits in the log from one reference to another
     /// @param fromRef The reference to start from
     /// @param toRef The reference to end at
     /// @return Vector of commit hashes
-    auto getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>;
+    [[nodiscard]] auto getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>;
 
 
     /// @brief Get the commits in the log with detailed informations
     /// @param ref The reference to start from (default: HEAD)
     /// @return Vector of commits
-    auto getCommitsLogDetailed(const std::string_view ref = "HEAD") const -> std::vector<Commit>;
+    [[nodiscard]] auto getCommitsLogDetailed(const std::string_view ref = "HEAD") const -> std::vector<Commit>;
 
     /// @brief Get the commits in the log with detailed informations from one reference to another
     /// @param fromRef The reference to start from
     /// @param toRef The reference to end at
     /// @return Vector of commits
-    auto getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>;
+    [[nodiscard]] auto getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>;
 
 
     /// @brief Set whether to include all branches in the log

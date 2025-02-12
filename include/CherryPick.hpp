@@ -41,7 +41,7 @@ public:
 
     /// @brief Check whether a cherry pick is in progress
     /// @return True if a cherry pick is in progress, false otherwise
-    auto isCherryPickInProgress() const -> bool;
+    [[nodiscard]] auto isCherryPickInProgress() const -> bool;
 
 private:
     const Repository& repo;

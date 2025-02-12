@@ -35,16 +35,16 @@ public:
            const std::string& description,
            const std::string& treeHash);
 
-    auto getHash() const -> const std::string&;
-    auto getParents() const -> const std::vector<std::string>&;
-    auto getAuthor() const -> const Signature&;
-    auto getAuthorDate() const -> const std::string&;
-    auto getCommitter() const -> const Signature&;
-    auto getCommitterDate() const -> const std::string&;
-    auto getMessage() const -> const std::string&;
-    auto getDescription() const -> const std::string&;
-    auto getMessageAndDescription() const -> std::string;
-    auto getTreeHash() const -> const std::string&;
+    [[nodiscard]] auto getHash() const -> const std::string&;
+    [[nodiscard]] auto getParents() const -> const std::vector<std::string>&;
+    [[nodiscard]] auto getAuthor() const -> const Signature&;
+    [[nodiscard]] auto getAuthorDate() const -> const std::string&;
+    [[nodiscard]] auto getCommitter() const -> const Signature&;
+    [[nodiscard]] auto getCommitterDate() const -> const std::string&;
+    [[nodiscard]] auto getMessage() const -> const std::string&;
+    [[nodiscard]] auto getDescription() const -> const std::string&;
+    [[nodiscard]] auto getMessageAndDescription() const -> std::string;
+    [[nodiscard]] auto getTreeHash() const -> const std::string&;
 
 private:
     std::string hash;

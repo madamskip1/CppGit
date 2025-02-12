@@ -23,7 +23,7 @@ Checks:
   - "-clang-diagnostic-covered-switch-default"
   - "-bugprone-easily-swappable-parameters"
   - "-readability-avoid-const-params-in-decls"
-  - "-modernize-use-nodiscard" # will fix it later
+  - "-modernize-use-nodiscard"
   - "-modernize-pass-by-value"
 HeaderFilterRegex: '.*'
 ExcludeHeaderFilterRegex: '.*/new_allocator\.h'

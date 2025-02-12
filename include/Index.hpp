@@ -95,55 +95,55 @@ public:
     /// @brief Check whether a file is staged
     /// @param file File path
     /// @return True if the file is staged, false otherwise
-    auto isFileStaged(const std::string_view file) const -> bool;
+    [[nodiscard]] auto isFileStaged(const std::string_view file) const -> bool;
 
     /// @brief Get list of files in the index
     /// @param filePattern File(s) pattern to filter
     /// @return List of files in the index
-    auto getFilesInIndexList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    [[nodiscard]] auto getFilesInIndexList(const std::string_view filePattern = "") const -> std::vector<std::string>;
 
     /// @brief Get list of files in the index with details
     /// @param filePattern File(s) pattern to filter
     /// @return List of files in the index with details
-    auto getFilesInIndexListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
+    [[nodiscard]] auto getFilesInIndexListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
 
     /// @brief Get list of untracked files
     /// @param filePattern File(s) pattern to filter
     /// @return List of untracked files
-    auto getUntrackedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    [[nodiscard]] auto getUntrackedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
 
     /// @brief Get list of staged files
     /// @param filePattern File(s) pattern to filter
     /// @return List of staged files
-    auto getStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    [[nodiscard]] auto getStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
 
     /// @brief Get list of staged files with details
     /// @param filePattern File(s) pattern to filter
     /// @return List of staged files with details
-    auto getStagedFilesListWithStatus(const std::string_view filePattern = "") const -> std::vector<DiffIndexEntry>;
+    [[nodiscard]] auto getStagedFilesListWithStatus(const std::string_view filePattern = "") const -> std::vector<DiffIndexEntry>;
 
     /// @brief Get list of not staged files
     /// @param filePattern File(s) pattern to filter
     /// @return List of not staged files
-    auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
+    [[nodiscard]] auto getNotStagedFilesList(const std::string_view filePattern = "") const -> std::vector<std::string>;
 
     /// @brief Get list of unmerged files (conflicted)
     /// @param filePattern File(s) pattern to filter
     /// @return List of unmerged files
-    auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
+    [[nodiscard]] auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
     /// @brief Check whether there are any staged files
     /// @return True if there are any staged files, false otherwise
-    auto areAnyStagedFiles() const -> bool;
+    [[nodiscard]] auto areAnyStagedFiles() const -> bool;
 
     /// @brief Check whether there are any not staged files
     /// @return True if there are any not staged files, false otherwise
-    auto areAnyNotStagedTrackedFiles() const -> bool;
+    [[nodiscard]] auto areAnyNotStagedTrackedFiles() const -> bool;
 
     /// @brief Check whether working directory is dirty
     /// @return True if working directory is dirty, false otherwise
-    auto isDirty() const -> bool;
+    [[nodiscard]] auto isDirty() const -> bool;
 
 private:
     const Repository& repo;

@@ -29,16 +29,16 @@ public:
 
     /// @brief Check if repository has any commits
     /// @return True if repository has any commits, false otherwise
-    auto hasAnyCommits() const -> bool;
+    [[nodiscard]] auto hasAnyCommits() const -> bool;
 
     /// @brief Get the hash of the HEAD commit
     /// @return Hash of the HEAD commit
-    auto getHeadCommitHash() const -> std::string;
+    [[nodiscard]] auto getHeadCommitHash() const -> std::string;
 
     /// @brief Get the commit object for the given commit hash with detailed informations
     /// @param commitHash Hash of the commit
     /// @return Commit object
-    auto getCommitInfo(const std::string_view commitHash) const -> Commit;
+    [[nodiscard]] auto getCommitInfo(const std::string_view commitHash) const -> Commit;
 
 private:
     const Repository& repo;

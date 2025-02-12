@@ -36,7 +36,7 @@ inline auto createOrAppendFile(T&& path, Args&&... args) -> void
 /// @param path File path
 /// @return File content
 template <typename T>
-inline auto readFile(T&& path)
+[[nodiscard]] inline auto readFile(T&& path)
 {
     auto file = std::ifstream{ std::forward<T>(path) };
     auto buffer = std::ostringstream{};

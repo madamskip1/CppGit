@@ -16,19 +16,19 @@ public:
     /// @brief Parse a commit log from the git cat-file command
     /// @param commitLog Commit log to parse
     /// @return Commit object
-    static auto parseCommit_CatFile(std::string_view commitLog) -> Commit;
+    [[nodiscard]] static auto parseCommit_CatFile(std::string_view commitLog) -> Commit;
 
     /// @brief Parse a commit log from the git rev-list command
     /// @param commitLog Commit log to parse
     /// @return Commit object
-    static auto parseCommit_PrettyFormat(std::string_view commitLog) -> Commit;
+    [[nodiscard]] static auto parseCommit_PrettyFormat(std::string_view commitLog) -> Commit;
 
     /// @brief Parse a commit log from the git rev-list command
     /// @param commitLog Commit log to parse
     /// @param format Format to use when parsing the commit log
     /// @param delimiter Delimiter to use when parsing the commit log
     /// @return Commit object
-    static auto parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit;
+    [[nodiscard]] static auto parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit;
 
 private:
     static auto isHashToken(std::string_view token) -> bool;

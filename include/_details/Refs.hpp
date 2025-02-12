@@ -16,17 +16,17 @@ public:
     /// @brief Get the hash of a reference
     /// @param refName The name of the reference
     /// @return The hash of the reference
-    auto getRefHash(std::string_view refName) const -> std::string;
+    [[nodiscard]] auto getRefHash(std::string_view refName) const -> std::string;
 
     /// @brief Get the symbolic reference that reference points to
     /// @param refName Reference name
     /// @return The symbolic reference
-    auto getSymbolicRef(std::string_view refName) const -> std::string;
+    [[nodiscard]] auto getSymbolicRef(std::string_view refName) const -> std::string;
 
     /// @brief Check if a reference exists
     /// @param refName The name of the reference
     /// @return True if the reference exists, false otherwise
-    auto refExists(std::string_view refName) const -> bool;
+    [[nodiscard]] auto refExists(std::string_view refName) const -> bool;
 
     /// @brief Update the hash that refName points to
     /// @param refName The name of the reference
@@ -55,7 +55,7 @@ public:
     /// @param refName Reference name
     /// @param remote True if the reference is a remote reference
     /// @return The reference name with the correct prefix
-    static auto appendPrefixToRefIfNeeded(std::string_view refName, bool remote) -> std::string;
+    [[nodiscard]] static auto appendPrefixToRefIfNeeded(std::string_view refName, bool remote) -> std::string;
 
 private:
     const Repository& repo;

@@ -21,23 +21,23 @@ public:
 
     /// @brief Get all branches (both local and remote) in the repository
     /// @return A vector of all branches in the repository
-    auto getAllBranches() const -> std::vector<Branch>;
+    [[nodiscard]] auto getAllBranches() const -> std::vector<Branch>;
 
     /// @brief Get all remote branches in the repository
     /// @return A vector of all remote branches in the repository
-    auto getRemoteBranches() const -> std::vector<Branch>;
+    [[nodiscard]] auto getRemoteBranches() const -> std::vector<Branch>;
 
     /// @brief Get all local branches in the repository
     /// @return A vector of all local branches in the repository
-    auto getLocalBranches() const -> std::vector<Branch>;
+    [[nodiscard]] auto getLocalBranches() const -> std::vector<Branch>;
 
     /// @brief Get the current branch name
     /// @return The name of the current branch
-    auto getCurrentBranchName() const -> std::string;
+    [[nodiscard]] auto getCurrentBranchName() const -> std::string;
 
     /// @brief Get the current branch
     /// @return The current branch
-    auto getCurrentBranchInfo() const -> Branch;
+    [[nodiscard]] auto getCurrentBranchInfo() const -> Branch;
 
     /// @brief Change the current branch
     /// @param branchName The name of the branch to change to
@@ -59,12 +59,12 @@ public:
     /// @param branchName The name of the branch to check
     /// @param remote If the branch is remote
     /// @return True if the branch exists, false otherwise
-    auto branchExists(const std::string_view branchName, bool remote = false) const -> bool;
+    [[nodiscard]] auto branchExists(const std::string_view branchName, bool remote = false) const -> bool;
 
     /// @brief Check if a branch exists
     /// @param branch The branch to check
     /// @return True if the branch exists, false otherwise
-    auto branchExists(const Branch& branch) const -> bool;
+    [[nodiscard]] auto branchExists(const Branch& branch) const -> bool;
 
     /// @brief Delete a branch
     /// @param branchName The name of the branch to delete
@@ -88,12 +88,12 @@ public:
     /// @param branchName The name of the branch
     /// @param remote If the branch is remote
     /// @return The commit hash the branch refers to
-    auto getHashBranchRefersTo(const std::string_view branchName, bool remote = false) const -> std::string;
+    [[nodiscard]] auto getHashBranchRefersTo(const std::string_view branchName, bool remote = false) const -> std::string;
 
     /// @brief Get the commit hash a branch refers to
     /// @param branch The branch
     /// @return The commit hash the branch refers to
-    auto getHashBranchRefersTo(const Branch& branch) const -> std::string;
+    [[nodiscard]] auto getHashBranchRefersTo(const Branch& branch) const -> std::string;
 
 private:
     auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;

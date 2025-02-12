@@ -42,32 +42,32 @@ public:
     /// @brief Check whether fast-forward merge source branch onto current branch is possible
     /// @param sourceBranch Source branch name that would be merged
     /// @return True if fast-forward merge is possible, otherwise false
-    auto canFastForward(const std::string_view sourceBranch) const -> bool;
+    [[nodiscard]] auto canFastForward(const std::string_view sourceBranch) const -> bool;
 
     /// @brief Check whether fast-forward merge source branch onto target branch is possible
     /// @param sourceBranch Source branch name that would be merged
     /// @param targetBranch Target branch name that would be merged onto
     /// @return True if fast-forward merge is possible, otherwise false
-    auto canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
+    [[nodiscard]] auto canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
 
     /// @brief Check whether there is anything to merge from source branch onto current branch
     /// @param sourceBranch Source branch name that would be merged
     /// @return True if there is anything to merge, otherwise false
-    auto isAnythingToMerge(const std::string_view sourceBranch) const -> bool;
+    [[nodiscard]] auto isAnythingToMerge(const std::string_view sourceBranch) const -> bool;
 
     /// @brief Check whether there is anything to merge from source branch onto target branch
     /// @param sourceBranch Source branch name that would be merged
     /// @param targetBranch Target branch name that would be merged onto
     /// @return True if there is anything to merge, otherwise false
-    auto isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
+    [[nodiscard]] auto isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool;
 
     /// @brief Check whether there is a merge in progress
     /// @return True if there is a merge in progress, otherwise false
-    auto isMergeInProgress() const -> bool;
+    [[nodiscard]] auto isMergeInProgress() const -> bool;
 
     /// @brief Check whether there is any conflict in current merge
     /// @return True if there is any conflict, otherwise false
-    auto isThereAnyConflict() const -> std::expected<bool, Error>;
+    [[nodiscard]] auto isThereAnyConflict() const -> std::expected<bool, Error>;
 
     /// @brief Abort current merge in progress
     /// @return Error code if there is no merge in progress, otherwise no error

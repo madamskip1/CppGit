@@ -15,12 +15,12 @@ public:
     /// @brief Parse a branch line
     /// @param line Line to parse
     /// @return Branch object
-    static auto parseBranch(std::string_view line) -> Branch;
+    [[nodiscard]] static auto parseBranch(std::string_view line) -> Branch;
 
     /// @brief Check if a branch is a local branch
     /// @param refName Branch name
     /// @return True if the branch is a local branch, false otherwise
-    static auto isLocalBranch(std::string_view refName) -> bool; ///< Check if a branch is a local branch
+    [[nodiscard]] static auto isLocalBranch(std::string_view refName) -> bool; ///< Check if a branch is a local branch
 };
 
 

@@ -16,19 +16,19 @@ public:
 
     /// @brief Get the name of the branch
     /// @return The name of the TRAP_BRANCH
-    auto getRefName() const -> const std::string&;
+    [[nodiscard]] auto getRefName() const -> const std::string&;
 
     /// @brief Get the name of the remote upstream branch to pull from
     /// @return The name of the remote upstream branch to pull from
-    auto getUpstreamPull() const -> const std::string&;
+    [[nodiscard]] auto getUpstreamPull() const -> const std::string&;
 
     /// @brief Get the name of the remote upstream branch to push to
     /// @return The name of the remote upstream branch to push to
-    auto getUpstreamPush() const -> const std::string&;
+    [[nodiscard]] auto getUpstreamPush() const -> const std::string&;
 
     /// @brief Check if the branch is a local branch
     /// @return True if the branch is a local branch, false otherwise
-    auto isLocalBranch() const -> bool;
+    [[nodiscard]] auto isLocalBranch() const -> bool;
 
 private:
     std::string refName;

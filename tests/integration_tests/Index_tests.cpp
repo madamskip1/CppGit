@@ -631,7 +631,7 @@ TEST_F(IndexTests, notDirty_noCommitsYet)
 {
     auto index = repository->Index();
 
-    EXPECT_THROW(index.isDirty(), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(index.isDirty()), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, dirty_noCommitsYet)
@@ -640,7 +640,7 @@ TEST_F(IndexTests, dirty_noCommitsYet)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
-    EXPECT_THROW(index.isDirty(), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(index.isDirty()), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, dirty_noCommitsYet_FileAddedToIndex)
@@ -650,7 +650,7 @@ TEST_F(IndexTests, dirty_noCommitsYet_FileAddedToIndex)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
-    EXPECT_THROW(index.isDirty(), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(index.isDirty()), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, notDirty)
@@ -903,7 +903,7 @@ TEST_F(IndexTests, isFileStaged_noCommitsYet)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
-    EXPECT_THROW(index.isFileStaged("file.txt"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(index.isFileStaged("file.txt")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, isFileStaged_fileStaged_noCommitsYet)
@@ -913,7 +913,7 @@ TEST_F(IndexTests, isFileStaged_fileStaged_noCommitsYet)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
-    EXPECT_THROW(index.isFileStaged("file.txt"), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(index.isFileStaged("file.txt")), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, isFileStaged_fileNotStaged)
