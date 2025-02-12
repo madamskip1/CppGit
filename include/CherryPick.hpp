@@ -50,10 +50,11 @@ private:
 
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;
+    auto processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;
+
     auto createCherryPickHeadFile(const std::string_view commitHash) const -> void;
     auto getCherryPickHead() const -> std::string;
-
-    auto processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;
+    auto removeCherryPickHeadFile() const -> void;
 };
 
 } // namespace CppGit

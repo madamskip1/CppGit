@@ -55,7 +55,7 @@ auto CherryPick::commitEmptyCherryPickedCommit() const -> std::expected<std::str
     }
 
     auto commitedHash = commitCherryPicked(commitHash);
-    std::filesystem::remove(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
+    removeCherryPickHeadFile();
 
     return commitedHash;
 }
@@ -100,6 +100,11 @@ auto CherryPick::getCherryPickHead() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
 }
 
+auto CherryPick::removeCherryPickHeadFile() const -> void
+{
+    std::filesystem::remove(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
+}
+
 auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
 {
     if (!isCherryPickInProgress())
@@ -114,7 +119,7 @@ auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
     }
 
     auto commitHash = getCherryPickHead();
-
+    removeCherryPickHeadFile();
     return commitCherryPicked(commitHash);
 }
 

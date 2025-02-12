@@ -40,6 +40,7 @@ TEST_F(CherryPickTests, simpleCherryPick)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
@@ -62,6 +63,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Initial commit");
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
@@ -79,6 +81,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
     ASSERT_TRUE(cherryPickedHash.has_value());
     EXPECT_EQ(cherryPickedHash, std::string(40, '0'));
     EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
@@ -119,6 +122,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
     EXPECT_NE(cherryPickedHash, initialCommitHash);
     EXPECT_NE(cherryPickedHash, secondCommitHash);
     checkCommitAuthorEqualTest(cherryPickedInfo);
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
 TEST_F(CherryPickTests, tryCommitEmptyCherryPickedCommitWhenNoCherryPickInProgress)
@@ -239,6 +243,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Conflict resolved");
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
 TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
