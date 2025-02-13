@@ -22,6 +22,7 @@ class Diff;           // forward-declaration
 class Merge;          // forward-declaration
 class CherryPick;     // forward-declaration
 class Rebase;         // forward-declaration
+class Reset;          // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 class Repository
@@ -86,6 +87,10 @@ public:
     /// @brief Return rebase object with current repository
     /// @return Rebase object
     [[nodiscard]] auto Rebase() const -> CppGit::Rebase;
+
+    /// @brief Return reset object with current repository
+    /// @return Reset object
+    [[nodiscard]] auto Reset() const -> CppGit::Reset;
 
     /// @brief Get repository path as string
     /// @return Repository path as string
