@@ -319,3 +319,48 @@ TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
 }
+
+TEST_F(CherryPickTests, cherryPick_abort)
+{
+    auto commits = repository->Commits();
+    auto index = repository->Index();
+    auto branches = repository->Branches();
+    auto cherryPick = repository->CherryPick();
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    index.add("file.txt");
+    auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.createBranch("second-branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
+    index.add("file.txt");
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+
+    branches.changeCurrentBranch("second-branch");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2");
+    index.add("file.txt");
+    auto thirdCommitHash = commits.createCommit("Third commit");
+
+    cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+
+    auto abortResult = cherryPick.cherryPickAbort();
+
+
+    ASSERT_TRUE(abortResult == CppGit::Error::NO_ERROR);
+
+    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified 2");
+    EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
+}
+
+TEST_F(CherryPickTests, cherryPick_abort_noCherryPickInProgress)
+{
+    auto cherryPick = repository->CherryPick();
+    auto commits = repository->Commits();
+
+    commits.createCommit("Initial commit");
+
+    auto abortResult = cherryPick.cherryPickAbort();
+
+    EXPECT_EQ(abortResult, CppGit::Error::NO_CHERRY_PICK_IN_PROGRESS);
+}

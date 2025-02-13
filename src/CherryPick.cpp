@@ -6,6 +6,7 @@
 #include "Repository.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/FileUtility.hpp"
+#include "_details/IndexWorktree.hpp"
 
 #include <cstddef>
 #include <expected>
@@ -121,6 +122,21 @@ auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
     auto commitHash = getCherryPickHead();
     removeCherryPickHeadFile();
     return commitCherryPicked(commitHash);
+}
+
+auto CherryPick::cherryPickAbort() const -> Error
+{
+    if (!isCherryPickInProgress())
+    {
+        return Error::NO_CHERRY_PICK_IN_PROGRESS;
+    }
+
+    auto indexWorkTree = _details::IndexWorktree{ repo };
+    indexWorkTree.resetIndexToTree("HEAD");
+    indexWorkTree.copyForceIndexToWorktree();
+    removeCherryPickHeadFile();
+
+    return Error::NO_ERROR;
 }
 
 auto CppGit::CherryPick::processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>

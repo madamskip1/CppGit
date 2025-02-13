@@ -39,6 +39,10 @@ public:
     /// @return The hash of the cherry picked commit or an error code
     auto cherryPickContinue() const -> std::expected<std::string, Error>;
 
+    /// @brief Abort the cherry pick in progress
+    /// @return Error code
+    auto cherryPickAbort() const -> Error;
+
     /// @brief Check whether a cherry pick is in progress
     /// @return True if a cherry pick is in progress, false otherwise
     [[nodiscard]] auto isCherryPickInProgress() const -> bool;
