@@ -4,9 +4,9 @@
 #include "Error.hpp"
 #include "Index.hpp"
 #include "Repository.hpp"
+#include "Reset.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/FileUtility.hpp"
-#include "_details/IndexWorktree.hpp"
 
 #include <cstddef>
 #include <expected>
@@ -131,9 +131,7 @@ auto CherryPick::cherryPickAbort() const -> Error
         return Error::NO_CHERRY_PICK_IN_PROGRESS;
     }
 
-    auto indexWorkTree = _details::IndexWorktree{ repo };
-    indexWorkTree.resetIndexToTree("HEAD");
-    indexWorkTree.copyForceIndexToWorktree();
+    Reset{ repo }.resetHard("HEAD");
     removeCherryPickHeadFile();
 
     return Error::NO_ERROR;

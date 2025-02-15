@@ -5,9 +5,9 @@
 #include "Error.hpp"
 #include "Index.hpp"
 #include "Repository.hpp"
+#include "Reset.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
-#include "_details/Refs.hpp"
 
 #include <expected>
 #include <filesystem>
@@ -57,10 +57,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
         return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
     }
 
-    _indexWorktree.resetIndexToTree(sourceBranchRef);
-    _indexWorktree.copyForceIndexToWorktree();
-    auto refs = _details::Refs{ repo };
-    refs.updateRefHash("HEAD", sourceBranchRef);
+    Reset{ repo }.resetHard(sourceBranchRef);
 
     return sourceBranchRef;
 }
