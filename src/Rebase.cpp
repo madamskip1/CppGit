@@ -98,6 +98,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             {
                 auto headCommitInfo = commits.getCommitInfo(hashAfter);
                 hashAfter = _details::AmendCommit{ repo }.amend(headCommitInfo, messageAndDesc);
+                refs.updateRefHash("HEAD", hashAfter);
             }
 
             rebaseFilesHelper.removeAmendFile();
@@ -108,6 +109,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             auto parent = commits.getHeadCommitHash();
 
             hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
+            refs.updateRefHash("HEAD", hashAfter);
             rebaseFilesHelper.removeAuthorScriptFile();
         }
 
@@ -368,7 +370,8 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-        _details::AmendCommit{ repo }.amend(headCommitInfo);
+        auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo);
+        refs.updateRefHash("HEAD", newCommitHash);
 
         return Error::NO_ERROR;
     }
@@ -383,6 +386,8 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
     }
 
     auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo);
+    refs.updateRefHash("HEAD", newCommitHash);
+
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     rebaseFilesHelper.appendRewrittenListWithRewrittenPending(newCommitHash);
     rebaseFilesHelper.removeCurrentFixupFile();
@@ -416,7 +421,8 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     auto headCommitHash = commits.getHeadCommitHash();
     auto headCommitInfo = commits.getCommitInfo(headCommitHash);
-    _details::AmendCommit{ repo }.amend(headCommitInfo, messageSquash);
+    auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo, messageSquash);
+    refs.updateRefHash("HEAD", newCommitHash);
 
     return Error::NO_ERROR;
 }
@@ -454,7 +460,10 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
         "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
     };
 
-    return _details::CreateCommit{ repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
+    auto newCommitHash = _details::CreateCommit{ repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
+    refs.updateRefHash("HEAD", newCommitHash);
+
+    return newCommitHash;
 }
 
 auto Rebase::isNextCommandFixupOrSquash() const -> bool

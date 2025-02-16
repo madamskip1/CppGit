@@ -8,6 +8,7 @@
 #include "_details/ApplyDiff.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/GitFilesHelper.hpp"
+#include "_details/Refs.hpp"
 
 #include <cstddef>
 #include <expected>
@@ -90,8 +91,10 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
     };
 
     auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
+    auto newCommitHash = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
 
-    return _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    return newCommitHash;
 }
 
 auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) const -> void

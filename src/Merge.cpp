@@ -174,7 +174,10 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
 {
     auto parents = std::vector<std::string>{ std::string{ targetBranchRef }, std::string{ sourceBranchRef } };
 
-    return _createCommit.createCommit(message, description, parents, {});
+    auto mergeCommitHash = _createCommit.createCommit(message, description, parents, {});
+    _details::Refs{ repo }.updateRefHash("HEAD", mergeCommitHash);
+
+    return mergeCommitHash;
 }
 
 auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void

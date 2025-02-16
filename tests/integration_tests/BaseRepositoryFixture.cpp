@@ -1,6 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 
 #include "_details/CreateCommit.hpp"
+#include "_details/Refs.hpp"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -27,7 +28,10 @@ auto BaseRepositoryFixture::prepareCommitAuthorCommiterTestEnvp() -> std::vector
 
 auto BaseRepositoryFixture::createCommitWithTestAuthorCommiter(const std::string_view& message, const std::string_view description, std::string parentHash) const -> std::string
 {
-    return CppGit::_details::CreateCommit{ *repository }.createCommit(message, description, { std::move(parentHash) }, prepareCommitAuthorCommiterTestEnvp());
+    auto newCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit(message, description, { std::move(parentHash) }, prepareCommitAuthorCommiterTestEnvp());
+    CppGit::_details::Refs{ *repository }.updateRefHash("HEAD", newCommitHash);
+
+    return newCommitHash;
 }
 
 auto BaseRepositoryFixture::createCommitWithTestAuthorCommiter(const std::string_view& message, std::string parentHash) const -> std::string

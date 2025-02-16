@@ -29,7 +29,10 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
         _details::GitFilesHelper{ repo }.setOrigHeadFile(parent);
     }
 
-    return _createCommit.createCommit(message, description, { parent }, {});
+    auto newCommitHash = _createCommit.createCommit(message, description, { parent }, {});
+    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
+
+    return newCommitHash;
 }
 
 auto Commits::amendCommit(const std::string_view message, const std::string_view description) const -> std::string
@@ -38,7 +41,10 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     auto commitInfo = getCommitInfo(headCommitHash);
 
     _details::GitFilesHelper{ repo }.setOrigHeadFile(headCommitHash);
-    return _details::AmendCommit{ repo }.amend(commitInfo, message, description);
+    auto newCommitHash = _details::AmendCommit{ repo }.amend(commitInfo, message, description);
+    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
+
+    return newCommitHash;
 }
 
 auto Commits::hasAnyCommits() const -> bool
