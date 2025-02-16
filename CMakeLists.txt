@@ -36,6 +36,7 @@ target_sources(${PROJECT_NAME}
         src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
 
         src/_details/CreateCommit.cpp
+        src/_details/AmendCommit.cpp
         src/_details/ThreeWayMerge.cpp
         src/_details/Refs.cpp
         src/_details/IndexWorktree.cpp

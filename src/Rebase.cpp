@@ -8,6 +8,7 @@
 #include "Index.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
+#include "_details/AmendCommit.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/CreateCommit.hpp"
 
@@ -84,18 +85,18 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         {
             messageAndDesc = rebaseFilesHelper.getMessageFile();
         }
+
         auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
         auto hashAfter = std::string{};
 
         if (auto amend = rebaseFilesHelper.getAmendFile(); !amend.empty())
         {
-            if (lastCommand->type == RebaseTodoCommandType::EDIT && !Index{ repo }.areAnyStagedFiles())
+            hashAfter = commits.getHeadCommitHash();
+
+            if (lastCommand->type != RebaseTodoCommandType::EDIT || Index{ repo }.areAnyStagedFiles())
             {
-                hashAfter = commits.getHeadCommitHash();
-            }
-            else
-            {
-                hashAfter = commits.amendCommit(messageAndDesc);
+                auto headCommitInfo = commits.getCommitInfo(hashAfter);
+                hashAfter = _details::AmendCommit{ repo }.amend(headCommitInfo, messageAndDesc);
             }
 
             rebaseFilesHelper.removeAmendFile();
@@ -347,10 +348,11 @@ auto Rebase::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> Erro
 
 auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
 {
+    auto headCommitHash = commits.getHeadCommitHash();
+    auto headCommitInfo = commits.getCommitInfo(headCommitHash);
+
     if (auto applyResult = applyDiff.apply(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
     {
-        auto headCommitHash = commits.getHeadCommitHash();
-        auto headCommitInfo = commits.getCommitInfo(headCommitHash);
         rebaseFilesHelper.createAmendFile(headCommitHash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
@@ -363,15 +365,13 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-        commits.amendCommit();
+        _details::AmendCommit{ repo }.amend(headCommitInfo);
 
         return Error::NO_ERROR;
     }
 
     if (rebaseFilesHelper.areAnySquashInCurrentFixup())
     {
-        auto headCommitHash = commits.getHeadCommitHash();
-        auto headCommitInfo = commits.getCommitInfo(headCommitHash);
         rebaseFilesHelper.createAmendFile(headCommitHash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
@@ -379,7 +379,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         return Error::REBASE_SQUASH;
     }
 
-    auto newCommitHash = commits.amendCommit();
+    auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo);
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     rebaseFilesHelper.appendRewrittenListWithRewrittenPending(newCommitHash);
     rebaseFilesHelper.removeCurrentFixupFile();
@@ -411,7 +411,9 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
-    commits.amendCommit(messageSquash);
+    auto headCommitHash = commits.getHeadCommitHash();
+    auto headCommitInfo = commits.getCommitInfo(headCommitHash);
+    _details::AmendCommit{ repo }.amend(headCommitInfo, messageSquash);
 
     return Error::NO_ERROR;
 }

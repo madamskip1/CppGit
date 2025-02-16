@@ -1,6 +1,7 @@
 #include "Commits.hpp"
 
 #include "Repository.hpp"
+#include "_details/AmendCommit.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "_details/Parser/CommitParser.hpp"
 #include "_details/Refs.hpp"
@@ -30,15 +31,7 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     auto headCommitHash = getHeadCommitHash();
     auto commitInfo = getCommitInfo(headCommitHash);
 
-    auto envp = std::vector<std::string>{};
-    envp.emplace_back("GIT_AUTHOR_NAME=" + commitInfo.getAuthor().name);
-    envp.emplace_back("GIT_AUTHOR_EMAIL=" + commitInfo.getAuthor().email);
-    envp.emplace_back("GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate());
-
-    auto newCommitMessage = (message.empty() ? commitInfo.getMessage() : std::string{ message });
-    auto newCommitDescription = (message.empty() ? commitInfo.getDescription() : std::string{ description });
-
-    return _createCommit.createCommit(newCommitMessage, newCommitDescription, commitInfo.getParents(), envp);
+    return _details::AmendCommit{ repo }.amend(commitInfo, message, description);
 }
 
 auto Commits::hasAnyCommits() const -> bool
