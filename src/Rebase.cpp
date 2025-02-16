@@ -11,6 +11,7 @@
 #include "_details/AmendCommit.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/CreateCommit.hpp"
+#include "_details/GitFilesHelper.hpp"
 
 #include <algorithm>
 #include <expected>
@@ -186,11 +187,13 @@ auto Rebase::startRebase(const std::string_view upstream, const std::vector<Reba
 {
     auto branches = repo.Branches();
     auto upstreamHash = refs.getRefHash(upstream);
+    auto headRef = refs.getRefHash("HEAD");
 
     rebaseFilesHelper.createRebaseDir();
     rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranchName());
     rebaseFilesHelper.createOntoFile(upstreamHash);
-    rebaseFilesHelper.createOrigHeadFiles(refs.getRefHash("HEAD"));
+    rebaseFilesHelper.createRebaseOrigHeadFile(headRef);
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(headRef);
     rebaseFilesHelper.generateTodoFile(rebaseCommands);
 
     branches.detachHead(upstreamHash);

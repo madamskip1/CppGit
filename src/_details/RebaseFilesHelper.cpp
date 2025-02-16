@@ -49,11 +49,10 @@ auto RebaseFilesHelper::getHeadName() const -> std::string
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "head-name");
 }
 
-auto RebaseFilesHelper::createOrigHeadFiles(const std::string_view origHead) const -> void
+auto RebaseFilesHelper::createRebaseOrigHeadFile(const std::string_view origHead) const -> void
 {
     // Contains the commit hash of the branch that was checked out before the rebase started
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "orig-head", origHead);
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "ORIG_HEAD", origHead); // TODO Sprawdzić ten plik co zawiera i kiedy
 }
 
 auto RebaseFilesHelper::getOrigHead() const -> std::string

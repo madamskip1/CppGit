@@ -57,6 +57,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupCommit)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
@@ -78,7 +79,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
     commits.createCommit("Third commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file3.txt");
-    commits.createCommit("Fourth commit");
+    auto fourthCommitHash = commits.createCommit("Fourth commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[1].type = CppGit::RebaseTodoCommandType::FIXUP;
@@ -107,6 +108,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
@@ -168,6 +170,7 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
@@ -240,6 +243,7 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fifthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBefore)
@@ -301,6 +305,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefore)
@@ -372,6 +377,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fifthCommitHash);
     // When we do pick, break and then fixup
     // rewritten-list should contains previous rewritten from pick
     // and new rewritten from fixup
@@ -447,6 +453,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
     // When we do pick, break and then fixup
     // rewritten-list should contains: previous rewritten from pick
     // and new rewritten from fixup
@@ -519,6 +526,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommitHash + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
@@ -542,7 +550,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    commits.createCommit("Fourth commit", "Fourth commit description");
+    auto fourthCommitHash = commits.createCommit("Fourth commit", "Fourth commit description");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -577,6 +585,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
@@ -648,6 +657,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
@@ -717,6 +727,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-pending"), thirdCommitHash + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fifthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
@@ -743,7 +754,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
     commits.createCommit("Fourth commit", "Fourth commit description");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file4.txt", "Hello World 4!");
     index.add("file4.txt");
-    commits.createCommit("Fifth commit");
+    auto fifthCommitHash = commits.createCommit("Fifth commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -780,6 +791,7 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fifthCommitHash);
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue)
@@ -858,4 +870,5 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fifthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fifthCommitHash);
 }

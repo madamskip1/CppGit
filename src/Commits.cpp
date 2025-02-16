@@ -3,6 +3,7 @@
 #include "Repository.hpp"
 #include "_details/AmendCommit.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "_details/GitFilesHelper.hpp"
 #include "_details/Parser/CommitParser.hpp"
 #include "_details/Refs.hpp"
 
@@ -23,6 +24,11 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
 {
     auto parent = hasAnyCommits() ? getHeadCommitHash() : std::string{};
 
+    if (!parent.empty())
+    {
+        _details::GitFilesHelper{ repo }.setOrigHeadFile(parent);
+    }
+
     return _createCommit.createCommit(message, description, { parent }, {});
 }
 
@@ -31,6 +37,7 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     auto headCommitHash = getHeadCommitHash();
     auto commitInfo = getCommitInfo(headCommitHash);
 
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(headCommitHash);
     return _details::AmendCommit{ repo }.amend(commitInfo, message, description);
 }
 

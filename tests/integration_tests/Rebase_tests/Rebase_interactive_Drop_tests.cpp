@@ -48,6 +48,7 @@ TEST_F(RebaseInteractiveDropTests, drop_commit)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
@@ -111,6 +112,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
@@ -134,7 +136,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -171,6 +173,7 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_continue)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict)
@@ -244,4 +247,5 @@ TEST_F(RebaseInteractiveDropTests, dropLeadToConflict_breakAfterResolvedConflict
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }

@@ -60,6 +60,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), expectedMessage);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), secondCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, noFastForward_stop)
@@ -112,6 +113,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), expectedMessage);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
@@ -127,7 +129,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::REWORD;
@@ -157,6 +159,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
@@ -171,7 +174,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::REWORD;
@@ -201,6 +204,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
@@ -217,7 +221,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -248,6 +252,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
@@ -264,7 +269,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
     auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -295,6 +300,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
@@ -310,7 +316,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::REWORD;
@@ -340,6 +346,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
@@ -355,7 +362,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::REWORD;
@@ -384,6 +391,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, breakAfter)
@@ -433,6 +441,7 @@ TEST_F(RebaseInteractiveRewordTests, breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), secondCommitHash + " " + commits.getHeadCommitHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, conflict_stop)
@@ -497,6 +506,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, conflict_continue)
@@ -520,7 +530,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", "Fourth commit description", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -558,6 +568,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
@@ -581,7 +592,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file3.txt", "Hello World 3!");
     index.add("file1.txt");
     index.add("file3.txt");
-    createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
@@ -619,6 +630,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
@@ -693,4 +705,5 @@ TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), rewrittenListExpected);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }

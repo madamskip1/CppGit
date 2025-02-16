@@ -40,6 +40,7 @@ TEST_F(CherryPickTests, simpleCherryPick)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
@@ -63,6 +64,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Initial commit");
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
@@ -81,6 +83,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
     ASSERT_TRUE(cherryPickedHash.has_value());
     EXPECT_EQ(cherryPickedHash, std::string(40, '0'));
     EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
@@ -100,6 +103,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_EMPTY_COMMIT);
     EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), initialCommitHash);
 }
 
@@ -122,6 +126,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
     EXPECT_NE(cherryPickedHash, initialCommitHash);
     EXPECT_NE(cherryPickedHash, secondCommitHash);
     checkCommitAuthorEqualTest(cherryPickedInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
@@ -166,6 +171,7 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_EMPTY_COMMIT);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), secondCommitHash);
 }
 
@@ -188,7 +194,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
     index.add("file.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    commits.createCommit("Third commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
     auto fourthCommitHash = commits.createCommit("Fourth commit");
@@ -200,6 +206,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
     EXPECT_EQ(fourthCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified.\n>>>>>>> " + secondCommitHash + "\n");
 }
@@ -243,6 +250,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     checkCommitAuthorEqualTest(cherryPickedInfo);
     checkCommitCommiterNotEqualTest(cherryPickedInfo);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Conflict resolved");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
@@ -276,6 +284,7 @@ TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2.\n=======\nHello, World! Modified.\n>>>>>>> " + secondCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World 2!");
@@ -315,6 +324,7 @@ TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "CHERRY_PICK_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World! Modified 2!\n=======\nHello, World! Modified!\n>>>>>>> " + secondCommitHash + "\n");
@@ -350,6 +360,7 @@ TEST_F(CherryPickTests, cherryPick_abort)
 
     EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified 2");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 

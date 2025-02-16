@@ -8,6 +8,7 @@
 #include "Reset.hpp"
 #include "_details/FileUtility.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "_details/GitFilesHelper.hpp"
 
 #include <expected>
 #include <filesystem>
@@ -57,6 +58,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
         return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
     }
 
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(targetBranchRef);
     Reset{ repo }.resetHard(sourceBranchRef);
 
     return sourceBranchRef;
@@ -94,6 +96,8 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
     {
         throw std::runtime_error("Failed to read tree");
     }
+
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(targetBranchRef);
 
     _indexWorktree.copyIndexToWorktree();
 

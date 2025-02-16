@@ -36,7 +36,7 @@ public:
 
     /// @brief Create orig head files
     /// @param origHead Commit hash of the branch that was checked out before the rebase started
-    auto createOrigHeadFiles(const std::string_view origHead) const -> void;
+    auto createRebaseOrigHeadFile(const std::string_view origHead) const -> void;
 
     /// @brief Get orig head file content
     /// @return Commit hash of the branch that was checked out before the rebase started

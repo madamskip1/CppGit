@@ -101,7 +101,7 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
-    createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands("main");
 
@@ -131,6 +131,7 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseInteractiveBasicTests, sameBranch)
@@ -176,4 +177,5 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }

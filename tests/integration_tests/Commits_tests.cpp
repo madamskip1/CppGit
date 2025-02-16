@@ -57,6 +57,7 @@ TEST_F(CommitsTests, createCommit_empty_withParent)
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Second commit");
     EXPECT_EQ(commitInfo.getParents().size(), 1);
     EXPECT_EQ(commitInfo.getParents()[0], initialCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, createCommit_empty_withDescription)
@@ -83,7 +84,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
@@ -95,6 +96,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
@@ -105,7 +107,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    commits.createCommit("Initial commit");
+    auto initialCommitHash = commits.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! file2");
@@ -117,6 +119,7 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! file2");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_noCommits)
@@ -137,7 +140,7 @@ TEST_F(CommitsTests, amendCommit_noChanges)
     auto amendedCommitHash = commits.amendCommit();
 
 
-    // even we do amend commit without changes and same message, it should create new commit
+    // even we do amend commit without changes and same message, it should create new commit (for eg. because of different committer/committer date)
     EXPECT_NE(amendedCommitHash, initialCommitHash);
     auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 1);
@@ -152,6 +155,7 @@ TEST_F(CommitsTests, amendCommit_noChanges)
     EXPECT_EQ(commitInfo.getParents().size(), 0);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsg)
@@ -179,6 +183,7 @@ TEST_F(CommitsTests, amendCommit_changeMsg)
     EXPECT_EQ(commitInfo.getParents().size(), 0);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
@@ -205,6 +210,7 @@ TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
     EXPECT_EQ(commitInfo.getParents().size(), 0);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
@@ -231,6 +237,7 @@ TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
     EXPECT_EQ(commitInfo.getParents().size(), 0);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_addFile)
@@ -277,6 +284,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     EXPECT_EQ(diffFile.fileA, "/dev/null");
     EXPECT_EQ(diffFile.fileB, "file.txt");
     EXPECT_EQ(diffFile.newMode, 100'644);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(CommitsTests, amendCommit_withOneParent)
@@ -287,6 +295,7 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
 
     auto initialCommitHash = commits.createCommit("Initial commit");
     auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+
     auto amendedCommitHash = commits.amendCommit();
 
 
@@ -311,4 +320,5 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
     EXPECT_EQ(commitInfo.getParents()[0], initialCommitHash);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }

@@ -25,7 +25,7 @@ TEST_F(ResetTests, resetSoft)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft(initialCommitHash);
@@ -34,6 +34,7 @@ TEST_F(ResetTests, resetSoft)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 3");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetHard)
@@ -49,7 +50,7 @@ TEST_F(ResetTests, resetHard)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetHard(initialCommitHash);
@@ -58,6 +59,7 @@ TEST_F(ResetTests, resetHard)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetSoftWithUntrackedFile)
@@ -73,7 +75,7 @@ TEST_F(ResetTests, resetSoftWithUntrackedFile)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 4");
 
@@ -84,6 +86,7 @@ TEST_F(ResetTests, resetSoftWithUntrackedFile)
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 3");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! 4");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetHardWithUntrackedFile)
@@ -99,7 +102,7 @@ TEST_F(ResetTests, resetHardWithUntrackedFile)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 4");
 
@@ -110,6 +113,7 @@ TEST_F(ResetTests, resetHardWithUntrackedFile)
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! 4");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetSoft_usingHEADRelativeTildeNotation)
@@ -125,7 +129,7 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeTildeNotation)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft("HEAD^");
@@ -134,6 +138,7 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeTildeNotation)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 3");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetHard_usingHEADRelativeTildeNotation)
@@ -149,7 +154,7 @@ TEST_F(ResetTests, resetHard_usingHEADRelativeTildeNotation)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
 
@@ -159,6 +164,7 @@ TEST_F(ResetTests, resetHard_usingHEADRelativeTildeNotation)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetSoft_usingHEADRelativeCaretNotation)
@@ -174,7 +180,7 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeCaretNotation)
     auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    commits.createCommit("Second commit");
+    auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft("HEAD~1");
@@ -183,6 +189,7 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeCaretNotation)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 3");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetSoft_toHEAD)
@@ -207,6 +214,7 @@ TEST_F(ResetTests, resetSoft_toHEAD)
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 3");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetHard_toHEAD)
@@ -231,6 +239,7 @@ TEST_F(ResetTests, resetHard_toHEAD)
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 2");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetSoft_detachedHEAD)
@@ -258,6 +267,7 @@ TEST_F(ResetTests, resetSoft_detachedHEAD)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_THROW(static_cast<void>(branches.getCurrentBranchName()), std::runtime_error);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 2");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
 
 TEST_F(ResetTests, resetHard_detachedHEAD)
@@ -285,4 +295,5 @@ TEST_F(ResetTests, resetHard_detachedHEAD)
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
     EXPECT_THROW(static_cast<void>(branches.getCurrentBranchName()), std::runtime_error);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }

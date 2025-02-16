@@ -7,6 +7,7 @@
 #include "Reset.hpp"
 #include "_details/ApplyDiff.hpp"
 #include "_details/FileUtility.hpp"
+#include "_details/GitFilesHelper.hpp"
 
 #include <cstddef>
 #include <expected>
@@ -31,6 +32,8 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, CherryPickE
     {
         return std::unexpected{ Error::DIRTY_WORKTREE };
     }
+
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(repo.Commits().getHeadCommitHash());
 
     auto applyDiffResult = _applyDiff.apply(commitHash);
 

@@ -33,7 +33,7 @@ TEST_F(RebaseBasicTests, simpleRebase)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
     auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
-    createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
+    auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
 
@@ -61,6 +61,7 @@ TEST_F(RebaseBasicTests, simpleRebase)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
@@ -116,6 +117,7 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), expectedMessage);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
@@ -174,6 +176,7 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), fourthCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[2].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
@@ -231,6 +234,7 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), "Third commit");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
@@ -292,6 +296,7 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "message"), expectedMessage);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflict_abort)
@@ -331,6 +336,7 @@ TEST_F(RebaseBasicTests, conflict_abort)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseBasicTests, conflict_continue)
@@ -352,7 +358,7 @@ TEST_F(RebaseBasicTests, conflict_continue)
     branches.changeCurrentBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
     index.add("file.txt");
-    createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
+    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
 
     auto rebaseResult = rebase.rebase("main");
     ASSERT_FALSE(rebaseResult.has_value());
@@ -383,6 +389,7 @@ TEST_F(RebaseBasicTests, conflict_continue)
 
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
 TEST_F(RebaseBasicTests, abort_noRebaseInProgress)

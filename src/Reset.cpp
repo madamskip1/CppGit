@@ -1,5 +1,6 @@
 #include "Reset.hpp"
 
+#include "_details/GitFilesHelper.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
@@ -12,15 +13,19 @@ Reset::Reset(const Repository& repo)
 
 auto CppGit::Reset::resetSoft(const std::string_view commitHash) const -> void
 {
-    _details::Refs{ repo }.updateRefHash("HEAD", commitHash);
+    auto refs = _details::Refs{ repo };
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(refs.getRefHash("HEAD"));
+    refs.updateRefHash("HEAD", commitHash);
 }
 
 auto CppGit::Reset::resetHard(const std::string_view commitHash) const -> void
 {
     auto indexWorktree = _details::IndexWorktree{ repo };
+    auto refs = _details::Refs{ repo };
+    _details::GitFilesHelper{ repo }.setOrigHeadFile(refs.getRefHash("HEAD"));
     indexWorktree.resetIndexToTree(commitHash);
     indexWorktree.copyForceIndexToWorktree();
-    _details::Refs{ repo }.updateRefHash("HEAD", commitHash);
+    refs.updateRefHash("HEAD", commitHash);
 }
 
 
