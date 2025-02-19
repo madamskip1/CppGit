@@ -38,7 +38,7 @@ auto CommitsHistory::getCommitsLogDetailed(const std::string_view fromRef, const
     return getCommitsLogDetailedImpl(fromRef, toRef);
 }
 
-auto CommitsHistory::setAllBranches(bool allBranches) -> CommitsHistory&
+auto CommitsHistory::setAllBranches(const bool allBranches) -> CommitsHistory&
 {
     allBranches_ = allBranches;
     return *this;
@@ -196,15 +196,15 @@ auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, con
 
 auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
-    auto arguments = prepareCommandsArgument(fromRef, toRef);
-    auto output = repo_.executeGitCommand("rev-list", arguments);
+    const auto arguments = prepareCommandsArgument(fromRef, toRef);
+    const auto output = repo_.executeGitCommand("rev-list", arguments);
 
     if (output.return_code != 0)
     {
         throw std::runtime_error("Error while getting commits log hashes");
     }
 
-    auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
+    const auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
 
     return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
 }
@@ -212,7 +212,7 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
 auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
-    auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
+    const auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
     arguments.push_back(std::move(formatString));
     arguments.emplace_back("--no-commit-header");
     arguments.emplace_back("--date=raw");
@@ -226,7 +226,7 @@ auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, c
 
     auto commits = std::vector<Commit>();
     output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line
-    auto commitsSplitted = Parser::splitToStringViewsVector(output.stdout, "$:>\n");
+    const auto commitsSplitted = Parser::splitToStringViewsVector(output.stdout, "$:>\n");
 
     for (const auto commitLog : commitsSplitted)
     {
@@ -234,7 +234,7 @@ auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, c
         {
             continue;
         }
-        commits.push_back(CommitParser::parseCommit_PrettyFormat(commitLog));
+        commits.emplace_back(CommitParser::parseCommit_PrettyFormat(commitLog));
     }
 
     return commits;

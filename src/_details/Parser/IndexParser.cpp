@@ -18,7 +18,7 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
     constexpr auto pattern = R"((^\d{6})\s+(.{40})\s+(\d)\s+(\S+)$)";
     auto match = std::cmatch{};
 
-    if (auto regex = std::regex{ pattern }; !std::regex_match(indexEntryLine.cbegin(), indexEntryLine.cend(), match, regex))
+    if (const auto regex = std::regex{ pattern }; !std::regex_match(indexEntryLine.cbegin(), indexEntryLine.cend(), match, regex))
     {
         throw std::runtime_error("Invalid index entry line");
     }
@@ -30,7 +30,7 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
 
 auto IndexParser::parseStageDetailedList(const std::string_view indexContent) -> std::vector<IndexEntry>
 {
-    auto splitIndexContent = splitToStringViewsVector(indexContent, '\n');
+    const auto splitIndexContent = splitToStringViewsVector(indexContent, '\n');
     std::vector<IndexEntry> indexEntries;
     indexEntries.reserve(splitIndexContent.size());
 
@@ -49,7 +49,7 @@ auto IndexParser::parseStageDetailedList(const std::string_view indexContent) ->
 
 auto IndexParser::parseStageSimpleCacheList(const std::string_view indexContent) -> std::vector<std::string>
 {
-    auto listSV = splitToStringViewsVector(indexContent, '\n');
+    const auto listSV = splitToStringViewsVector(indexContent, '\n');
     auto result = std::vector<std::string>{};
     result.reserve(listSV.size());
     for (const auto& entry : listSV)
@@ -108,7 +108,7 @@ auto IndexParser::parseDiffIndexWithStatusEntry(const std::string_view diffIndex
     constexpr auto pattern = R"((\w)\s+(.+))";
     auto match = std::cmatch{};
 
-    if (auto regex = std::regex{ pattern }; !std::regex_match(diffIndexLine.cbegin(), diffIndexLine.cend(), match, regex))
+    if (const auto regex = std::regex{ pattern }; !std::regex_match(diffIndexLine.cbegin(), diffIndexLine.cend(), match, regex))
     {
         throw std::runtime_error("Invalid diff index entry line");
     }
@@ -123,7 +123,7 @@ auto IndexParser::parseDiffIndexWithStatus(const std::string_view diffIndexConte
         return std::vector<DiffIndexEntry>{};
     }
 
-    auto splitDiffIndexContent = splitToStringViewsVector(diffIndexContent, '\n');
+    const auto splitDiffIndexContent = splitToStringViewsVector(diffIndexContent, '\n');
     auto result = std::vector<DiffIndexEntry>{};
     result.reserve(splitDiffIndexContent.size());
 
@@ -177,7 +177,7 @@ auto IndexParser::parseLsFilesEntry(const std::string_view lsFilesLine) -> LsFil
     constexpr auto pattern = R"(([\w\?])\s+(.+))";
     auto match = std::cmatch{};
 
-    if (auto regex = std::regex{ pattern }; !std::regex_match(lsFilesLine.cbegin(), lsFilesLine.cend(), match, regex))
+    if (const auto regex = std::regex{ pattern }; !std::regex_match(lsFilesLine.cbegin(), lsFilesLine.cend(), match, regex))
     {
         throw std::runtime_error("Invalid ls-files entry line");
     }
@@ -192,7 +192,7 @@ auto IndexParser::parseLsFilesList(const std::string_view lsFilesContent) -> std
         return std::vector<LsFilesEntry>{};
     }
 
-    auto splitLsFilesContent = splitToStringViewsVector(lsFilesContent, '\n');
+    const auto splitLsFilesContent = splitToStringViewsVector(lsFilesContent, '\n');
     auto result = std::vector<LsFilesEntry>{};
     result.reserve(splitLsFilesContent.size());
 

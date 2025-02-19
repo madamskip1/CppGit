@@ -17,7 +17,7 @@ namespace CppGit {
 
 auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFile>
 {
-    auto splittedDiff = splitToStringViewsVector(diffContent, '\n');
+    const auto splittedDiff = splitToStringViewsVector(diffContent, '\n');
     std::vector<HeaderLine> headersLines;
 
     std::vector<DiffFile> diffFiles;
@@ -27,14 +27,14 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
     const auto endIterator = splittedDiff.cend();
     for (auto iterator = splittedDiff.cbegin(); iterator < endIterator; ++iterator)
     {
-        auto line = *iterator;
+        const auto line = *iterator;
         switch (currentState)
         {
         case ParseState::WAITING_FOR_DIFF: {
             currentState = ParseState::HEADER;
             headersLines.clear();
 
-            auto diffLine = parseDiffLine(line);
+            const auto diffLine = parseDiffLine(line);
             diffFile.isCombined = diffLine.isCombined;
             diffFile.fileA = diffLine.fileA;
             diffFile.fileB = diffLine.fileB;
@@ -42,14 +42,14 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
         }
 
         case ParseState::HEADER: {
-            auto lastHeaderLineType = headersLines.empty() ? HeaderLineType::NO_LINE : headersLines.back().type;
-            auto headerLine = parseHeaderLine(line, lastHeaderLineType);
+            const auto lastHeaderLineType = headersLines.empty() ? HeaderLineType::NO_LINE : headersLines.back().type;
+            const auto headerLine = parseHeaderLine(line, lastHeaderLineType);
 
 
             headersLines.push_back(headerLine);
             processHeaderLine(headerLine, diffFile);
 
-            if (auto nextLine = peakNextLine(iterator, endIterator); nextLine == "Binary files differ")
+            if (const auto nextLine = peakNextLine(iterator, endIterator); nextLine == "Binary files differ")
             {
                 currentState = ParseState::BINARY_FILE;
             }

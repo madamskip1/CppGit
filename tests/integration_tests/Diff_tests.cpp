@@ -12,29 +12,29 @@ class DiffTests : public BaseRepositoryFixture
 
 TEST_F(DiffTests, emptyRepo)
 {
-    auto diff = repository->Diff();
+    const auto diff = repository->Diff();
 
     ASSERT_THROW(diff.getDiff(), std::runtime_error);
 }
 
 TEST_F(DiffTests, singleEmptyCommit)
 {
-    auto commits = repository->Commits();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto diff = repository->Diff();
 
 
     commits.createCommit("Initial commit");
 
 
-    auto diffFiles = diff.getDiff();
+    const auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
 TEST_F(DiffTests, singleCommit)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
@@ -42,15 +42,15 @@ TEST_F(DiffTests, singleCommit)
     commits.createCommit("Initial commit");
 
 
-    auto diffFiles = diff.getDiff();
+    const auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 0); // cant compare as we dont have any previous commit, so no diff
 }
 
 TEST_F(DiffTests, twoCommitsAddedFileWithContent)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
@@ -61,9 +61,9 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
     commits.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiff();
+    const auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -86,9 +86,9 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
 
 TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
@@ -100,9 +100,9 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
     commits.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiff();
+    const auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -114,9 +114,9 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
 
 TEST_F(DiffTests, fileModdified)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
@@ -130,7 +130,7 @@ TEST_F(DiffTests, fileModdified)
 
     auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile.fileA, "test.txt");
@@ -158,9 +158,9 @@ TEST_F(DiffTests, fileModdified)
 
 TEST_F(DiffTests, multipleFile)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
@@ -174,7 +174,7 @@ TEST_F(DiffTests, multipleFile)
     commits.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiff();
+    const auto diffFiles = diff.getDiff();
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -223,9 +223,9 @@ TEST_F(DiffTests, multipleFile)
 
 TEST_F(DiffTests, getGivenFileDiff)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
@@ -239,9 +239,9 @@ TEST_F(DiffTests, getGivenFileDiff)
     commits.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiffFile("test2.txt");
+    const auto diffFiles = diff.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -254,9 +254,9 @@ TEST_F(DiffTests, getGivenFileDiff)
 
 TEST_F(DiffTests, getGivenFileDiffNoFile)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
@@ -268,15 +268,15 @@ TEST_F(DiffTests, getGivenFileDiffNoFile)
     commits.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiffFile("test2.txt");
+    const auto diffFiles = diff.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
 TEST_F(DiffTests, givenCommitDiff)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
@@ -285,16 +285,16 @@ TEST_F(DiffTests, givenCommitDiff)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
     index.add("test3.txt");
     commits.createCommit("Third commit");
 
 
-    auto diffFiles = diff.getDiff(secondCommitHash);
+    const auto diffFiles = diff.getDiff(secondCommitHash);
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -304,9 +304,9 @@ TEST_F(DiffTests, givenCommitDiff)
 
 TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
@@ -322,9 +322,9 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
     commits.createCommit("Third commit");
 
 
-    auto diffFiles = diff.getDiff("HEAD~1");
+    const auto diffFiles = diff.getDiff("HEAD~1");
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -334,9 +334,9 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
 
 TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
@@ -352,9 +352,9 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
     commits.createCommit("Third commit");
 
 
-    auto diffFiles = diff.getDiff("HEAD^");
+    const auto diffFiles = diff.getDiff("HEAD^");
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");
@@ -364,14 +364,14 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
 
 TEST_F(DiffTests, diffBetweenTwoCommits)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
-    auto firstCommithash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
@@ -379,10 +379,10 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
 
-    auto diffFiles = diff.getDiff(firstCommithash, thirdCommitHash);
+    const auto diffFiles = diff.getDiff(initialCommitHash, thirdCommitHash);
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -431,14 +431,14 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
 
 TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto diff = repository->Diff();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto diff = repository->Diff();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
     index.add("test1.txt");
-    auto firstCommithash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
     index.add("test2.txt");
@@ -446,12 +446,12 @@ TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     index.add("test1.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
 
-    auto diffFiles = diff.getDiffFile(firstCommithash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
+    const auto diffFiles = diff.getDiffFile(initialCommitHash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
     ASSERT_EQ(diffFiles.size(), 1);
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.fileA, "/dev/null");

@@ -14,18 +14,18 @@ class ResetTests : public BaseRepositoryFixture
 
 TEST_F(ResetTests, resetSoft)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft(initialCommitHash);
@@ -39,18 +39,18 @@ TEST_F(ResetTests, resetSoft)
 
 TEST_F(ResetTests, resetHard)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetHard(initialCommitHash);
@@ -64,18 +64,18 @@ TEST_F(ResetTests, resetHard)
 
 TEST_F(ResetTests, resetSoftWithUntrackedFile)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 4");
 
@@ -91,18 +91,18 @@ TEST_F(ResetTests, resetSoftWithUntrackedFile)
 
 TEST_F(ResetTests, resetHardWithUntrackedFile)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 4");
 
@@ -118,18 +118,18 @@ TEST_F(ResetTests, resetHardWithUntrackedFile)
 
 TEST_F(ResetTests, resetSoft_usingHEADRelativeTildeNotation)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft("HEAD^");
@@ -143,18 +143,18 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeTildeNotation)
 
 TEST_F(ResetTests, resetHard_usingHEADRelativeTildeNotation)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
 
@@ -169,18 +169,18 @@ TEST_F(ResetTests, resetHard_usingHEADRelativeTildeNotation)
 
 TEST_F(ResetTests, resetSoft_usingHEADRelativeCaretNotation)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft("HEAD~1");
@@ -194,10 +194,10 @@ TEST_F(ResetTests, resetSoft_usingHEADRelativeCaretNotation)
 
 TEST_F(ResetTests, resetSoft_toHEAD)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -205,7 +205,7 @@ TEST_F(ResetTests, resetSoft_toHEAD)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetSoft("HEAD");
@@ -219,10 +219,10 @@ TEST_F(ResetTests, resetSoft_toHEAD)
 
 TEST_F(ResetTests, resetHard_toHEAD)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -230,7 +230,7 @@ TEST_F(ResetTests, resetHard_toHEAD)
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
 
     reset.resetHard("HEAD");
@@ -244,18 +244,18 @@ TEST_F(ResetTests, resetHard_toHEAD)
 
 TEST_F(ResetTests, resetSoft_detachedHEAD)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     index.add("file.txt");
     commits.createCommit("Third commit");
@@ -272,18 +272,18 @@ TEST_F(ResetTests, resetSoft_detachedHEAD)
 
 TEST_F(ResetTests, resetHard_detachedHEAD)
 {
-    auto commits = repository->Commits();
-    auto reset = repository->Reset();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
+    const auto commits = repository->Commits();
+    const auto reset = repository->Reset();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 2");
     index.add("file.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! 3");
     index.add("file.txt");
     commits.createCommit("Third commit");

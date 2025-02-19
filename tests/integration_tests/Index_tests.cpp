@@ -15,8 +15,8 @@ TEST_F(IndexTests, addRegularFile)
     // For staged we need at least one commit
     // TODO: getStagedFileList should do ls-files if no commit
 
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -26,7 +26,7 @@ TEST_F(IndexTests, addRegularFile)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("file.txt");
+    const auto addResult = index.add("file.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -40,17 +40,17 @@ TEST_F(IndexTests, addRegularFile)
 
 TEST_F(IndexTests, addRegularFile_fileNotExist)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
-    auto addResult = index.add("file.txt");
+    const auto addResult = index.add("file.txt");
 
     ASSERT_EQ(addResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
 }
 
 TEST_F(IndexTests, addRegularFileInDir)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -61,7 +61,7 @@ TEST_F(IndexTests, addRegularFileInDir)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("dir/file.txt");
+    const auto addResult = index.add("dir/file.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -75,8 +75,8 @@ TEST_F(IndexTests, addRegularFileInDir)
 
 TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -86,7 +86,7 @@ TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("dir");
+    const auto addResult = index.add("dir");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -100,8 +100,8 @@ TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
 
 TEST_F(IndexTests, addExecutableFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -112,7 +112,7 @@ TEST_F(IndexTests, addExecutableFile)
     auto indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("file.sh");
+    const auto addResult = index.add("file.sh");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -127,8 +127,8 @@ TEST_F(IndexTests, addExecutableFile)
 
 TEST_F(IndexTests, addSymlink)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -139,7 +139,7 @@ TEST_F(IndexTests, addSymlink)
     auto indexFiles = index.getFilesInIndexListWithDetails();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("file-symlink.txt");
+    const auto addResult = index.add("file-symlink.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -154,8 +154,8 @@ TEST_F(IndexTests, addSymlink)
 
 TEST_F(IndexTests, addOnDeletedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -166,21 +166,21 @@ TEST_F(IndexTests, addOnDeletedFile)
     EXPECT_EQ(indexFiles[0], "file.txt");
     std::filesystem::remove(repositoryPath / "file.txt");
 
-    auto addResult = index.add("file.txt");
+    const auto addResult = index.add("file.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
     indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
-    auto stagedFiles = index.getStagedFilesList();
+    const auto stagedFiles = index.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, addFilesWithAsteriskPattern)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -191,7 +191,7 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("*.txt");
+    const auto addResult = index.add("*.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -207,8 +207,8 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
 
 TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -221,7 +221,7 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto addResult = index.add("dir*/*.txt");
+    const auto addResult = index.add("dir*/*.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::NO_ERROR);
@@ -237,12 +237,12 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
 
 TEST_F(IndexTests, addFile_fileNotExist)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
+
 
     commits.createCommit("Initial commit");
-
-    auto addResult = index.add("file.txt");
+    const auto addResult = index.add("file.txt");
 
 
     ASSERT_EQ(addResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -250,8 +250,8 @@ TEST_F(IndexTests, addFile_fileNotExist)
 
 TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -261,7 +261,7 @@ TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    auto removeResult = index.remove("file.txt");
+    const auto removeResult = index.remove("file.txt");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -271,8 +271,8 @@ TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
 
 TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -283,7 +283,7 @@ TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
     EXPECT_EQ(indexFiles[0], "file.txt");
     std::filesystem::remove(repositoryPath / "file.txt");
 
-    auto removeResult = index.remove("file.txt");
+    const auto removeResult = index.remove("file.txt");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -293,8 +293,8 @@ TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
 
 TEST_F(IndexTests, removeRegularFile_force)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -304,7 +304,7 @@ TEST_F(IndexTests, removeRegularFile_force)
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    auto removeResult = index.remove("file.txt", true);
+    const auto removeResult = index.remove("file.txt", true);
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -314,16 +314,16 @@ TEST_F(IndexTests, removeRegularFile_force)
 
 TEST_F(IndexTests, removeRegularFile_notInIndex)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    auto indexFiles = index.getFilesInIndexList();
+    const auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto removeResult = index.remove("file.txt");
+    const auto removeResult = index.remove("file.txt");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -331,16 +331,16 @@ TEST_F(IndexTests, removeRegularFile_notInIndex)
 
 TEST_F(IndexTests, removeRegularFile_notInIndex_force)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    auto indexFiles = index.getFilesInIndexList();
+    const auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto removeResult = index.remove("file.txt", true);
+    const auto removeResult = index.remove("file.txt", true);
 
 
     EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -348,12 +348,12 @@ TEST_F(IndexTests, removeRegularFile_notInIndex_force)
 
 TEST_F(IndexTests, removeRegularFile_norInIndexNeitherInWorkingDirectory)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
-    auto removeResult = index.remove("file.txt", true);
+    const auto removeResult = index.remove("file.txt", true);
 
 
     EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -361,8 +361,8 @@ TEST_F(IndexTests, removeRegularFile_norInIndexNeitherInWorkingDirectory)
 
 TEST_F(IndexTests, removeRegularFileInDir)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -373,7 +373,7 @@ TEST_F(IndexTests, removeRegularFileInDir)
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    auto removeResult = index.remove("dir/file.txt");
+    const auto removeResult = index.remove("dir/file.txt");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -383,8 +383,8 @@ TEST_F(IndexTests, removeRegularFileInDir)
 
 TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -395,7 +395,7 @@ TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    auto removeResult = index.remove("dir");
+    const auto removeResult = index.remove("dir");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -405,8 +405,8 @@ TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
 
 TEST_F(IndexTests, removeRegularFileInDir_force)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -417,7 +417,7 @@ TEST_F(IndexTests, removeRegularFileInDir_force)
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    auto removeResult = index.remove("dir", true);
+    const auto removeResult = index.remove("dir", true);
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -427,8 +427,8 @@ TEST_F(IndexTests, removeRegularFileInDir_force)
 
 TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -437,7 +437,7 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto removeResult = index.remove("dir");
+    const auto removeResult = index.remove("dir");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -445,8 +445,8 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex)
 
 TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -455,7 +455,7 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
     auto indexFiles = index.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    auto removeResult = index.remove("dir", true);
+    const auto removeResult = index.remove("dir", true);
 
 
     EXPECT_EQ(removeResult, CppGit::Error::PATTERN_NOT_MATCHING_ANY_FILES);
@@ -463,8 +463,8 @@ TEST_F(IndexTests, removeRegularFileInDir_notInIndex_force)
 
 TEST_F(IndexTests, removeRegularFileInDir_removedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -476,7 +476,7 @@ TEST_F(IndexTests, removeRegularFileInDir_removedFile)
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
     std::filesystem::remove(repositoryPath / "dir" / "file.txt");
 
-    auto removeResult = index.remove("dir/file.txt");
+    const auto removeResult = index.remove("dir/file.txt");
 
 
     EXPECT_EQ(removeResult, CppGit::Error::NO_ERROR);
@@ -487,8 +487,8 @@ TEST_F(IndexTests, removeRegularFileInDir_removedFile)
 
 TEST_F(IndexTests, restoreAllStaged_noChanges)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -506,8 +506,8 @@ TEST_F(IndexTests, restoreAllStaged_noChanges)
 
 TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -526,8 +526,8 @@ TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
 
 TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -545,8 +545,8 @@ TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
 
 TEST_F(IndexTests, restoreAllStaged_stagedChanges)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -566,8 +566,8 @@ TEST_F(IndexTests, restoreAllStaged_stagedChanges)
 
 TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -586,8 +586,8 @@ TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
 
 TEST_F(IndexTests, restoreAllStaged_multipleFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -607,8 +607,8 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile)
 
 TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -629,14 +629,14 @@ TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
 
 TEST_F(IndexTests, notDirty_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     EXPECT_THROW(static_cast<void>(index.isDirty()), std::runtime_error); // Static cast to prevent warning from discard value
 }
 
 TEST_F(IndexTests, dirty_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
@@ -645,7 +645,7 @@ TEST_F(IndexTests, dirty_noCommitsYet)
 
 TEST_F(IndexTests, dirty_noCommitsYet_FileAddedToIndex)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
@@ -655,8 +655,8 @@ TEST_F(IndexTests, dirty_noCommitsYet_FileAddedToIndex)
 
 TEST_F(IndexTests, notDirty)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -670,8 +670,8 @@ TEST_F(IndexTests, notDirty)
 
 TEST_F(IndexTests, dirty_changesInCachedNotAdded)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -685,8 +685,8 @@ TEST_F(IndexTests, dirty_changesInCachedNotAdded)
 
 TEST_F(IndexTests, dirty_changesInCachedAdded)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -701,8 +701,8 @@ TEST_F(IndexTests, dirty_changesInCachedAdded)
 
 TEST_F(IndexTests, notdirty_untrackedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -714,8 +714,8 @@ TEST_F(IndexTests, notdirty_untrackedFile)
 
 TEST_F(IndexTests, dirty_untrackedFileAdded)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -728,55 +728,55 @@ TEST_F(IndexTests, dirty_untrackedFileAdded)
 
 TEST_F(IndexTests, getUntrackedFileList_emptyRepo)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_notStagedFile)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 1);
     ASSERT_EQ(untrackedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getUntrackedFileList_stagedFile)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDir)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 1);
     ASSERT_EQ(untrackedFiles[0], "dir/file.txt");
 }
 
 TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDirStaged)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
@@ -784,14 +784,14 @@ TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDirStaged)
     index.add("dir/file.txt");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_trackedModified)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -800,14 +800,14 @@ TEST_F(IndexTests, getUntrackedFileList_trackedModified)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_trackedDeleted)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -816,13 +816,13 @@ TEST_F(IndexTests, getUntrackedFileList_trackedDeleted)
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = index.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getStagedFilesList_emptyRepo_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     EXPECT_THROW(index.getStagedFilesListWithStatus(), std::runtime_error);
 }
@@ -830,7 +830,7 @@ TEST_F(IndexTests, getStagedFilesList_emptyRepo_noCommitsYet)
 
 TEST_F(IndexTests, getStagedFilesList_notStagedFile_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
@@ -839,7 +839,7 @@ TEST_F(IndexTests, getStagedFilesList_notStagedFile_noCommitsYet)
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
@@ -849,8 +849,8 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile_noCommitsYet)
 
 TEST_F(IndexTests, getStagedFilesList_commitedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -858,14 +858,14 @@ TEST_F(IndexTests, getStagedFilesList_commitedFile)
     commits.createCommit("Initial commit");
 
 
-    auto stagedFiles = index.getStagedFilesListWithStatus();
+    const auto stagedFiles = index.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -873,7 +873,7 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
     index.add("file.txt");
 
 
-    auto stagedFiles = index.getStagedFilesListWithStatus();
+    const auto stagedFiles = index.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0].path, "file.txt");
     EXPECT_EQ(stagedFiles[0].status, CppGit::DiffIndexStatus::ADDED);
@@ -881,8 +881,8 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile_pattern)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -892,14 +892,14 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile_pattern)
     index.add("another_file.txt");
 
 
-    auto stagedFiles = index.getStagedFilesList("file*");
+    const auto stagedFiles = index.getStagedFilesList("file*");
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, isFileStaged_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
@@ -908,7 +908,7 @@ TEST_F(IndexTests, isFileStaged_noCommitsYet)
 
 TEST_F(IndexTests, isFileStaged_fileStaged_noCommitsYet)
 {
-    auto index = repository->Index();
+    const auto index = repository->Index();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
@@ -918,8 +918,8 @@ TEST_F(IndexTests, isFileStaged_fileStaged_noCommitsYet)
 
 TEST_F(IndexTests, isFileStaged_fileNotStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -931,8 +931,8 @@ TEST_F(IndexTests, isFileStaged_fileNotStaged)
 
 TEST_F(IndexTests, isFileStaged_fileStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -945,8 +945,8 @@ TEST_F(IndexTests, isFileStaged_fileStaged)
 
 TEST_F(IndexTests, isFileStaged_FileNotExist)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
@@ -955,36 +955,36 @@ TEST_F(IndexTests, isFileStaged_FileNotExist)
 
 TEST_F(IndexTests, getNotStagedFiles_noFiles)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_untrackedNotStagedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getNotStagedFiles_untrackedStagedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -992,14 +992,14 @@ TEST_F(IndexTests, getNotStagedFiles_untrackedStagedFile)
     index.add("file.txt");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedNotModified)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -1007,14 +1007,14 @@ TEST_F(IndexTests, getNotStagedFiles_trackedNotModified)
     commits.createCommit("Initial commit");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedModifiedNotStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -1023,15 +1023,15 @@ TEST_F(IndexTests, getNotStagedFiles_trackedModifiedNotStaged)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedModifiedStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -1041,15 +1041,15 @@ TEST_F(IndexTests, getNotStagedFiles_trackedModifiedStaged)
     index.add("file.txt");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 
 TEST_F(IndexTests, getNotStagedFiles_trackedDeletedNotStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -1058,15 +1058,15 @@ TEST_F(IndexTests, getNotStagedFiles_trackedDeletedNotStaged)
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = index.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_justFirstCommit)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
@@ -1075,8 +1075,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_justFirstCommit)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_notTrackedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1088,8 +1088,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_notTrackedFile)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_stagedNotTrackedBefore)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1102,8 +1102,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_stagedNotTrackedBefore)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedNotChanged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1117,8 +1117,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedNotChanged)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedNotStagged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1133,8 +1133,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedNotStagged)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedStagged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1150,8 +1150,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedStagged)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedNotStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1166,8 +1166,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedNotStaged)
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1183,8 +1183,8 @@ TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedStaged)
 
 TEST_F(IndexTests, areAnyStagedFiles_justFirstCommit)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
@@ -1193,8 +1193,8 @@ TEST_F(IndexTests, areAnyStagedFiles_justFirstCommit)
 
 TEST_F(IndexTests, areAnyStagedFiles_notTrackedFile)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1206,8 +1206,8 @@ TEST_F(IndexTests, areAnyStagedFiles_notTrackedFile)
 
 TEST_F(IndexTests, areAnyStagedFiles_stagedNotTrackedBefore)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1220,8 +1220,8 @@ TEST_F(IndexTests, areAnyStagedFiles_stagedNotTrackedBefore)
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedNotChanged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1235,8 +1235,8 @@ TEST_F(IndexTests, areAnyStagedFiles_trackedNotChanged)
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedChangedNotStagged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1251,8 +1251,8 @@ TEST_F(IndexTests, areAnyStagedFiles_trackedChangedNotStagged)
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedChangedStagged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1268,8 +1268,8 @@ TEST_F(IndexTests, areAnyStagedFiles_trackedChangedStagged)
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedNotStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");
@@ -1284,8 +1284,8 @@ TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedNotStaged)
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedStaged)
 {
-    auto index = repository->Index();
-    auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto commits = repository->Commits();
 
 
     commits.createCommit("Initial commit");

@@ -16,32 +16,32 @@ public:
     /// @brief Parse a commit log from the git cat-file command
     /// @param commitLog Commit log to parse
     /// @return Commit object
-    [[nodiscard]] static auto parseCommit_CatFile(std::string_view commitLog) -> Commit;
+    [[nodiscard]] static auto parseCommit_CatFile(const std::string_view commitLog) -> Commit;
 
     /// @brief Parse a commit log from the git rev-list command
     /// @param commitLog Commit log to parse
     /// @return Commit object
-    [[nodiscard]] static auto parseCommit_PrettyFormat(std::string_view commitLog) -> Commit;
+    [[nodiscard]] static auto parseCommit_PrettyFormat(const std::string_view commitLog) -> Commit;
 
     /// @brief Parse a commit log from the git rev-list command
     /// @param commitLog Commit log to parse
     /// @param format Format to use when parsing the commit log
     /// @param delimiter Delimiter to use when parsing the commit log
     /// @return Commit object
-    [[nodiscard]] static auto parseCommit_PrettyFormat(std::string_view commitLog, std::string_view format, std::string_view delimiter) -> Commit;
+    [[nodiscard]] static auto parseCommit_PrettyFormat(const std::string_view commitLog, const std::string_view format, const std::string_view delimiter) -> Commit;
 
 private:
-    static auto isHashToken(std::string_view token) -> bool;
-    static auto isParentsToken(std::string_view token) -> bool;
-    static auto isAuthorNameToken(std::string_view token) -> bool;
-    static auto isAuthorEmailToken(std::string_view token) -> bool;
-    static auto isAuthorDateToken(std::string_view token) -> bool;
-    static auto isCommitterNameToken(std::string_view token) -> bool;
-    static auto isCommitterEmailToken(std::string_view token) -> bool;
-    static auto isCommitterDateToken(std::string_view token) -> bool;
-    static auto isMessageToken(std::string_view token) -> bool;
-    static auto isDescriptionToken(std::string_view token) -> bool;
-    static auto isTreeHashToken(std::string_view token) -> bool;
+    static auto isHashToken(const std::string_view token) -> bool;
+    static auto isParentsToken(const std::string_view token) -> bool;
+    static auto isAuthorNameToken(const std::string_view token) -> bool;
+    static auto isAuthorEmailToken(const std::string_view token) -> bool;
+    static auto isAuthorDateToken(const std::string_view token) -> bool;
+    static auto isCommitterNameToken(const std::string_view token) -> bool;
+    static auto isCommitterEmailToken(const std::string_view token) -> bool;
+    static auto isCommitterDateToken(const std::string_view token) -> bool;
+    static auto isMessageToken(const std::string_view token) -> bool;
+    static auto isDescriptionToken(const std::string_view token) -> bool;
+    static auto isTreeHashToken(const std::string_view token) -> bool;
 };
 
 } // namespace CppGit

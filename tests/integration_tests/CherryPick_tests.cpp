@@ -15,25 +15,26 @@ class CherryPickTests : public BaseRepositoryFixture
 
 TEST_F(CherryPickTests, simpleCherryPick)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash);
+
 
     ASSERT_TRUE(cherryPickedHash.has_value());
-    auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
+    const auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
     EXPECT_EQ(cherryPickedHash, commits.getHeadCommitHash());
     EXPECT_NE(cherryPickedHash, secondCommitHash);
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Second commit");
@@ -46,19 +47,18 @@ TEST_F(CherryPickTests, simpleCherryPick)
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
 {
-    auto commits = repository->Commits();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
 
 
-    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
-
-    auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::KEEP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::KEEP);
 
 
     ASSERT_TRUE(cherryPickedHash.has_value());
-    auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
+    const auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
     EXPECT_EQ(cherryPickedHash, commits.getHeadCommitHash());
     EXPECT_NE(cherryPickedHash, secondCommitHash);
     EXPECT_EQ(cherryPickedInfo.getMessage(), "Initial commit");
@@ -70,14 +70,14 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_keep)
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
 {
-    auto commits = repository->Commits();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
 
 
-    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::DROP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::DROP);
 
 
     ASSERT_TRUE(cherryPickedHash.has_value());
@@ -89,14 +89,14 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_drop)
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
 {
-    auto commits = repository->Commits();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
 
 
-    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
@@ -109,19 +109,19 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
 
 TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
 {
-    auto commits = repository->Commits();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
 
 
-    auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
     cherryPick.cherryPickCommit(initialCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
-    auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
+    const auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
 
 
     ASSERT_TRUE(cherryPickedHash.has_value());
-    auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
+    const auto cherryPickedInfo = commits.getCommitInfo(cherryPickedHash.value());
     EXPECT_EQ(cherryPickedHash, commits.getHeadCommitHash());
     EXPECT_NE(cherryPickedHash, initialCommitHash);
     EXPECT_NE(cherryPickedHash, secondCommitHash);
@@ -132,12 +132,12 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
 
 TEST_F(CherryPickTests, tryCommitEmptyCherryPickedCommitWhenNoCherryPickInProgress)
 {
-    auto cherryPick = repository->CherryPick();
-    auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
-    auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
+    const auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
 
     ASSERT_FALSE(cherryPickedHash.has_value());
     EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::NO_CHERRY_PICK_IN_PROGRESS);
@@ -145,26 +145,26 @@ TEST_F(CherryPickTests, tryCommitEmptyCherryPickedCommitWhenNoCherryPickInProgre
 
 TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
@@ -177,19 +177,19 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 
 TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
     index.add("file.txt");
-    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
@@ -197,9 +197,9 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
     commits.createCommit("Third commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
-    auto fourthCommitHash = commits.createCommit("Fourth commit");
+    const auto fourthCommitHash = commits.createCommit("Fourth commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
@@ -213,24 +213,24 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
 
 TEST_F(CherryPickTests, cherryPick_conflict_resolve)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2");
     index.add("file.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
     cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
     ASSERT_TRUE(cherryPick.isCherryPickInProgress());
@@ -238,11 +238,11 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Conflict resolved");
     index.add("file.txt");
 
-    auto cherryPickResolvedHash = cherryPick.cherryPickContinue();
+    const auto cherryPickResolvedHash = cherryPick.cherryPickContinue();
 
 
     ASSERT_TRUE(cherryPickResolvedHash.has_value());
-    auto cherryPickedInfo = commits.getCommitInfo(cherryPickResolvedHash.value());
+    const auto cherryPickedInfo = commits.getCommitInfo(cherryPickResolvedHash.value());
     EXPECT_EQ(cherryPickResolvedHash, commits.getHeadCommitHash());
     EXPECT_NE(secondCommitHash, cherryPickResolvedHash);
     EXPECT_NE(thirdCommitHash, cherryPickResolvedHash);
@@ -256,28 +256,28 @@ TEST_F(CherryPickTests, cherryPick_conflict_resolve)
 
 TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified.");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
     index.add("file.txt");
     index.add("file2.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
     index.add("file.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
@@ -292,32 +292,32 @@ TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
 
 TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
     index.add("file.txt");
     index.add("file2.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! Modified!");
     index.add("file.txt");
     index.add("file2.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! Modified 2!");
     index.add("file.txt");
     index.add("file2.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
-    auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
+    const auto cherryPickedHash = cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
@@ -332,28 +332,28 @@ TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
 
 TEST_F(CherryPickTests, cherryPick_abort)
 {
-    auto commits = repository->Commits();
-    auto index = repository->Index();
-    auto branches = repository->Branches();
-    auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
+    const auto index = repository->Index();
+    const auto branches = repository->Branches();
+    const auto cherryPick = repository->CherryPick();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     index.add("file.txt");
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     branches.createBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     index.add("file.txt");
-    auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
+    const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     branches.changeCurrentBranch("second-branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2");
     index.add("file.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
     cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
-    auto abortResult = cherryPick.cherryPickAbort();
+    const auto abortResult = cherryPick.cherryPickAbort();
 
 
     ASSERT_TRUE(abortResult == CppGit::Error::NO_ERROR);
@@ -366,12 +366,12 @@ TEST_F(CherryPickTests, cherryPick_abort)
 
 TEST_F(CherryPickTests, cherryPick_abort_noCherryPickInProgress)
 {
-    auto cherryPick = repository->CherryPick();
-    auto commits = repository->Commits();
+    const auto cherryPick = repository->CherryPick();
+    const auto commits = repository->Commits();
 
     commits.createCommit("Initial commit");
 
-    auto abortResult = cherryPick.cherryPickAbort();
+    const auto abortResult = cherryPick.cherryPickAbort();
 
     EXPECT_EQ(abortResult, CppGit::Error::NO_CHERRY_PICK_IN_PROGRESS);
 }

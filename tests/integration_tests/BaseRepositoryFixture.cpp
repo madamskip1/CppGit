@@ -21,14 +21,14 @@ void BaseRepositoryFixture::TearDown()
 
 auto BaseRepositoryFixture::prepareCommitAuthorCommiterTestEnvp() -> std::vector<std::string>
 {
-    auto envp = std::vector<std::string>{ std::string{ "GIT_AUTHOR_NAME=" } + AUTHOR_NAME, std::string{ "GIT_AUTHOR_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_AUTHOR_DATE=" } + AUTHOR_DATE, std::string{ "GIT_COMMITTER_NAME=" } + AUTHOR_NAME, std::string{ "GIT_COMMITTER_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_COMMITTER_DATE=" } + AUTHOR_DATE };
+    const auto envp = std::vector<std::string>{ std::string{ "GIT_AUTHOR_NAME=" } + AUTHOR_NAME, std::string{ "GIT_AUTHOR_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_AUTHOR_DATE=" } + AUTHOR_DATE, std::string{ "GIT_COMMITTER_NAME=" } + AUTHOR_NAME, std::string{ "GIT_COMMITTER_EMAIL=" } + AUTHOR_EMAIL, std::string{ "GIT_COMMITTER_DATE=" } + AUTHOR_DATE };
 
     return envp;
 }
 
 auto BaseRepositoryFixture::createCommitWithTestAuthorCommiter(const std::string_view& message, const std::string_view description, std::string parentHash) const -> std::string
 {
-    auto newCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit(message, description, { std::move(parentHash) }, prepareCommitAuthorCommiterTestEnvp());
+    const auto newCommitHash = CppGit::_details::CreateCommit{ *repository }.createCommit(message, description, { std::move(parentHash) }, prepareCommitAuthorCommiterTestEnvp());
     CppGit::_details::Refs{ *repository }.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;

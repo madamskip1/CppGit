@@ -18,9 +18,9 @@ CreateCommit::CreateCommit(const Repository& repo)
 auto CreateCommit::createCommit(const std::string_view message, const std::string_view description, const std::vector<std::string>& parents, const std::vector<std::string>& envp) const -> std::string
 {
     auto treeHash = writeTree();
-    auto commitHash = commitTree(std::move(treeHash), message, description, parents, envp);
+    const auto commitHash = commitTree(std::move(treeHash), message, description, parents, envp);
 
-    if (auto updateIndexOutput = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
+    if (const auto updateIndexOutput = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to update index");
     }
@@ -32,7 +32,6 @@ auto CreateCommit::createCommit(const std::string_view message, const std::vecto
 {
     return createCommit(message, "", parents, envp);
 }
-
 
 auto CreateCommit::writeTree() const -> std::string
 {

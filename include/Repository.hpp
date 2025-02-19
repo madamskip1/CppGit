@@ -144,7 +144,7 @@ public:
     /// @param bare Whether to initialize bare repository
     /// @param mainBranchName Main branch name (default: "main")
     /// @return True if repository was initialized, false otherwise
-    auto initRepository(bool bare = false, std::string_view mainBranchName = "main") const -> bool;
+    auto initRepository(const bool bare = false, const std::string_view mainBranchName = "main") const -> bool;
 
     /// @brief Get remote URL
     /// @return Remote URL

@@ -4,7 +4,7 @@
 
 TEST(DiffParserTests, fileAdded)
 {
-    std::string diff = R"(diff --git a/new_file.txt b/new_file.txt
+    constexpr auto diff = R"(diff --git a/new_file.txt b/new_file.txt
 new file mode 100644
 index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
 --- /dev/null
@@ -16,11 +16,11 @@ index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
 +Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -46,16 +46,16 @@ index 0000000..180cf8328022becee9aaa2577a8f84ea2b9f3827
 
 TEST(DiffParserTests, fileAddedWithoutContext)
 {
-    std::string diff = R"(diff --git a/test4.txt b/test4.txt
+    constexpr auto diff = R"(diff --git a/test4.txt b/test4.txt
 new file mode 100644
 index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -76,7 +76,7 @@ index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2
 
 TEST(DiffParserTests, fileDeleted)
 {
-    std::string diff = R"(diff --git a/deleted_file.txt b/deleted_file.txt
+    constexpr auto diff = R"(diff --git a/deleted_file.txt b/deleted_file.txt
 deleted file mode 100644
 index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
 --- a/deleted_file.txt
@@ -88,11 +88,11 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
 -Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::DELETED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -118,16 +118,16 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..0000000
 
 TEST(DiffPraserTests, fileDeletedWithoutContext)
 {
-    std::string diff = R"(diff --git a/test4.txt b/test4.txt
+    constexpr auto diff = R"(diff --git a/test4.txt b/test4.txt
 deleted file mode 100644
 index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..0000000000000000000000000000000000000000)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::DELETED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -147,7 +147,7 @@ index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..00000000000000000000000000000000
 
 TEST(DiffParserTests, fileModified)
 {
-    std::string diff = R"(diff --git a/modified_file.txt b/modified_file.txt
+    constexpr auto diff = R"(diff --git a/modified_file.txt b/modified_file.txt
 index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc74ea4fbc 100644
 --- a/modified_file.txt
 +++ b/modified_file.txt
@@ -159,11 +159,11 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
  Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -191,17 +191,17 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 
 TEST(DiffParserTests, fileRenamed)
 {
-    std::string diff = R"(diff --git a/old_name.txt b/new_name.txt
+    constexpr auto diff = R"(diff --git a/old_name.txt b/new_name.txt
 similarity index 90%
 rename from old_name.txt
 rename to new_name.txt)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::RENAMED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -220,7 +220,7 @@ rename to new_name.txt)";
 
 TEST(DiffParserTests, fileRenamedWithContentChanged)
 {
-    std::string diff = R"(diff --git a/old_name.txt b/new_name.txt
+    constexpr auto diff = R"(diff --git a/old_name.txt b/new_name.txt
 similarity index 90%
 rename from old_name.txt
 rename to new_name.txt
@@ -235,11 +235,11 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
  Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::RENAMED_AND_MODIFIED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -266,17 +266,17 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 
 TEST(DiffParserTests, fileCopied)
 {
-    std::string diff = R"(diff --git a/original.txt b/copied_file.txt
+    constexpr auto diff = R"(diff --git a/original.txt b/copied_file.txt
 similarity index 100%
 copy from original.txt
 copy to copied_file.txt)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::COPIED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -297,7 +297,7 @@ copy to copied_file.txt)";
 
 TEST(DiffParserTests, fileCopiedWithContentChanged)
 {
-    std::string diff = R"(diff --git a/original.txt b/copied_file.txt
+    constexpr auto diff = R"(diff --git a/original.txt b/copied_file.txt
 similarity index 90%
 copy from original.txt
 copy to copied_file.txt
@@ -312,11 +312,11 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
  Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::COPIED_AND_MODIFIED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -343,16 +343,16 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 
 TEST(DiffParserTests, fileTypeChanged)
 {
-    std::string diff = R"(diff --git a/file.txt b/file.txt
+    constexpr auto diff = R"(diff --git a/file.txt b/file.txt
 old mode 100644
 new mode 100755)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::TYPE_CHANGED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -373,7 +373,7 @@ new mode 100755)";
 
 TEST(DiffParserTests, fileTypeChangedSymlink)
 {
-    std::string diff = R"(diff --git a/file.txt b/file.txt
+    constexpr auto diff = R"(diff --git a/file.txt b/file.txt
 old mode 100644
 new mode 120000
 index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc74ea4fbc
@@ -384,11 +384,11 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 +/path/to/symlink)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::TYPE_CHANGED_SYMLINK);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -413,7 +413,7 @@ index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc
 
 TEST(DiffParserTests, moreParentsModified)
 {
-    std::string diff = R"(diff --cc file1.txt
+    constexpr auto diff = R"(diff --cc file1.txt
 index 6fefc78134f4d22c90a778f555c4137feded408e,1d89a1850b82787e2766aa3c724048fc74ea4fbc..180cf8328022becee9aaa2577a8f84ea2b9f3827
 --- a/file1.txt
 +++ b/file1.txt
@@ -427,11 +427,11 @@ index 6fefc78134f4d22c90a778f555c4137feded408e,1d89a1850b82787e2766aa3c724048fc7
   Line 4)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile.isCombined, true);
@@ -463,7 +463,7 @@ index 6fefc78134f4d22c90a778f555c4137feded408e,1d89a1850b82787e2766aa3c724048fc7
 
 TEST(DiffParserTests, multipleFiles)
 {
-    std::string diff = R"(diff --git a/test.txt b/test.txt
+    constexpr auto diff = R"(diff --git a/test.txt b/test.txt
 index 3406f99e1a810bac7e2f890286787350ce2601d3..6fefc78134f4d22c90a778f555c4137feded408e 100644
 --- a/test.txt
 +++ b/test.txt
@@ -488,11 +488,11 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
 +test3_content)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 3);
 
-    auto diffFile1 = diffFiles[0];
+    const auto& diffFile1 = diffFiles[0];
 
     EXPECT_EQ(diffFile1.diffStatus, CppGit::DiffStatus::MODDIFIED);
     EXPECT_EQ(diffFile1.isCombined, false);
@@ -515,7 +515,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
     EXPECT_EQ(diffFile1.hunkContent[2], " test");
     EXPECT_EQ(diffFile1.hunkContent[3], "+__added");
 
-    auto diffFile2 = diffFiles[1];
+    const auto& diffFile2 = diffFiles[1];
 
     EXPECT_EQ(diffFile2.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile2.isCombined, false);
@@ -535,7 +535,7 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
     ASSERT_EQ(diffFile2.hunkContent.size(), 1);
     EXPECT_EQ(diffFile2.hunkContent[0], "+test2");
 
-    auto diffFile3 = diffFiles[2];
+    const auto& diffFile3 = diffFiles[2];
 
     EXPECT_EQ(diffFile3.diffStatus, CppGit::DiffStatus::NEW);
     EXPECT_EQ(diffFile3.isCombined, false);
@@ -558,16 +558,16 @@ index 0000000000000000000000000000000000000000..1d89a1850b82787e2766aa3c724048fc
 
 TEST(DiffParserTests, binaryFileChanged)
 {
-    std::string diff = R"(diff --git a/image.png b/image.png
+    constexpr auto diff = R"(diff --git a/image.png b/image.png
 index 180cf8328022becee9aaa2577a8f84ea2b9f3827..1d89a1850b82787e2766aa3c724048fc74ea4fbc
 Binary files differ)";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 1);
 
-    auto diffFile = diffFiles[0];
+    const auto& diffFile = diffFiles[0];
 
     EXPECT_EQ(diffFile.diffStatus, CppGit::DiffStatus::BINARY_CHANGED);
     EXPECT_EQ(diffFile.isCombined, false);
@@ -587,10 +587,10 @@ Binary files differ)";
 
 TEST(DiffParserTests, emptyDiff)
 {
-    std::string diff = "";
+    constexpr auto diff = "";
 
     auto diffParser = CppGit::DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
+    const auto diffFiles = diffParser.parse(diff);
 
     ASSERT_EQ(diffFiles.size(), 0);
 }

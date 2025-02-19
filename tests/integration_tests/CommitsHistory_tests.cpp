@@ -10,7 +10,7 @@ public:
     void SetUp() override
     {
         BaseRepositoryFixture::SetUp();
-        const auto& commits = repository->Commits();
+        auto commits = repository->Commits();
         auto commit1Hash = commits.createCommit("Commit1");
         auto commit2Hash = commits.createCommit("Commit2");
         auto commit3Hash = commits.createCommit("Commit3");
@@ -26,8 +26,8 @@ protected:
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_NoFilters)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 5);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[4]);
@@ -39,8 +39,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_NoFilters)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_MaxCount)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setMaxCount(3);
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setMaxCount(3);
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 3);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[4]);
@@ -50,8 +50,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_MaxCount)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_Skip)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setSkip(2);
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setSkip(2);
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 3);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[2]);
@@ -61,8 +61,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_Skip)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_MaxCountSkip)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setMaxCount(2).setSkip(1);
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setMaxCount(2).setSkip(1);
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 2);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[3]);
@@ -71,8 +71,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_MaxCountSkip)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_ReverseOrder)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setOrder(CppGit::CommitsHistory::Order::REVERSE);
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 5);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[0]);
@@ -84,8 +84,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_ReverseOrder)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_DateOrder)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setOrder(CppGit::CommitsHistory::Order::DATE);
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setOrder(CppGit::CommitsHistory::Order::DATE);
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 5);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[4]);
@@ -97,8 +97,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_DateOrder)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_messagePattern)
 {
-    const auto& commitsHistory = repository->CommitsHistory().setMessagePattern("Commit4");
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
+    const auto commitsHistory = repository->CommitsHistory().setMessagePattern("Commit4");
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly();
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 2);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[4]);
@@ -107,8 +107,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_messagePattern)
 
 TEST_F(CommitsHistoryTests, getCommitsDetailed_NoFilters)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed();
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsDetailed = commitsHistory.getCommitsLogDetailed();
 
     ASSERT_EQ(commitsDetailed.size(), 5);
 
@@ -140,8 +140,8 @@ TEST_F(CommitsHistoryTests, getCommitsDetailed_NoFilters)
 
 TEST_F(CommitsHistoryTests, getCommitsDetailed_ToRef)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[2]);
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[2]);
 
     ASSERT_EQ(commitsDetailed.size(), 3);
 
@@ -163,8 +163,8 @@ TEST_F(CommitsHistoryTests, getCommitsDetailed_ToRef)
 
 TEST_F(CommitsHistoryTests, getCommitsDetailed_FromRefToRef)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[1], commitsHashes[2]);
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsDetailed = commitsHistory.getCommitsLogDetailed(commitsHashes[1], commitsHashes[2]);
 
     ASSERT_EQ(commitsDetailed.size(), 1);
 
@@ -176,8 +176,8 @@ TEST_F(CommitsHistoryTests, getCommitsDetailed_FromRefToRef)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_ToRef)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[2]);
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[2]);
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 3);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[2]);
@@ -187,8 +187,8 @@ TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_ToRef)
 
 TEST_F(CommitsHistoryTests, getCommitsLogHashesOnly_FromRefToRef)
 {
-    const auto& commitsHistory = repository->CommitsHistory();
-    const auto& commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[1], commitsHashes[2]);
+    const auto commitsHistory = repository->CommitsHistory();
+    const auto commitsLogHashesOnly = commitsHistory.getCommitsLogHashesOnly(commitsHashes[1], commitsHashes[2]);
 
     ASSERT_EQ(commitsLogHashesOnly.size(), 1);
     EXPECT_EQ(commitsLogHashesOnly[0], commitsHashes[2]);

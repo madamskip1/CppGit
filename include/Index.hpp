@@ -73,7 +73,7 @@ public:
     /// @param filePattern File(s) pattern
     /// @param force Whether to force remove
     /// @return Error code
-    auto remove(const std::string_view filePattern, bool force = false) const -> Error;
+    auto remove(const std::string_view filePattern, const bool force = false) const -> Error;
 
     /// @brief Remove file(s) from stagged state
     /// @tparam Args File(s) arguments types
@@ -81,7 +81,7 @@ public:
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void
     {
-        auto output = repo.executeGitCommand("restore", std::forward<Args>(args)...);
+        const auto output = repo.executeGitCommand("restore", std::forward<Args>(args)...);
 
         if (output.return_code != 0)
         {

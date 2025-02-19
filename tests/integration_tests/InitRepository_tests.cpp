@@ -34,7 +34,7 @@ TEST_F(InitRepositoryTests, BareRepository)
 
 TEST_F(InitRepositoryTests, NonBareRepository)
 {
-    auto gitDir = repositoryPath / ".git";
+    const auto gitDir = repositoryPath / ".git";
 
 
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
@@ -50,7 +50,7 @@ TEST_F(InitRepositoryTests, NonBareRepository)
 
 TEST_F(InitRepositoryTests, BareRepository_NonDefaultMainBranchName)
 {
-    auto gitDir = repositoryPath / ".git";
+    const auto gitDir = repositoryPath / ".git";
 
 
     repository = std::make_unique<CppGit::Repository>(repositoryPath);

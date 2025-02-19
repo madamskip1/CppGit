@@ -26,16 +26,17 @@ auto IndexWorktree::copyForceIndexToWorktree() const -> void
 
 auto IndexWorktree::resetIndexToTree(const std::string_view treeHash) const -> void
 {
-    auto output = repo.executeGitCommand("read-tree", "--reset", "-u", treeHash);
+    const auto output = repo.executeGitCommand("read-tree", "--reset", "-u", treeHash);
 
     if (output.return_code != 0)
     {
         throw std::runtime_error("Failed to reset index to tree");
     }
 }
+
 auto IndexWorktree::copyIndexToWorktreeImpl(const bool force) const -> void
 {
-    auto output = repo.executeGitCommand("checkout-index", "--all", (force ? "--force" : ""));
+    const auto output = repo.executeGitCommand("checkout-index", "--all", (force ? "--force" : ""));
 
     if (output.return_code != 0)
     {

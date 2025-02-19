@@ -105,8 +105,7 @@ auto Repository::getTopLevelPath() const -> std::filesystem::path
 
 auto Repository::getGitDirectoryPath() const -> std::filesystem::path
 {
-    auto gitDir = getTopLevelPath() / ".git";
-    return gitDir;
+    return getTopLevelPath() / ".git";
 }
 
 auto Repository::getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const -> std::filesystem::path
@@ -164,7 +163,8 @@ auto Repository::isValidGitRepository() const -> bool
 
 auto Repository::clone(const std::string& url, const std::filesystem::path& path) -> Repository
 {
-    auto repository = Repository(path);
+    const auto repository = Repository(path);
+
     if (repository.clone(url) != Error::NO_ERROR)
     {
         throw std::runtime_error("Failed to clone repository");
@@ -210,9 +210,10 @@ auto Repository::clone(const std::string& url) const -> Error
     return Error::NO_ERROR;
 }
 
-auto Repository::initRepository(bool bare, std::string_view mainBranchName) const -> bool
+auto Repository::initRepository(const bool bare, const std::string_view mainBranchName) const -> bool
 {
     std::filesystem::path gitDir = path;
+
     if (!bare)
     {
         gitDir /= ".git";
@@ -290,7 +291,7 @@ auto Repository::initRepository(bool bare, std::string_view mainBranchName) cons
 
 auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 {
-    auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
+    const auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
 
     if (remote_output.return_code != 0)
     {
@@ -314,7 +315,7 @@ auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 
 auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 {
-    auto config_output = executeGitCommand("config", "--list", "--local");
+    const auto config_output = executeGitCommand("config", "--list", "--local");
 
     if (config_output.return_code != 0)
     {
@@ -345,7 +346,7 @@ auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 
 auto Repository::getDescription() const -> std::string
 {
-    auto topLevelRepoPathString = getTopLevelPathAsString();
+    const auto topLevelRepoPathString = getTopLevelPathAsString();
     std::filesystem::path descriptionPath;
 
     if (auto descriptionPathInGit = std::filesystem::path{ std::string(topLevelRepoPathString + "/.git/description") };

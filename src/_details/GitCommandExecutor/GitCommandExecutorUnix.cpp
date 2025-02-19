@@ -59,7 +59,7 @@ auto GitCommandExecutorUnix::parentProcess() -> GitCommandOutput
 
     const int returnCode = WEXITSTATUS(status);
 
-    constexpr int bufferSize = 256;
+    constexpr auto bufferSize = 256;
     std::array<char, bufferSize> buffer{};
 
     std::string stdoutStr;

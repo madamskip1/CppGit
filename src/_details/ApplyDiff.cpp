@@ -22,7 +22,7 @@ ApplyDiff::ApplyDiff(const Repository& repo)
 
 auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResult
 {
-    auto diff = getDiff(commitHash);
+    const auto diff = getDiff(commitHash);
 
     if (diff.empty())
     {
@@ -47,10 +47,10 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
     {
         if (applyOutput.return_code == 1 && applyOutput.stderr.contains("conflicts"))
         {
-            auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails();
+            const auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails();
             if (!unmergedFilesEntries.empty())
             {
-                auto threeWayMerge = ThreeWayMerge{ repo };
+                const auto threeWayMerge = ThreeWayMerge{ repo };
                 threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
                 return ApplyDiffResult::CONFLICT;
             }
@@ -78,8 +78,8 @@ auto ApplyDiff::getDiff(const std::string_view commitHash) const -> std::string
 auto ApplyDiff::createMissingFilesThatOccurInPatch(const std::string_view diff) const -> void
 {
     auto diffParser = DiffParser{};
-    auto diffFiles = diffParser.parse(diff);
-    auto index = repo.Index();
+    const auto diffFiles = diffParser.parse(diff);
+    const auto index = repo.Index();
     for (const auto& diffFile : diffFiles)
     {
         auto filePath = repo.getPath() / diffFile.fileA;

@@ -5,15 +5,15 @@
 
 TEST(CommitParserTests, parseCatfile_onlySingleLineMsg)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
 committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
 msg msg msg)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     EXPECT_EQ(author.name, "Firstauthor Secondauthor");
@@ -29,16 +29,16 @@ msg msg msg)";
 
 TEST(CommitParserTests, parseCatfile_multiLineMsg)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
 committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
 msg
 msg2)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     EXPECT_EQ(author.name, "Firstauthor Secondauthor");
@@ -54,7 +54,7 @@ msg2)";
 
 TEST(CommitParserTests, parseCatfile_singleLineMsg_singleLineDesc)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
 committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
@@ -62,9 +62,9 @@ msg
 
 desc)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     EXPECT_EQ(author.name, "Firstauthor Secondauthor");
@@ -80,7 +80,7 @@ desc)";
 
 TEST(CommitParserTests, parseCatfile_multiLineMsg_multiLineDesc)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
 committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
@@ -90,9 +90,9 @@ msg2
 desc
 desc2)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     EXPECT_EQ(author.name, "Firstauthor Secondauthor");
@@ -108,16 +108,16 @@ desc2)";
 
 TEST(CommitParserTests, parseCatfile_withSingleParent)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 parent 8120cca3edbd848e900b41d3d217ca2803dd0e74
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
 committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
 msg msg msg)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     ASSERT_EQ(parsedCommit.getParents().size(), 1);
@@ -135,7 +135,7 @@ msg msg msg)";
 
 TEST(CommitParserTests, parseCatfile_withMultiParent)
 {
-    std::string commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+    constexpr auto commit = R"(tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 parent 8120cca3edbd848e900b41d3d217ca2803dd0e74
 parent 8120cca3edbd848e900b41d3d217ca2803dd0e75
 author Firstauthor Secondauthor <author@email.com> 1722791195 +0200
@@ -143,9 +143,9 @@ committer Firstcommiter Secondcommiter <committer@email.com> 1722791195 +0200
 
 msg msg msg)";
 
-    CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
-    CppGit::Signature author = parsedCommit.getAuthor();
-    CppGit::Signature committer = parsedCommit.getCommitter();
+    const CppGit::Commit parsedCommit = CppGit::CommitParser::parseCommit_CatFile(commit);
+    const CppGit::Signature& author = parsedCommit.getAuthor();
+    const CppGit::Signature& committer = parsedCommit.getCommitter();
 
     EXPECT_EQ(parsedCommit.getTreeHash(), "4b825dc642cb6eb9a060e54bf8d69288fbee4904");
     ASSERT_EQ(parsedCommit.getParents().size(), 2);

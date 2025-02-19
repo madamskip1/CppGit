@@ -8,7 +8,7 @@ GitFilesHelper::GitFilesHelper(const Repository& repo)
     : repo(repo)
 { }
 
-auto GitFilesHelper::setOrigHeadFile(std::string_view commitHash) const -> void
+auto GitFilesHelper::setOrigHeadFile(const std::string_view commitHash) const -> void
 {
     FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "ORIG_HEAD", commitHash);
 }

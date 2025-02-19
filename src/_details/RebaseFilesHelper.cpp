@@ -62,15 +62,15 @@ auto RebaseFilesHelper::getOrigHead() const -> std::string
 
 auto RebaseFilesHelper::createAuthorScriptFile(const std::string_view authorName, const std::string_view authorEmail, const std::string_view authorDate) const -> void
 {
-    auto authorScript = "GIT_AUTHOR_NAME=" + std::string{ authorName } + "\n"
-                      + "GIT_AUTHOR_EMAIL=" + std::string{ authorEmail } + "\n"
-                      + "GIT_AUTHOR_DATE=" + std::string{ authorDate };
+    const auto authorScript = "GIT_AUTHOR_NAME=" + std::string{ authorName } + "\n"
+                            + "GIT_AUTHOR_EMAIL=" + std::string{ authorEmail } + "\n"
+                            + "GIT_AUTHOR_DATE=" + std::string{ authorDate };
     _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "rebase-merge" / "author-script", authorScript);
 }
 
 auto RebaseFilesHelper::getAuthorScriptFile() const -> std::vector<std::string>
 {
-    auto autorScript = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
+    const auto autorScript = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
 
     return Parser::splitToStringsVector(autorScript, '\n');
 }
@@ -79,7 +79,6 @@ auto RebaseFilesHelper::removeAuthorScriptFile() const -> void
 {
     std::filesystem::remove(repo.getGitDirectoryPath() / "rebase-merge" / "author-script");
 }
-
 
 auto RebaseFilesHelper::createAmendFile(const std::string_view hash) const -> void
 {
@@ -90,7 +89,6 @@ auto RebaseFilesHelper::getAmendFile() const -> std::string
 {
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "amend");
 }
-
 
 auto RebaseFilesHelper::removeAmendFile() const -> void
 {
@@ -125,9 +123,9 @@ auto RebaseFilesHelper::appendRewrittenPendingFile(const std::string_view hash) 
 
 auto RebaseFilesHelper::appendRewrittenListWithRewrittenPending(const std::string_view newHash) const -> void
 {
-    auto rewrittenPending = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending");
+    const auto rewrittenPending = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "rewritten-pending");
 
-    auto splitted = Parser::splitToStringViewsVector(rewrittenPending, '\n');
+    const auto splitted = Parser::splitToStringViewsVector(rewrittenPending, '\n');
 
     for (const auto& hash : splitted)
     {
@@ -149,8 +147,8 @@ auto RebaseFilesHelper::appendCurrentFixupFile(const RebaseTodoCommand& rebaseTo
 
 auto RebaseFilesHelper::areAnySquashInCurrentFixup() const -> bool
 {
-    auto currentFixup = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups");
-    auto splittedCurrentFixup = Parser::splitToStringViewsVector(currentFixup, '\n');
+    const auto currentFixup = _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "current-fixups");
+    const auto splittedCurrentFixup = Parser::splitToStringViewsVector(currentFixup, '\n');
 
     return std::ranges::any_of(splittedCurrentFixup, [](const auto& line) {
         return line.starts_with("squash");
@@ -169,11 +167,9 @@ auto RebaseFilesHelper::createMessageFile(const std::string_view message) const 
 }
 
 auto RebaseFilesHelper::getMessageFile() const -> std::string
-
 {
     return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "rebase-merge" / "message");
 }
-
 
 auto RebaseFilesHelper::removeMessageFile() const -> void
 {
@@ -194,7 +190,7 @@ auto RebaseFilesHelper::generateTodoFile(const std::vector<RebaseTodoCommand>& r
 
 auto RebaseFilesHelper::peekTodoFile() const -> std::optional<RebaseTodoCommand>
 {
-    auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
+    const auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
     auto todoFile = std::ifstream{ todoFilePath };
     std::string todoLine;
     std::getline(todoFile, todoLine);
@@ -202,16 +198,13 @@ auto RebaseFilesHelper::peekTodoFile() const -> std::optional<RebaseTodoCommand>
 
     auto commandTodo = parseTodoCommandLine(todoLine);
 
-    const auto& hash = commandTodo.has_value() ? commandTodo.value().hash : "";
-    const auto& message = commandTodo.has_value() ? commandTodo.value().message : "";
-
     return commandTodo;
 }
 
 auto RebaseFilesHelper::popTodoFile() const -> void
 {
-    auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
-    auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
+    const auto todoFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo";
+    const auto tempFilePath = repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo.temp";
 
     auto todoFile = std::ifstream{ todoFilePath };
     auto tempFile = std::ofstream{ tempFilePath };
@@ -231,10 +224,9 @@ auto RebaseFilesHelper::popTodoFile() const -> void
     std::filesystem::rename(tempFilePath, todoFilePath);
 }
 
-
 auto RebaseFilesHelper::peakAndPopTodoFile() const -> std::optional<RebaseTodoCommand>
 {
-    auto command = peekTodoFile();
+    const auto command = peekTodoFile();
 
     if (command)
     {

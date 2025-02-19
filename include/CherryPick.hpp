@@ -29,7 +29,7 @@ public:
     /// @param commitHash The commit hash to cherry pick
     /// @param emptyCommitStrategy The strategy to use when cherry picking an empty commit
     /// @return The hash of the cherry picked commit or an error code
-    auto cherryPickCommit(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::expected<std::string, Error>;
+    auto cherryPickCommit(const std::string_view commitHash, const CherryPickEmptyCommitStrategy emptyCommitStrategy = CherryPickEmptyCommitStrategy::STOP) const -> std::expected<std::string, Error>;
 
     /// @brief Continue cherry picking after stopping on an empty commit
     /// @return The hash of the cherry picked commit or an error code
@@ -54,7 +54,7 @@ private:
 
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;
-    auto processEmptyDiff(const std::string_view commitHash, CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;
+    auto processEmptyDiff(const std::string_view commitHash, const CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;
 
     auto createCherryPickHeadFile(const std::string_view commitHash) const -> void;
     auto getCherryPickHead() const -> std::string;

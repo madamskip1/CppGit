@@ -24,7 +24,7 @@ Index::Index(const Repository& repo)
 
 auto Index::add(const std::string_view filePattern) const -> Error
 {
-    auto filesList = getUntrackedAndIndexFilesList(filePattern);
+    const auto filesList = getUntrackedAndIndexFilesList(filePattern);
 
     if (filesList.empty())
     {
@@ -46,7 +46,7 @@ auto Index::add(const std::string_view filePattern) const -> Error
                        return std::forward<decltype(file)>(file);
                    });
 
-    auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", args);
 
     if (output.return_code != 0)
     {
@@ -56,9 +56,9 @@ auto Index::add(const std::string_view filePattern) const -> Error
     return Error::NO_ERROR;
 }
 
-auto Index::remove(const std::string_view filePattern, bool force) const -> Error
+auto Index::remove(const std::string_view filePattern, const bool force) const -> Error
 {
-    auto filesList = getFilesInIndexList(filePattern);
+    const auto filesList = getFilesInIndexList(filePattern);
 
     if (filesList.empty())
     {
@@ -84,7 +84,7 @@ auto Index::remove(const std::string_view filePattern, bool force) const -> Erro
                        return std::forward<decltype(file)>(file);
                    });
 
-    auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", args);
 
     if (output.return_code != 0)
     {
@@ -129,7 +129,7 @@ auto Index::restoreAllStaged() const -> void
         args.push_back(std::move(fileInfo));
     }
 
-    auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", args);
 
     if (output.return_code != 0)
     {
@@ -139,14 +139,14 @@ auto Index::restoreAllStaged() const -> void
 
 auto Index::isFileStaged(const std::string_view file) const -> bool
 {
-    auto stagedFiles = getStagedFilesList(file);
+    const auto stagedFiles = getStagedFilesList(file);
 
     return stagedFiles.size() == 1 && stagedFiles[0] == file;
 }
 
 auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("ls-files", "--cache", "--", filePattern);
+    const auto output = repo.executeGitCommand("ls-files", "--cache", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -158,7 +158,7 @@ auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std
 
 auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
-    auto output = repo.executeGitCommand("ls-files", "--stage", "--", filePattern);
+    const auto output = repo.executeGitCommand("ls-files", "--stage", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -171,7 +171,7 @@ auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) c
 
 auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("ls-files", "--others", "--exclude-standard", "--", filePattern);
+    const auto output = repo.executeGitCommand("ls-files", "--others", "--exclude-standard", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -183,7 +183,7 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
         return {};
     }
 
-    auto splittedList_SV = Parser::splitToStringViewsVector(output.stdout, '\n');
+    const auto splittedList_SV = Parser::splitToStringViewsVector(output.stdout, '\n');
     std::vector<std::string> untrackedFilesList;
     untrackedFilesList.reserve(splittedList_SV.size());
 
@@ -197,7 +197,7 @@ auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> s
 
 auto Index::getStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = getStagedFilesListOutput(filePattern);
+    const auto output = getStagedFilesListOutput(filePattern);
 
     if (output.empty())
     {
@@ -209,7 +209,7 @@ auto Index::getStagedFilesList(const std::string_view filePattern) const -> std:
 
 auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) const -> std::vector<DiffIndexEntry>
 {
-    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
+    const auto output = repo.executeGitCommand("diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -221,7 +221,7 @@ auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) con
 
 auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
+    const auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -233,14 +233,14 @@ auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> s
         return std::vector<std::string>{};
     }
 
-    auto splittedSV = Parser::splitToStringViewsVector(output.stdout, '\n');
+    const auto splittedSV = Parser::splitToStringViewsVector(output.stdout, '\n');
 
     return std::vector<std::string>{ splittedSV.cbegin(), splittedSV.cend() };
 }
 
 auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
-    auto output = repo.executeGitCommand("ls-files", "--unmerged", "--", filePattern);
+    const auto output = repo.executeGitCommand("ls-files", "--unmerged", "--", filePattern);
 
     if (output.return_code != 0)
     {
@@ -257,14 +257,14 @@ auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) 
 
 auto Index::areAnyStagedFiles() const -> bool
 {
-    auto output = getStagedFilesListOutput();
+    const auto output = getStagedFilesListOutput();
 
     return !output.empty();
 }
 
 auto Index::areAnyNotStagedTrackedFiles() const -> bool
 {
-    auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--exclude-standard", "--deduplicate");
+    const auto output = repo.executeGitCommand("ls-files", "--modified", "--deleted", "--exclude-standard", "--deduplicate");
 
     if (output.return_code != 0)
     {
@@ -276,8 +276,8 @@ auto Index::areAnyNotStagedTrackedFiles() const -> bool
 
 auto Index::isDirty() const -> bool
 {
-    auto commits = repo.Commits();
-    auto headCommit = commits.getCommitInfo("HEAD");
+    const auto commits = repo.Commits();
+    const auto headCommit = commits.getCommitInfo("HEAD");
 
     auto output = repo.executeGitCommand("diff-index", "--quiet", "--exit-code", headCommit.getTreeHash());
     if (output.return_code > 1)
@@ -310,7 +310,7 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
         }
     }
 
-    auto output = repo.executeGitCommand("ls-tree", args);
+    const auto output = repo.executeGitCommand("ls-tree", args);
 
     if (output.return_code != 0)
     {
@@ -327,7 +327,7 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
 
 auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const -> std::vector<std::string>
 {
-    auto output = repo.executeGitCommand("ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
+    const auto output = repo.executeGitCommand("ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
 
     if (output.return_code != 0)
     {
@@ -344,7 +344,7 @@ auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const 
 
 auto Index::getStagedFilesListOutput(const std::string_view filePattern) const -> std::string
 {
-    auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
+    const auto output = repo.executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
 
     if (output.return_code != 0)
     {

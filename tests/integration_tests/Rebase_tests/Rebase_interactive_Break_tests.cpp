@@ -16,31 +16,31 @@ class RebaseInteractiveBreakTests : public RebaseFixture
 
 TEST_F(RebaseInteractiveBreakTests, stop)
 {
-    auto commits = repository->Commits();
-    auto rebase = repository->Rebase();
-    auto index = repository->Index();
+    const auto commits = repository->Commits();
+    const auto rebase = repository->Rebase();
+    const auto index = repository->Index();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands.emplace(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
 
-    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
@@ -48,8 +48,8 @@ TEST_F(RebaseInteractiveBreakTests, stop)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file2.txt"));
 
-    auto doneFileExpected = "pick " + secondCommitHash + " Second commit\n"
-                          + "break\n";
+    const auto doneFileExpected = "pick " + secondCommitHash + " Second commit\n"
+                                + "break\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -68,36 +68,36 @@ TEST_F(RebaseInteractiveBreakTests, stop)
 
 TEST_F(RebaseInteractiveBreakTests, continueRebase)
 {
-    auto commits = repository->Commits();
-    auto rebase = repository->Rebase();
-    auto index = repository->Index();
+    const auto commits = repository->Commits();
+    const auto rebase = repository->Rebase();
+    const auto index = repository->Index();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
     index.add("file1.txt");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
     index.add("file2.txt");
-    auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commits.createCommit("Third commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands.emplace(todoCommands.begin() + 1, CppGit::RebaseTodoCommandType::BREAK);
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
 
-    auto continueBreakResult = rebase.continueRebase();
+    const auto continueBreakResult = rebase.continueRebase();
 
 
     ASSERT_TRUE(continueBreakResult.has_value());
     EXPECT_EQ(continueBreakResult.value(), thirdCommitHash);
     EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
 
-    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
@@ -114,32 +114,32 @@ TEST_F(RebaseInteractiveBreakTests, continueRebase)
 
 TEST_F(RebaseInteractiveBreakTests, fastForward_breakAfter)
 {
-    auto commits = repository->Commits();
-    auto rebase = repository->Rebase();
+    const auto commits = repository->Commits();
+    const auto rebase = repository->Rebase();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommitHash = commits.createCommit("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
 
-    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
 
-    auto doneFileExpected = "pick " + secondCommitHash + " Second commit\n"
-                          + "break\n";
+    const auto doneFileExpected = "pick " + secondCommitHash + " Second commit\n"
+                                + "break\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -158,37 +158,37 @@ TEST_F(RebaseInteractiveBreakTests, fastForward_breakAfter)
 
 TEST_F(RebaseInteractiveBreakTests, noFastForward_breakAfter)
 {
-    auto commits = repository->Commits();
-    auto rebase = repository->Rebase();
+    const auto commits = repository->Commits();
+    const auto rebase = repository->Rebase();
     auto commitsHistory = repository->CommitsHistory();
     commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
 
 
-    auto initialCommitHash = commits.createCommit("Initial commit");
-    auto secondCommitHash = commits.createCommit("Second commit");
-    auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
+    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto secondCommitHash = commits.createCommit("Second commit");
+    const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", secondCommitHash);
 
     auto todoCommands = rebase.getDefaultTodoCommands(initialCommitHash);
     todoCommands[0].type = CppGit::RebaseTodoCommandType::DROP;
     todoCommands.emplace_back(CppGit::RebaseTodoCommandType::BREAK);
 
-    auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
+    const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
     EXPECT_NE(commits.getHeadCommitHash(), secondCommitHash);
 
-    auto commitsLog = commitsHistory.getCommitsLogDetailed();
+    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
     EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
     EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
     EXPECT_EQ(commitsLog[1].getDescription(), "");
     checkTestAuthorPreservedCommitterModified(commitsLog[1]);
 
-    auto doneFileExpected = "drop " + secondCommitHash + " Second commit\n"
-                          + "pick " + thirdCommitHash + " Third commit\n"
-                          + "break\n";
+    const auto doneFileExpected = "drop " + secondCommitHash + " Second commit\n"
+                                + "pick " + thirdCommitHash + " Third commit\n"
+                                + "break\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));

@@ -62,7 +62,7 @@ public:
     /// @brief Set whether to include all branches in the log
     /// @param allBranches True to include all branches, false otherwise
     /// @return Reference to this object
-    auto setAllBranches(bool allBranches) -> CommitsHistory&;
+    auto setAllBranches(const bool allBranches) -> CommitsHistory&;
 
     /// @brief Reset whether to include all branches in the log to default (include only the current branch)
     /// @return Reference to this object
