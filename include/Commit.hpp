@@ -48,14 +48,14 @@ public:
 
 private:
     std::string hash;
-    std::vector<std::string> parents;
-    Signature author;
     std::string authorDate;
-    Signature committer;
     std::string committerDate;
     std::string message;
     std::string description;
     std::string treeHash;
+    Signature author;
+    Signature committer;
+    std::vector<std::string> parents;
 };
 
 } // namespace CppGit
