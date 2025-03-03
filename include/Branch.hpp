@@ -12,7 +12,7 @@ public:
     /// @param upstreamPull The name of remote upstream branch to pull from
     /// @param upstreamPush The name of remote upstream branch to push to
     /// @param isLocalBranch Whether the branch is a local branch or remote
-    explicit Branch(const std::string& refName, const std::string& upstreamPull = "", const std::string& upstreamPush = "", bool isLocalBranch = false);
+    explicit Branch(std::string refName, std::string upstreamPull = "", std::string upstreamPush = "", bool isLocalBranch = false);
 
     /// @brief Get the name of the branch
     /// @return The name of the TRAP_BRANCH

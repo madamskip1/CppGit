@@ -1,13 +1,14 @@
 #include "Branch.hpp"
 
 #include <string>
+#include <utility>
 
 namespace CppGit {
 
-Branch::Branch(const std::string& refName, const std::string& upstreamPull, const std::string& upstreamPush, bool isLocalBranch)
-    : refName(refName),
-      upstreamPull(upstreamPull),
-      upstreamPush(upstreamPush),
+Branch::Branch(std::string refName, std::string upstreamPull, std::string upstreamPush, bool isLocalBranch)
+    : refName(std::move(refName)),
+      upstreamPull(std::move(upstreamPull)),
+      upstreamPush(std::move(upstreamPush)),
       isLocal(isLocalBranch)
 {
 }
