@@ -3,24 +3,25 @@
 #include "Signature.hpp"
 
 #include <string>
+#include <utility>
 #include <vector>
 namespace CppGit {
 
-Commit::Commit(const std::string& hash, const std::vector<std::string>& parents, const Signature& author, const std::string& authorDate, const Signature& committer, const std::string& committerDate, const std::string& message, const std::string& description, const std::string& treeHash)
-    : hash(hash),
-      parents(parents),
-      author(author),
-      authorDate(authorDate),
-      committer(committer),
-      committerDate(committerDate),
-      message(message),
-      description(description),
-      treeHash(treeHash)
+Commit::Commit(std::string hash, std::vector<std::string> parents, Signature author, std::string authorDate, Signature committer, std::string committerDate, std::string message, std::string description, std::string treeHash)
+    : hash(std::move(hash)),
+      authorDate(std::move(authorDate)),
+      committerDate(std::move(committerDate)),
+      message(std::move(message)),
+      description(std::move(description)),
+      treeHash(std::move(treeHash)),
+      author(std::move(author)),
+      committer(std::move(committer)),
+      parents(std::move(parents))
 {
 }
 
-Commit::Commit(const std::string& hash, const std::vector<std::string>& parents, const std::string& authorName, const std::string& authorEmail, const std::string& authorDate, const std::string& committerName, const std::string& committerEmail, const std::string& committerDate, const std::string& message, const std::string& description, const std::string& treeHash)
-    : Commit(hash, parents, Signature(authorName, authorEmail), authorDate, Signature(committerName, committerEmail), committerDate, message, description, treeHash)
+Commit::Commit(std::string hash, std::vector<std::string> parents, std::string authorName, std::string authorEmail, std::string authorDate, std::string committerName, std::string committerEmail, std::string committerDate, std::string message, std::string description, std::string treeHash)
+    : Commit(std::move(hash), std::move(parents), Signature(std::move(authorName), std::move(authorEmail)), std::move(authorDate), Signature(std::move(committerName), std::move(committerEmail)), std::move(committerDate), std::move(message), std::move(description), std::move(treeHash))
 {
 }
 

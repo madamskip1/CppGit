@@ -14,26 +14,26 @@ class Commit
     friend Commits;
 
 public:
-    Commit(const std::string& hash,
-           const std::vector<std::string>& parents,
-           const Signature& author,
-           const std::string& authorDate,
-           const Signature& committer,
-           const std::string& committerDate,
-           const std::string& message,
-           const std::string& description,
-           const std::string& treeHash);
-    Commit(const std::string& hash,
-           const std::vector<std::string>& parents,
-           const std::string& authorName,
-           const std::string& authorEmail,
-           const std::string& authorDate,
-           const std::string& committerName,
-           const std::string& committerEmail,
-           const std::string& committerDate,
-           const std::string& message,
-           const std::string& description,
-           const std::string& treeHash);
+    Commit(std::string hash,
+           std::vector<std::string> parents,
+           Signature author,
+           std::string authorDate,
+           Signature committer,
+           std::string committerDate,
+           std::string message,
+           std::string description,
+           std::string treeHash);
+    Commit(std::string hash,
+           std::vector<std::string> parents,
+           std::string authorName,
+           std::string authorEmail,
+           std::string authorDate,
+           std::string committerName,
+           std::string committerEmail,
+           std::string committerDate,
+           std::string message,
+           std::string description,
+           std::string treeHash);
 
     [[nodiscard]] auto getHash() const -> const std::string&;
     [[nodiscard]] auto getParents() const -> const std::vector<std::string>&;

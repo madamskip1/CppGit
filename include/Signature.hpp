@@ -1,16 +1,16 @@
 #pragma once
 #include <string>
+#include <utility>
 
 namespace CppGit {
 
 struct Signature
 {
-    Signature(const std::string& name, const std::string& email)
-        : name(name),
-          email(email)
+    Signature(std::string name, std::string email)
+        : name(std::move(name)),
+          email(std::move(email))
     {
     }
-    Signature() = default;
 
     // NOLINTBEGIN(misc-non-private-member-variables-in-classes)
     std::string name;
