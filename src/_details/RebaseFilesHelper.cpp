@@ -283,7 +283,7 @@ auto RebaseFilesHelper::parseTodoCommandLine(const std::string_view line) -> std
 
     if (endPos == std::string::npos)
     {
-        return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command) };
+        return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(std::move(command)) };
     }
 
     startPos = endPos + 1;
@@ -292,7 +292,7 @@ auto RebaseFilesHelper::parseTodoCommandLine(const std::string_view line) -> std
 
     auto message = std::string{ line.substr(endPos + 1) };
 
-    return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(command), commitHash, message };
+    return RebaseTodoCommand{ RebaseTodoCommandTypeWrapper::fromString(std::move(command)), std::move(commitHash), std::move(message) };
 }
 
 } // namespace CppGit::_details

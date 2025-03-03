@@ -155,14 +155,14 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
 
     auto commitsHistory = repo.CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
-    const auto commitsToRebase = commitsHistory.getCommitsLogDetailed(rebaseBase.stdout, "HEAD");
+    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
 
     auto rebaseCommands = std::vector<RebaseTodoCommand>{};
 
     std::ranges::transform(commitsToRebase,
                            std::back_inserter(rebaseCommands),
-                           [](const auto& commit) {
-                               return RebaseTodoCommand{ RebaseTodoCommandType::PICK, commit.getHash(), commit.getMessage() };
+                           [](auto& commit) {
+                               return RebaseTodoCommand{ RebaseTodoCommandType::PICK, std::move(commit.getHash()), std::move(commit.getMessage()) };
                            });
 
     return rebaseCommands;

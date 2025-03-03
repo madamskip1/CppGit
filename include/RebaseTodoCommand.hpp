@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace CppGit {
 
@@ -184,10 +185,10 @@ public:
     /// @param type Type of the command
     /// @param hash Hash of the commit
     /// @param message Message of the commit
-    RebaseTodoCommand(const RebaseTodoCommandType type, const std::string& hash, const std::string& message)
+    RebaseTodoCommand(const RebaseTodoCommandType type, std::string hash, std::string message)
         : type{ type },
-          hash{ hash },
-          message{ message }
+          hash{ std::move(hash) },
+          message{ std::move(message) }
     {
     }
 
