@@ -17,6 +17,7 @@ auto AmendCommit::amend(const Commit& commit) const -> std::string
 auto AmendCommit::amend(const Commit& commit, const std::string_view newMessage, const std::string_view newDescription) const -> std::string
 {
     auto envp = std::vector<std::string>{};
+    envp.reserve(3);
     envp.emplace_back("GIT_AUTHOR_NAME=" + commit.getAuthor().name);
     envp.emplace_back("GIT_AUTHOR_EMAIL=" + commit.getAuthor().email);
     envp.emplace_back("GIT_AUTHOR_DATE=" + commit.getAuthorDate());

@@ -134,23 +134,23 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
         throw std::runtime_error("Failed to get branches");
     }
 
-    const auto& outputString = output.stdout;
+    const auto& outputStdoutSV = std::string_view{ output.stdout };
     std::vector<Branch> branches;
     std::size_t start = 0;
-    std::size_t delimiterPos = outputString.find('\n');
+    std::size_t delimiterPos = outputStdoutSV.find('\n');
 
     while (delimiterPos != std::string::npos)
     {
-        auto line = outputString.substr(start, delimiterPos - start);
+        auto line = outputStdoutSV.substr(start, delimiterPos - start);
         branches.emplace_back(BranchesParser::parseBranch(line));
 
         start = delimiterPos + 1;
-        delimiterPos = outputString.find('\n', start);
+        delimiterPos = outputStdoutSV.find('\n', start);
     }
 
-    if (start < outputString.size())
+    if (start < outputStdoutSV.size())
     {
-        auto line = outputString.substr(start);
+        auto line = outputStdoutSV.substr(start);
         branches.emplace_back(BranchesParser::parseBranch(line));
     }
 

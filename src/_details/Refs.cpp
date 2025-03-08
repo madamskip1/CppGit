@@ -112,7 +112,7 @@ auto Refs::appendPrefixToRefIfNeeded(const std::string_view refName, bool remote
 
     const auto* prefix = remote ? REMOTE_BRANCH_PREFIX : LOCAL_BRANCH_PREFIX;
 
-    if (refName.find(prefix) == std::string::npos)
+    if (!refName.contains(prefix))
     {
         return prefix + std::string{ refName };
     }

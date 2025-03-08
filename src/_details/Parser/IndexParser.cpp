@@ -40,7 +40,7 @@ auto IndexParser::parseStageDetailedList(const std::string_view indexContent) ->
         {
             continue;
         }
-        indexEntries.push_back(parseStageDetailedEntry(indexEntryLine));
+        indexEntries.emplace_back(parseStageDetailedEntry(indexEntryLine));
     }
 
     return indexEntries;

@@ -182,7 +182,7 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
 auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void
 {
     createNoFFMergeFiles(sourceBranchRef, message, description);
-    mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef.cbegin(), sourceBranchRef.cend() };
+    mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef };
     mergeInProgress_targetBranchRef = std::string{ targetBranchRef };
 
     _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);

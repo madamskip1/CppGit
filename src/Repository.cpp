@@ -94,7 +94,7 @@ auto Repository::getTopLevelPath() const -> std::filesystem::path
         throw std::runtime_error("Failed to get top level path");
     }
 
-    if (output.stdout.find('\n') != std::string::npos)
+    if (output.stdout.contains('\n'))
     {
         output.stdout.replace(output.stdout.find('\n'), 1, "");
     }
