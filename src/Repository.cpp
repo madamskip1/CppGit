@@ -9,6 +9,7 @@
 #include "Index.hpp"
 #include "Merge.hpp"
 #include "Rebase.hpp"
+#include "Reset.hpp"
 
 #include <algorithm>
 #include <filesystem>
@@ -63,6 +64,11 @@ auto Repository::CherryPick() const -> CppGit::CherryPick
 auto Repository::Rebase() const -> CppGit::Rebase
 {
     return CppGit::Rebase(*this);
+}
+
+auto Repository::Reset() const -> CppGit::Reset
+{
+    return CppGit::Reset(*this);
 }
 
 auto Repository::getPathAsString() const -> std::string

@@ -13,6 +13,7 @@ target_sources(${PROJECT_NAME}_integration_tests
         Diff_tests.cpp
         Merge_tests.cpp
         CherryPick_tests.cpp
+        Reset_tests.cpp
 
         Rebase_tests/Rebase_basic_tests.cpp
         Rebase_tests/Rebase_interactive_basic_tests.cpp

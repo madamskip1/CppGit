@@ -23,7 +23,7 @@ target_sources(${PROJECT_NAME}
         src/Merge.cpp
         src/CherryPick.cpp
         src/Rebase.cpp
-
+        src/Reset.cpp
 
         # _details (internal)
 
