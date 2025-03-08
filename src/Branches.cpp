@@ -165,16 +165,20 @@ auto Branches::changeHEAD(const std::string_view target) const -> Error
         return Error::DIRTY_WORKTREE;
     }
 
-    auto hash = std::string{};
+    const auto hash = [&target, this]() {
+        if (target.starts_with("refs/"))
+        {
+            return getHashBranchRefersTo(target);
+        }
+        return std::string{ target };
+    }();
 
     if (target.starts_with("refs/"))
     {
-        hash = getHashBranchRefersTo(target);
         refs.updateSymbolicRef("HEAD", target);
     }
     else
     {
-        hash = target;
         refs.detachHead(hash);
     }
 

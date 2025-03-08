@@ -73,19 +73,19 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
     if (auto lastCommand = rebaseFilesHelper.getLastDoneCommand(); lastCommand->type != RebaseTodoCommandType::BREAK)
     {
-        auto messageAndDesc = std::string{};
-        if (!message.empty())
-        {
-            messageAndDesc = std::string{ message };
-            if (!description.empty())
+        const auto messageAndDesc = [&message, &description, this] {
+            if (!message.empty())
             {
-                messageAndDesc += "\n\n" + std::string{ description };
+                if (!description.empty())
+                {
+                    return std::string{ message } + "\n\n" + std::string{ description };
+                }
+
+                return std::string{ message };
             }
-        }
-        else
-        {
-            messageAndDesc = rebaseFilesHelper.getMessageFile();
-        }
+
+            return rebaseFilesHelper.getMessageFile();
+        }();
 
         auto hashBefore = rebaseFilesHelper.getRebaseHeadFile();
         auto hashAfter = std::string{};
