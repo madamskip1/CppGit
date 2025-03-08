@@ -204,9 +204,7 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
         throw std::runtime_error("Error while getting commits log hashes");
     }
 
-    const auto hasheshSplited = Parser::splitToStringViewsVector(output.stdout, '\n');
-
-    return std::vector<std::string>{ hasheshSplited.begin(), hasheshSplited.end() };
+    return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
 auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
