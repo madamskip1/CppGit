@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RebaseTodoCommand.hpp"
-#include "Repository.hpp"
+#include "../RebaseTodoCommand.hpp"
+#include "../Repository.hpp"
 
 #include <optional>
 #include <string>

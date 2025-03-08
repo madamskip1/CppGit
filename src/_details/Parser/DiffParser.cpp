@@ -1,6 +1,6 @@
-#include "_details/Parser/DiffParser.hpp"
+#include "CppGit/_details/Parser/DiffParser.hpp"
 
-#include "DiffFile.hpp"
+#include "CppGit/DiffFile.hpp"
 
 #include <algorithm>
 #include <charconv>

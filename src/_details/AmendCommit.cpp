@@ -1,7 +1,7 @@
-#include "_details/AmendCommit.hpp"
+#include "CppGit/_details/AmendCommit.hpp"
 
-#include "Commit.hpp"
-#include "_details/CreateCommit.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/_details/CreateCommit.hpp"
 
 namespace CppGit::_details {
 AmendCommit::AmendCommit(const Repository& repo)

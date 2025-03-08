@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Commit.hpp"
+#include "../../Commit.hpp"
 #include "Parser.hpp"
 
 #include <string_view>

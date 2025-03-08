@@ -1,9 +1,9 @@
-#include "CommitsHistory.hpp"
+#include "CppGit/CommitsHistory.hpp"
 
-#include "Commit.hpp"
-#include "Repository.hpp"
-#include "_details/Parser/CommitParser.hpp"
-#include "_details/Parser/Parser.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/Parser/CommitParser.hpp"
+#include "CppGit/_details/Parser/Parser.hpp"
 
 #include <format>
 #include <stdexcept>

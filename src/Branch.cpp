@@ -1,4 +1,4 @@
-#include "Branch.hpp"
+#include "CppGit/Branch.hpp"
 
 #include <string>
 #include <utility>

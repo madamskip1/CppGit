@@ -1,6 +1,6 @@
-#include "_details/Refs.hpp"
+#include "CppGit/_details/Refs.hpp"
 
-#include "Repository.hpp"
+#include "CppGit/Repository.hpp"
 
 #include <fstream>
 #include <stdexcept>

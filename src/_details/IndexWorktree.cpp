@@ -1,6 +1,6 @@
-#include "_details/IndexWorktree.hpp"
+#include "CppGit/_details/IndexWorktree.hpp"
 
-#include "Repository.hpp"
+#include "CppGit/Repository.hpp"
 
 #include <stdexcept>
 #include <string_view>

@@ -1,10 +1,10 @@
 #include "BaseRepositoryFixture.hpp"
-#include "Branches.hpp"
-#include "CherryPick.hpp"
-#include "Commit.hpp"
-#include "Commits.hpp"
-#include "Index.hpp"
-#include "_details/FileUtility.hpp"
+#include "CppGit/Branches.hpp"
+#include "CppGit/CherryPick.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>

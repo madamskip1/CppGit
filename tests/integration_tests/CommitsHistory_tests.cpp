@@ -1,6 +1,6 @@
 #include "BaseRepositoryFixture.hpp"
-#include "Commits.hpp"
-#include "CommitsHistory.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/CommitsHistory.hpp"
 
 #include <gtest/gtest.h>
 

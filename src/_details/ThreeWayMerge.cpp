@@ -1,7 +1,7 @@
-#include "_details/ThreeWayMerge.hpp"
+#include "CppGit/_details/ThreeWayMerge.hpp"
 
-#include "Index.hpp"
-#include "Repository.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Repository.hpp"
 
 #include <filesystem>
 #include <fstream>

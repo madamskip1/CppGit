@@ -1,14 +1,14 @@
-#include "Repository.hpp"
+#include "CppGit/Repository.hpp"
 
-#include "Branches.hpp"
-#include "CherryPick.hpp"
-#include "Commits.hpp"
-#include "CommitsHistory.hpp"
-#include "Diff.hpp"
-#include "Index.hpp"
-#include "Merge.hpp"
-#include "Rebase.hpp"
-#include "Reset.hpp"
+#include "CppGit/Branches.hpp"
+#include "CppGit/CherryPick.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/CommitsHistory.hpp"
+#include "CppGit/Diff.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Merge.hpp"
+#include "CppGit/Rebase.hpp"
+#include "CppGit/Reset.hpp"
 
 #include <algorithm>
 #include <filesystem>

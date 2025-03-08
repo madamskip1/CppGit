@@ -1,6 +1,6 @@
-#include "_details/Parser/IndexParser.hpp"
+#include "CppGit/_details/Parser/IndexParser.hpp"
 
-#include "Index.hpp"
+#include "CppGit/Index.hpp"
 
 #include <algorithm>
 #include <charconv>

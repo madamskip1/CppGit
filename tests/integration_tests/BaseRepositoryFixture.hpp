@@ -1,5 +1,5 @@
-#include "Commit.hpp"
-#include "Repository.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/Repository.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>

@@ -1,8 +1,8 @@
-#include "Diff.hpp"
+#include "CppGit/Diff.hpp"
 
-#include "DiffFile.hpp"
-#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
-#include "_details/Parser/DiffParser.hpp"
+#include "CppGit/DiffFile.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "CppGit/_details/Parser/DiffParser.hpp"
 
 #include <filesystem>
 #include <stdexcept>

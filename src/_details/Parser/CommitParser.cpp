@@ -1,6 +1,6 @@
-#include "_details/Parser/CommitParser.hpp"
+#include "CppGit/_details/Parser/CommitParser.hpp"
 
-#include "Commit.hpp"
+#include "CppGit/Commit.hpp"
 
 #include <cstddef>
 #include <regex>

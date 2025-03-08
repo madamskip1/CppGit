@@ -1,6 +1,6 @@
-#include "_details/GitCommandExecutor/GitCommandExecutor.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandExecutor.hpp"
 
-#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
 
 #include <string>
 #include <string_view>

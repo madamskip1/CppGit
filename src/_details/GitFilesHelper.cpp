@@ -1,6 +1,6 @@
-#include "_details/GitFilesHelper.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
 
-#include "_details/FileUtility.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 namespace CppGit::_details {
 

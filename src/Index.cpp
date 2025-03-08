@@ -1,11 +1,11 @@
-#include "Index.hpp"
+#include "CppGit/Index.hpp"
 
-#include "Commit.hpp"
-#include "Commits.hpp"
-#include "Error.hpp"
-#include "Repository.hpp"
-#include "_details/Parser/IndexParser.hpp"
-#include "_details/Parser/Parser.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/Error.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/Parser/IndexParser.hpp"
+#include "CppGit/_details/Parser/Parser.hpp"
 
 #include <algorithm>
 #include <iterator>

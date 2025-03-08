@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Index.hpp"
-#include "Repository.hpp"
+#include "../Index.hpp"
+#include "../Repository.hpp"
 
 #include <string>
 #include <string_view>

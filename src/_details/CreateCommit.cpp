@@ -1,6 +1,6 @@
-#include "_details/CreateCommit.hpp"
+#include "CppGit/_details/CreateCommit.hpp"
 
-#include "Repository.hpp"
+#include "CppGit/Repository.hpp"
 
 #include <stdexcept>
 #include <string>

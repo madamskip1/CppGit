@@ -1,14 +1,14 @@
-#include "Merge.hpp"
+#include "CppGit/Merge.hpp"
 
-#include "Branches.hpp"
-#include "Commits.hpp"
-#include "Error.hpp"
-#include "Index.hpp"
-#include "Repository.hpp"
-#include "Reset.hpp"
-#include "_details/FileUtility.hpp"
-#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
-#include "_details/GitFilesHelper.hpp"
+#include "CppGit/Branches.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/Error.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/Reset.hpp"
+#include "CppGit/_details/FileUtility.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
 
 #include <expected>
 #include <filesystem>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DiffFile.hpp"
+#include "../../DiffFile.hpp"
 #include "Parser.hpp"
 
 #include <cstdint>

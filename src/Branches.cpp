@@ -1,10 +1,10 @@
-#include "Branches.hpp"
+#include "CppGit/Branches.hpp"
 
-#include "Branch.hpp"
-#include "Error.hpp"
-#include "Index.hpp"
-#include "Repository.hpp"
-#include "_details/Parser/BranchesParser.hpp"
+#include "CppGit/Branch.hpp"
+#include "CppGit/Error.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/Parser/BranchesParser.hpp"
 
 #include <cstddef>
 #include <stdexcept>

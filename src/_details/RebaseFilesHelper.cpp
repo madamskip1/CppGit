@@ -1,9 +1,9 @@
-#include "_details/RebaseFilesHelper.hpp"
+#include "CppGit/_details/RebaseFilesHelper.hpp"
 
-#include "RebaseTodoCommand.hpp"
-#include "Repository.hpp"
-#include "_details/FileUtility.hpp"
-#include "_details/Parser/Parser.hpp"
+#include "CppGit/RebaseTodoCommand.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/FileUtility.hpp"
+#include "CppGit/_details/Parser/Parser.hpp"
 
 #include <algorithm>
 #include <cstddef>

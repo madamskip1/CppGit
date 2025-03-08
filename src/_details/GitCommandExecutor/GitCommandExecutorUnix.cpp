@@ -1,6 +1,6 @@
-#include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 
-#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
 
 #include <array>
 #include <cstddef>

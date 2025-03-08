@@ -1,11 +1,11 @@
-#include "_details/ApplyDiff.hpp"
+#include "CppGit/_details/ApplyDiff.hpp"
 
-#include "Index.hpp"
-#include "Repository.hpp"
-#include "_details/FileUtility.hpp"
-#include "_details/IndexWorktree.hpp"
-#include "_details/Parser/DiffParser.hpp"
-#include "_details/ThreeWayMerge.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/FileUtility.hpp"
+#include "CppGit/_details/IndexWorktree.hpp"
+#include "CppGit/_details/Parser/DiffParser.hpp"
+#include "CppGit/_details/ThreeWayMerge.hpp"
 
 #include <filesystem>
 #include <stdexcept>

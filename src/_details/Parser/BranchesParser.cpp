@@ -1,6 +1,6 @@
-#include "_details/Parser/BranchesParser.hpp"
+#include "CppGit/_details/Parser/BranchesParser.hpp"
 
-#include "Branch.hpp"
+#include "CppGit/Branch.hpp"
 
 #include <string>
 #include <string_view>

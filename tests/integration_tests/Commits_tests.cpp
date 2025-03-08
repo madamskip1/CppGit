@@ -1,10 +1,10 @@
 #include "BaseRepositoryFixture.hpp"
-#include "Commit.hpp"
-#include "Commits.hpp"
-#include "CommitsHistory.hpp"
-#include "Diff.hpp"
-#include "Index.hpp"
-#include "_details/FileUtility.hpp"
+#include "CppGit/Commit.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/CommitsHistory.hpp"
+#include "CppGit/Diff.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>

@@ -1,5 +1,5 @@
-#include "Index.hpp"
-#include "_details/Parser/IndexParser.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/_details/Parser/IndexParser.hpp"
 
 #include <gtest/gtest.h>
 

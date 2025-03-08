@@ -1,4 +1,4 @@
-#include "_details/Parser/Parser.hpp"
+#include "CppGit/_details/Parser/Parser.hpp"
 
 #include <gtest/gtest.h>
 

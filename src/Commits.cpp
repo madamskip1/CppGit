@@ -1,11 +1,11 @@
-#include "Commits.hpp"
+#include "CppGit/Commits.hpp"
 
-#include "Repository.hpp"
-#include "_details/AmendCommit.hpp"
-#include "_details/GitCommandExecutor/GitCommandOutput.hpp"
-#include "_details/GitFilesHelper.hpp"
-#include "_details/Parser/CommitParser.hpp"
-#include "_details/Refs.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/AmendCommit.hpp"
+#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
+#include "CppGit/_details/Parser/CommitParser.hpp"
+#include "CppGit/_details/Refs.hpp"
 
 #include <stdexcept>
 #include <string>

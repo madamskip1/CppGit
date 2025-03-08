@@ -1,14 +1,14 @@
-#include "CherryPick.hpp"
+#include "CppGit/CherryPick.hpp"
 
-#include "Commits.hpp"
-#include "Error.hpp"
-#include "Index.hpp"
-#include "Repository.hpp"
-#include "Reset.hpp"
-#include "_details/ApplyDiff.hpp"
-#include "_details/FileUtility.hpp"
-#include "_details/GitFilesHelper.hpp"
-#include "_details/Refs.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/Error.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/Reset.hpp"
+#include "CppGit/_details/ApplyDiff.hpp"
+#include "CppGit/_details/FileUtility.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
+#include "CppGit/_details/Refs.hpp"
 
 #include <cstddef>
 #include <expected>

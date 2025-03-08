@@ -1,9 +1,9 @@
 #include "BaseRepositoryFixture.hpp"
-#include "Branch.hpp"
-#include "Branches.hpp"
-#include "Commits.hpp"
-#include "Index.hpp"
-#include "_details/FileUtility.hpp"
+#include "CppGit/Branch.hpp"
+#include "CppGit/Branches.hpp"
+#include "CppGit/Commits.hpp"
+#include "CppGit/Index.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 #include <filesystem>
 #include <gtest/gtest.h>

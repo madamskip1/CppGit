@@ -1,6 +1,6 @@
 #include "BaseRepositoryFixture.hpp"
-#include "Repository.hpp"
-#include "_details/FileUtility.hpp"
+#include "CppGit/Repository.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 
 class InitRepositoryTests : public BaseRepositoryFixture

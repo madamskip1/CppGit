@@ -1,6 +1,6 @@
-#include "Commit.hpp"
+#include "CppGit/Commit.hpp"
 
-#include "Signature.hpp"
+#include "CppGit/Signature.hpp"
 
 #include <string>
 #include <utility>
