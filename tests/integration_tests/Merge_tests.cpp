@@ -352,7 +352,7 @@ TEST_F(MergeTests, mergeFastForward_untrackedFile)
 
 TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
 {
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
     EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
 }
@@ -360,7 +360,7 @@ TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
 TEST_F(MergeTests, mergeNoFastForward_sameBranch)
 {
     const auto commits = repository->Commits();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -375,7 +375,7 @@ TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
 {
     const auto commits = repository->Commits();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     commits.createCommit("Initial commit");
@@ -393,7 +393,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearBehind)
     const auto commits = repository->Commits();
     const auto branches = repository->Branches();
     const auto index = repository->Index();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -424,7 +424,7 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
     const auto commits = repository->Commits();
     const auto branches = repository->Branches();
     const auto index = repository->Index();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     commits.createCommit("Initial commit");
@@ -447,7 +447,7 @@ TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
     const auto commits = repository->Commits();
     const auto branches = repository->Branches();
     const auto index = repository->Index();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     commits.createCommit("Initial commit");
@@ -470,7 +470,7 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
     const auto commits = repository->Commits();
     const auto branches = repository->Branches();
     const auto index = repository->Index();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     commits.createCommit("Initial commit");
@@ -504,7 +504,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -542,7 +542,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_bothConflictAndNotFiles)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -583,7 +583,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflictTwoFiles)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -628,7 +628,7 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -673,7 +673,7 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
@@ -712,7 +712,7 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     commits.createCommit("Initial commit");
@@ -769,7 +769,7 @@ TEST_F(MergeTests, mergeNoFastForward_continue_conflict)
     const auto commits = repository->Commits();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto merge = repository->Merge();
+    const auto merge = repository->Merge();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");

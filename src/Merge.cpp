@@ -64,7 +64,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
     return sourceBranchRef;
 }
 
-auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) -> std::expected<std::string, Error>
+auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
 {
     const auto index = repo.Index();
 
@@ -104,7 +104,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     if (auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails(); !unmergedFilesEntries.empty())
     {
-        startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
+        startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, "HEAD", message, description);
 
         return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
     }
@@ -179,12 +179,9 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
     return mergeCommitHash;
 }
 
-auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void
+auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetLabel, const std::string_view message, const std::string_view description) const -> void
 {
     createNoFFMergeFiles(sourceBranchRef, message, description);
-    mergeInProgress_sourceBranchRef = std::string{ sourceBranchRef };
-    mergeInProgress_targetBranchRef = std::string{ targetBranchRef };
-
     _threeWayMerge.mergeConflictedFiles(unmergedFilesEntries, sourceLabel, targetLabel);
 }
 
@@ -242,8 +239,10 @@ auto Merge::continueMerge() const -> std::expected<std::string, Error>
     }
 
     const auto mergeMsg = _threeWayMerge.getMergeMsg();
+    const auto mergeHead = _details::FileUtility::readFile(repo.getTopLevelPath() / ".git/MERGE_HEAD");
+    const auto headCommitHash = repo.Commits().getHeadCommitHash();
 
-    auto mergeCommitHash = createMergeCommit(mergeInProgress_sourceBranchRef, mergeInProgress_targetBranchRef, mergeMsg, "");
+    auto mergeCommitHash = createMergeCommit(mergeHead, headCommitHash, mergeMsg, "");
 
     removeNoFFMergeFiles();
 

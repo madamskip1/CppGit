@@ -37,7 +37,7 @@ public:
     /// @param message Merge commit message
     /// @param description Merge commit description (optional)
     /// @return Merge commit hash if merge No-FF is successful, otherwise error code
-    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") -> std::expected<std::string, Error>;
+    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
 
     /// @brief Check whether fast-forward merge source branch onto current branch is possible
     /// @param sourceBranch Source branch name that would be merged
@@ -83,12 +83,9 @@ private:
     const _details::ThreeWayMerge _threeWayMerge;
     const _details::IndexWorktree _indexWorktree;
 
-    std::string mergeInProgress_sourceBranchRef;
-    std::string mergeInProgress_targetBranchRef;
-
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;
-    auto startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetBranchRef, const std::string_view targetLabel, const std::string_view message, const std::string_view description) -> void;
+    auto startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceBranchRef, const std::string_view sourceLabel, const std::string_view targetLabel, const std::string_view message, const std::string_view description) const -> void;
 
     auto createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void;
     auto removeNoFFMergeFiles() const -> void;
