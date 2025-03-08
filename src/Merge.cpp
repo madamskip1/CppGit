@@ -101,9 +101,8 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     _indexWorktree.copyIndexToWorktree();
 
-    auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails();
 
-    if (!unmergedFilesEntries.empty())
+    if (auto unmergedFilesEntries = index.getUnmergedFilesListWithDetails(); !unmergedFilesEntries.empty())
     {
         startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, std::move(targetBranchRef), "HEAD", message, description);
 
@@ -160,14 +159,14 @@ auto Merge::isThereAnyConflict() const -> std::expected<bool, Error>
 
 auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
 {
-    const auto output = repo.executeGitCommand("merge-base", sourceBranch, targetBranch);
+    auto output = repo.executeGitCommand("merge-base", sourceBranch, targetBranch);
 
     if (output.return_code != 0)
     {
         throw std::runtime_error("Failed to find merge base");
     }
 
-    return output.stdout;
+    return std::move(output.stdout);
 }
 
 auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string

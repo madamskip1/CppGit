@@ -70,12 +70,12 @@ auto CreateCommit::commitTree(std::string&& treeHash, const std::string_view mes
         }
     }
 
-    return commitTreeImpl(commitArgs, envp);
+    return commitTreeImpl(std::move(commitArgs), envp);
 }
 
-auto CreateCommit::commitTreeImpl(const std::vector<std::string>& commitArgs, const std::vector<std::string>& envp) const -> std::string
+auto CreateCommit::commitTreeImpl(std::vector<std::string> commitArgs, const std::vector<std::string>& envp) const -> std::string
 {
-    auto commitOutput = (envp.empty() ? repo.executeGitCommand("commit-tree", commitArgs) : repo.executeGitCommand(envp, "commit-tree", commitArgs));
+    auto commitOutput = (envp.empty() ? repo.executeGitCommand("commit-tree", std::move(commitArgs)) : repo.executeGitCommand(envp, "commit-tree", std::move(commitArgs)));
 
     if (commitOutput.return_code != 0)
     {

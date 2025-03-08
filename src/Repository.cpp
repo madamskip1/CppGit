@@ -134,7 +134,7 @@ auto Repository::isPathInGitDirectory(const std::filesystem::path& path) const -
     const auto canonicalGitDir = std::filesystem::canonical(getGitDirectoryPath());
     const auto canonicalArgPath = std::filesystem::canonical((path.is_absolute() ? path : getAbsoluteFromRelativePath(path)));
 
-    const auto canonicalGitDirStr = canonicalGitDir.string();
+    auto canonicalGitDirStr = canonicalGitDir.string();
     const auto canonicalArgPathStr = canonicalArgPath.string();
 
     if (canonicalArgPathStr.size() < canonicalGitDirStr.size())
@@ -142,7 +142,7 @@ auto Repository::isPathInGitDirectory(const std::filesystem::path& path) const -
         return false;
     }
 
-    return std::mismatch(canonicalGitDirStr.begin(), canonicalGitDirStr.end(), canonicalArgPathStr.begin()).first == canonicalGitDirStr.end();
+    return std::ranges::mismatch(std::move(canonicalGitDirStr), canonicalArgPathStr).in1 == canonicalArgPathStr.end();
 }
 
 auto Repository::isValidGitRepository() const -> bool
@@ -241,7 +241,7 @@ auto Repository::initRepository(const bool bare, const std::string_view mainBran
 
 auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 {
-    const auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
+    auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
 
     if (remote_output.return_code != 0)
     {
@@ -252,7 +252,7 @@ auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
         return {};
     }
 
-    std::istringstream iss(remote_output.stdout);
+    std::istringstream iss(std::move(remote_output.stdout));
     std::unordered_set<std::string> urls;
     std::string line;
     while (std::getline(iss, line))
@@ -265,7 +265,7 @@ auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 
 auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 {
-    const auto config_output = executeGitCommand("config", "--list", "--local");
+    auto config_output = executeGitCommand("config", "--list", "--local");
 
     if (config_output.return_code != 0)
     {
@@ -276,7 +276,7 @@ auto Repository::getConfig() const -> std::vector<GitConfigEntry>
         return {};
     }
 
-    std::istringstream iss(config_output.stdout);
+    std::istringstream iss(std::move(config_output.stdout));
     std::vector<GitConfigEntry> config;
 
     std::string line;

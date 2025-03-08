@@ -22,15 +22,15 @@ ThreeWayMerge::ThreeWayMerge(const Repository& repo)
 
 auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void
 {
-    const auto unmergedFiles = createUnmergedFileMap(unmergedFilesEntries);
+    auto unmergedFiles = createUnmergedFileMap(unmergedFilesEntries);
 
     const auto repoRootPath = repo.getTopLevelPath();
 
     for (const auto& [file, unmergedFile] : unmergedFiles)
     {
         auto baseTempFile = unpackFile(unmergedFile.baseBlob);
-        const auto targetTempFile = unpackFile(unmergedFile.targetBlob);
-        const auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
+        auto targetTempFile = unpackFile(unmergedFile.targetBlob);
+        auto sourceTempFile = unpackFile(unmergedFile.sourceBlob);
 
         if (baseTempFile.empty())
         {
@@ -43,8 +43,8 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
 
         auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
 
-        auto targetTempFilePath = std::filesystem::path{ repoRootPath / targetTempFile };
-        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / sourceTempFile };
+        auto targetTempFilePath = std::filesystem::path{ repoRootPath / std::move(targetTempFile) };
+        auto sourceTempFilePath = std::filesystem::path{ repoRootPath / std::move(sourceTempFile) };
         auto filePath = std::filesystem::path{ repoRootPath / file };
 
         auto src_file = std::ifstream{ targetTempFilePath, std::ios::binary };

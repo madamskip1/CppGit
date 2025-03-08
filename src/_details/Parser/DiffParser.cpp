@@ -74,8 +74,8 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
 
         case ParseState::HUNK_HEADER: {
             auto [rangesBefore, rangeAfter] = parseHunkHeader(line);
-            diffFile.hunkRangesBefore = rangesBefore;
-            diffFile.hunkRangeAfter = rangeAfter;
+            diffFile.hunkRangesBefore = std::move(rangesBefore);
+            diffFile.hunkRangeAfter = std::move(rangeAfter);
 
             currentState = ParseState::HUNK_CONTENT;
             break;
@@ -343,7 +343,7 @@ auto DiffParser::parseHunkHeader(const std::string_view line) -> std::pair<std::
 
     auto hunkRangeAfter = parseHunkHeaderRange(string_viewIteratorToString_view(match[2].first, match[2].second));
 
-    return std::make_pair(hunkRangesBefore, hunkRangeAfter);
+    return std::make_pair(std::move(hunkRangesBefore), std::move(hunkRangeAfter));
 }
 
 

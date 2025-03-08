@@ -22,7 +22,7 @@ ApplyDiff::ApplyDiff(const Repository& repo)
 
 auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResult
 {
-    const auto diff = getDiff(commitHash);
+    auto diff = getDiff(commitHash);
 
     if (diff.empty())
     {
@@ -31,7 +31,7 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
 
     createMissingFilesThatOccurInPatch(diff);
 
-    _details::FileUtility::createOrOverwriteFile(patchDiffPath, diff);
+    _details::FileUtility::createOrOverwriteFile(patchDiffPath, std::move(diff));
     auto applyOutput = repo.executeGitCommand("apply", "--cached", "--3way", patchDiffPath);
     std::filesystem::remove(patchDiffPath);
     IndexWorktree{ repo }.copyForceIndexToWorktree();

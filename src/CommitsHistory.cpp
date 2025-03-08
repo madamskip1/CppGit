@@ -196,8 +196,8 @@ auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, con
 
 auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
-    const auto arguments = prepareCommandsArgument(fromRef, toRef);
-    const auto output = repo_.executeGitCommand("rev-list", arguments);
+    auto arguments = prepareCommandsArgument(fromRef, toRef);
+    const auto output = repo_.executeGitCommand("rev-list", std::move(arguments));
 
     if (output.return_code != 0)
     {
@@ -210,12 +210,12 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
 auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
-    const auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
+    auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
     arguments.push_back(std::move(formatString));
     arguments.emplace_back("--no-commit-header");
     arguments.emplace_back("--date=raw");
 
-    auto output = repo_.executeGitCommand("rev-list", arguments);
+    auto output = repo_.executeGitCommand("rev-list", std::move(arguments));
 
     if (output.return_code != 0)
     {

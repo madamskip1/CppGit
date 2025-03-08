@@ -146,7 +146,7 @@ auto Rebase::isRebaseInProgress() const -> bool
 
 auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
 {
-    const auto rebaseBase = repo.executeGitCommand("merge-base", "HEAD", upstream);
+    auto rebaseBase = repo->executeGitCommand("merge-base", "HEAD", upstream);
 
     if (rebaseBase.return_code != 0)
     {

@@ -24,7 +24,7 @@ Index::Index(const Repository& repo)
 
 auto Index::add(const std::string_view filePattern) const -> Error
 {
-    const auto filesList = getUntrackedAndIndexFilesList(filePattern);
+    auto filesList = getUntrackedAndIndexFilesList(filePattern);
 
     if (filesList.empty())
     {
@@ -46,7 +46,7 @@ auto Index::add(const std::string_view filePattern) const -> Error
                        return std::forward<decltype(file)>(file);
                    });
 
-    const auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", std::move(args));
 
     if (output.return_code != 0)
     {
@@ -58,7 +58,7 @@ auto Index::add(const std::string_view filePattern) const -> Error
 
 auto Index::remove(const std::string_view filePattern, const bool force) const -> Error
 {
-    const auto filesList = getFilesInIndexList(filePattern);
+    auto filesList = getFilesInIndexList(filePattern);
 
     if (filesList.empty())
     {
@@ -84,7 +84,7 @@ auto Index::remove(const std::string_view filePattern, const bool force) const -
                        return std::forward<decltype(file)>(file);
                    });
 
-    const auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", std::move(args));
 
     if (output.return_code != 0)
     {
@@ -96,8 +96,6 @@ auto Index::remove(const std::string_view filePattern, const bool force) const -
 
 auto Index::restoreAllStaged() const -> void
 {
-    // TODO: Optimize it later - to many vector copies
-
     auto stagedFiles = getStagedFilesListWithStatus();
 
     if (stagedFiles.empty())
@@ -110,12 +108,12 @@ auto Index::restoreAllStaged() const -> void
 
     args.emplace_back("--force-remove");
 
-    for (auto& file : stagedFiles)
+    for (const auto& file : stagedFiles)
     {
         if (file.status == DiffIndexStatus::ADDED)
         {
             args.emplace_back("--force-remove");
-            args.push_back(std::move(file.path));
+            args.push_back(file.path);
         }
     }
 
@@ -129,7 +127,7 @@ auto Index::restoreAllStaged() const -> void
         args.push_back(std::move(fileInfo));
     }
 
-    const auto output = repo.executeGitCommand("update-index", args);
+    const auto output = repo.executeGitCommand("update-index", std::move(args));
 
     if (output.return_code != 0)
     {
@@ -299,7 +297,7 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
         }
     }
 
-    const auto output = repo.executeGitCommand("ls-tree", args);
+    const auto output = repo.executeGitCommand("ls-tree", std::move(args));
 
     if (output.return_code != 0)
     {
