@@ -5,7 +5,6 @@
 #include "Commits.hpp"
 #include "CommitsHistory.hpp"
 #include "Diff.hpp"
-#include "Error.hpp"
 #include "Index.hpp"
 #include "Merge.hpp"
 #include "Rebase.hpp"
@@ -159,55 +158,6 @@ auto Repository::isValidGitRepository() const -> bool
     }
 
     return true;
-}
-
-auto Repository::clone(const std::string& url, const std::filesystem::path& path) -> Repository
-{
-    const auto repository = Repository(path);
-
-    if (repository.clone(url) != Error::NO_ERROR)
-    {
-        throw std::runtime_error("Failed to clone repository");
-    }
-    return repository;
-}
-
-auto Repository::clone(const std::string& url) const -> Error
-{
-    if (path.empty())
-    {
-        return Error::CLONE_NO_PATH_GIVEN;
-    }
-
-    if (!std::filesystem::exists(path))
-    {
-        try
-        {
-            std::filesystem::create_directories(path);
-        }
-        catch (const std::filesystem::filesystem_error&)
-        {
-            return Error::FAILED_TO_CREATE_DIRECTORIES;
-        }
-    }
-    else
-    {
-        if (!std::filesystem::is_directory(path))
-        {
-            return Error::PATH_IS_NOT_A_DIRECTORY;
-        }
-        if (!std::filesystem::is_empty(path))
-        {
-            return Error::PATH_DIR_IS_NOT_EMPTY;
-        }
-    }
-
-    if (auto outout = executeGitCommand("clone", url, path.string()); outout.return_code != 0)
-    {
-        return Error::CLONE_FAILED;
-    }
-
-    return Error::NO_ERROR;
 }
 
 auto Repository::initRepository(const bool bare, const std::string_view mainBranchName) const -> bool

@@ -29,13 +29,6 @@ enum class Error : uint8_t
     MERGE_FF_BRANCHES_DIVERGENCE, ///< Branches have diverged
     MERGE_NO_FF_CONFLICT,         ///< Conflict during non-fast-forward merge
     NO_MERGE_IN_PROGRESS,         ///< No merge in progress
-
-    // Repository
-    CLONE_NO_PATH_GIVEN,          ///< No path given for clone
-    PATH_IS_NOT_A_DIRECTORY,      ///< Path is not a directory
-    PATH_DIR_IS_NOT_EMPTY,        ///< Directory is not empty
-    FAILED_TO_CREATE_DIRECTORIES, ///< Failed to create directories
-    CLONE_FAILED,                 ///< Clone failed
 };
 
 } // namespace CppGit

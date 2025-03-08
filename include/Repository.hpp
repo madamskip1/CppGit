@@ -129,17 +129,6 @@ public:
     /// @return True if the path is a valud git repository, false otherwise
     [[nodiscard]] auto isValidGitRepository() const -> bool;
 
-    /// @brief Clone repository
-    /// @param url Repository URL
-    /// @param path Path to clone repository to
-    /// @return Repository object with cloned repository
-    [[nodiscard]] static auto clone(const std::string& url, const std::filesystem::path& path) -> Repository;
-
-    /// @brief Clone repository
-    /// @param url Repository URL
-    /// @return Error code if cloning failed, otherwise no error
-    auto clone(const std::string& url) const -> Error;
-
     /// @brief Initialize repository
     /// @param bare Whether to initialize bare repository
     /// @param mainBranchName Main branch name (default: "main")
