@@ -1,6 +1,5 @@
-#include "CppGit/Signature.hpp"
-#include "CppGit/_details/Parser/CommitParser.hpp"
-
+#include <CppGit/Signature.hpp>
+#include <CppGit/_details/Parser/CommitParser.hpp>
 #include <gtest/gtest.h>
 
 TEST(CommitParserTests, parseCatfile_onlySingleLineMsg)

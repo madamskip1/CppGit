@@ -1,5 +1,4 @@
-#include "CppGit/_details/Parser/DiffParser.hpp"
-
+#include <CppGit/_details/Parser/DiffParser.hpp>
 #include <gtest/gtest.h>
 
 TEST(DiffParserTests, fileAdded)

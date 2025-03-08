@@ -1,8 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 
-#include "CppGit/_details/CreateCommit.hpp"
-#include "CppGit/_details/Refs.hpp"
-
+#include <CppGit/_details/CreateCommit.hpp>
+#include <CppGit/_details/Refs.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

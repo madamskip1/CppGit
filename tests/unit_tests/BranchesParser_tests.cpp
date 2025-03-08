@@ -1,5 +1,4 @@
-#include "CppGit/_details/Parser/BranchesParser.hpp"
-
+#include <CppGit/_details/Parser/BranchesParser.hpp>
 #include <gtest/gtest.h>
 
 TEST(BranchesParser, isLocalBranch_heads)

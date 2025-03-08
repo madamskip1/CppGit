@@ -1,12 +1,12 @@
 
-#include "CppGit/Commits.hpp"
-#include "CppGit/CommitsHistory.hpp"
-#include "CppGit/Index.hpp"
-#include "CppGit/Rebase.hpp"
-#include "CppGit/RebaseTodoCommand.hpp"
-#include "CppGit/_details/FileUtility.hpp"
 #include "RebaseFixture.hpp"
 
+#include <CppGit/Commits.hpp>
+#include <CppGit/CommitsHistory.hpp>
+#include <CppGit/Index.hpp>
+#include <CppGit/Rebase.hpp>
+#include <CppGit/RebaseTodoCommand.hpp>
+#include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 
 class RebaseInteractiveBreakTests : public RebaseFixture

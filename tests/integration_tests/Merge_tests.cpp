@@ -1,9 +1,9 @@
 #include "BaseRepositoryFixture.hpp"
-#include "CppGit/Branches.hpp"
-#include "CppGit/Commits.hpp"
-#include "CppGit/Merge.hpp"
-#include "CppGit/_details/FileUtility.hpp"
 
+#include <CppGit/Branches.hpp>
+#include <CppGit/Commits.hpp>
+#include <CppGit/Merge.hpp>
+#include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 
 class MergeTests : public BaseRepositoryFixture

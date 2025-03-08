@@ -1,13 +1,13 @@
-#include "CppGit/Branches.hpp"
-#include "CppGit/Commits.hpp"
-#include "CppGit/CommitsHistory.hpp"
-#include "CppGit/Index.hpp"
-#include "CppGit/Rebase.hpp"
-#include "CppGit/RebaseTodoCommand.hpp"
-#include "CppGit/_details/FileUtility.hpp"
-#include "CppGit/_details/Parser/Parser.hpp"
 #include "RebaseFixture.hpp"
 
+#include <CppGit/Branches.hpp>
+#include <CppGit/Commits.hpp>
+#include <CppGit/CommitsHistory.hpp>
+#include <CppGit/Index.hpp>
+#include <CppGit/Rebase.hpp>
+#include <CppGit/RebaseTodoCommand.hpp>
+#include <CppGit/_details/FileUtility.hpp>
+#include <CppGit/_details/Parser/Parser.hpp>
 #include <gtest/gtest.h>
 #include <regex>
 
