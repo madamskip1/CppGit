@@ -17,12 +17,13 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace CppGit {
 
-Repository::Repository(const std::filesystem::path& path)
-    : path(path)
+Repository::Repository(std::filesystem::path path)
+    : path(std::move(path))
 { }
 
 auto Repository::Branches() const -> CppGit::Branches

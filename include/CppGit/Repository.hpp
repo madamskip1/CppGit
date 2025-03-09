@@ -29,7 +29,7 @@ class Repository
 {
 public:
     /// @param path Path to the repository
-    explicit Repository(const std::filesystem::path& path);
+    explicit Repository(std::filesystem::path path);
     Repository() = delete;
 
     /// @brief Execute git command
