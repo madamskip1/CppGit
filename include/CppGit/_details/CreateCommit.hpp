@@ -31,7 +31,7 @@ public:
 
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     auto writeTree() const -> std::string;
 

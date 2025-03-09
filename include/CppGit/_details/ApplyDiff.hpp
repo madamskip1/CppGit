@@ -30,8 +30,7 @@ public:
     auto apply(const std::string_view commitHash) const -> ApplyDiffResult;
 
 private:
-    const Repository& repo;
-    const std::filesystem::path patchDiffPath;
+    const Repository* repo;
 
     auto getDiff(const std::string_view commitHash) const -> std::string;
     auto createMissingFilesThatOccurInPatch(const std::string_view diff) const -> void;

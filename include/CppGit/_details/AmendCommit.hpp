@@ -28,7 +28,7 @@ public:
     auto amend(const Commit& commit, const std::string_view newMessage, const std::string_view newDescription = "") const -> std::string;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 };
 
 } // namespace CppGit::_details

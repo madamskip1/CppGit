@@ -21,7 +21,7 @@
 namespace CppGit {
 
 CherryPick::CherryPick(const Repository& repo)
-    : repo(repo),
+    : repo(&repo),
       _createCommit(repo),
       _applyDiff(repo)
 {
@@ -29,12 +29,12 @@ CherryPick::CherryPick(const Repository& repo)
 
 auto CherryPick::cherryPickCommit(const std::string_view commitHash, const CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>
 {
-    if (repo.Index().isDirty())
+    if (repo->Index().isDirty())
     {
         return std::unexpected{ Error::DIRTY_WORKTREE };
     }
 
-    _details::GitFilesHelper{ repo }.setOrigHeadFile(repo.Commits().getHeadCommitHash());
+    _details::GitFilesHelper{ *repo }.setOrigHeadFile(repo->Commits().getHeadCommitHash());
 
     const auto applyDiffResult = _applyDiff.apply(commitHash);
 
@@ -67,7 +67,7 @@ auto CherryPick::commitEmptyCherryPickedCommit() const -> std::expected<std::str
 
 auto CherryPick::isCherryPickInProgress() const -> bool
 {
-    if (std::ifstream headFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD"); headFile.is_open())
+    if (std::ifstream headFile(repo->getGitDirectoryPath() / "CHERRY_PICK_HEAD"); headFile.is_open())
     {
         const auto isEmpty = headFile.peek() == std::ifstream::traits_type::eof();
         headFile.close();
@@ -80,7 +80,7 @@ auto CherryPick::isCherryPickInProgress() const -> bool
 
 auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> std::string
 {
-    const auto commits = Commits{ repo };
+    const auto commits = Commits{ *repo };
 
     const auto commitInfo = commits.getCommitInfo(commitHash);
 
@@ -92,24 +92,24 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
 
     auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
     auto newCommitHash = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
-    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
+    _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
 
 auto CherryPick::createCherryPickHeadFile(const std::string_view commitHash) const -> void
 {
-    _details::FileUtility::createOrOverwriteFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD", commitHash);
+    _details::FileUtility::createOrOverwriteFile(repo->getGitDirectoryPath() / "CHERRY_PICK_HEAD", commitHash);
 }
 
 auto CherryPick::getCherryPickHead() const -> std::string
 {
-    return _details::FileUtility::readFile(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
+    return _details::FileUtility::readFile(repo->getGitDirectoryPath() / "CHERRY_PICK_HEAD");
 }
 
 auto CherryPick::removeCherryPickHeadFile() const -> void
 {
-    std::filesystem::remove(repo.getGitDirectoryPath() / "CHERRY_PICK_HEAD");
+    std::filesystem::remove(repo->getGitDirectoryPath() / "CHERRY_PICK_HEAD");
 }
 
 auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
@@ -119,7 +119,7 @@ auto CherryPick::cherryPickContinue() const -> std::expected<std::string, Error>
         return std::unexpected{ Error::NO_CHERRY_PICK_IN_PROGRESS };
     }
 
-    if (const auto unmergedFilesEntries = repo.Index().getUnmergedFilesListWithDetails(); !unmergedFilesEntries.empty())
+    if (const auto unmergedFilesEntries = repo->Index().getUnmergedFilesListWithDetails(); !unmergedFilesEntries.empty())
     {
         return std::unexpected{ Error::CHERRY_PICK_CONFLICT };
     }
@@ -136,7 +136,7 @@ auto CherryPick::cherryPickAbort() const -> Error
         return Error::NO_CHERRY_PICK_IN_PROGRESS;
     }
 
-    Reset{ repo }.resetHard("HEAD");
+    Reset{ *repo }.resetHard("HEAD");
     removeCherryPickHeadFile();
 
     return Error::NO_ERROR;

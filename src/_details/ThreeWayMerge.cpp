@@ -16,7 +16,7 @@
 namespace CppGit::_details {
 
 ThreeWayMerge::ThreeWayMerge(const Repository& repo)
-    : repo(repo)
+    : repo(&repo)
 {
 }
 
@@ -24,7 +24,7 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
 {
     auto unmergedFiles = createUnmergedFileMap(unmergedFilesEntries);
 
-    const auto repoRootPath = repo.getTopLevelPath();
+    const auto repoRootPath = repo->getTopLevelPath();
 
     for (const auto& [file, unmergedFile] : unmergedFiles)
     {
@@ -37,9 +37,9 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
             baseTempFile = "/dev/null";
         }
 
-        repo.executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
+        repo->executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
 
-        repo.executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
+        repo->executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
 
         auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
 
@@ -64,7 +64,7 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
 
 auto ThreeWayMerge::createMergeMsgFile(const std::string_view msg, const std::string_view description) const -> void
 {
-    const auto path = repo.getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
     auto file = std::ofstream{ path };
     file << msg;
     if (!description.empty())
@@ -77,14 +77,14 @@ auto ThreeWayMerge::createMergeMsgFile(const std::string_view msg, const std::st
 
 auto ThreeWayMerge::removeMergeMsgFile() const -> void
 {
-    const auto path = repo.getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
     std::filesystem::remove(path);
 }
 
 
 auto ThreeWayMerge::getMergeMsg() const -> std::string
 {
-    const auto path = repo.getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
     auto file = std::ifstream{ path };
     auto msg = std::string{};
     std::getline(file, msg, '\0');
@@ -100,7 +100,7 @@ auto ThreeWayMerge::unpackFile(const std::string_view fileBlob) const -> std::st
         return std::string{};
     }
 
-    auto output = repo.executeGitCommand("unpack-file", fileBlob);
+    auto output = repo->executeGitCommand("unpack-file", fileBlob);
 
     if (output.return_code != 0)
     {

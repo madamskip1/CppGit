@@ -45,7 +45,7 @@ public:
     [[nodiscard]] auto getMergeMsg() const -> std::string;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     auto unpackFile(const std::string_view fileBlob) const -> std::string;
     static auto createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>;

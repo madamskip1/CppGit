@@ -20,7 +20,7 @@
 
 namespace CppGit {
 Merge::Merge(const Repository& repo)
-    : repo(repo),
+    : repo(&repo),
       _createCommit(repo),
       _threeWayMerge(repo),
       _indexWorktree(repo)
@@ -35,14 +35,14 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::
 
 auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>
 {
-    if (const auto index = repo.Index(); index.isDirty())
+    if (const auto index = repo->Index(); index.isDirty())
     {
         return std::unexpected{ Error::DIRTY_WORKTREE };
     }
 
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
 
-    const auto branches = repo.Branches();
+    const auto branches = repo->Branches();
 
     auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
     auto targetBranchRef = branches.getHashBranchRefersTo(targetBranch);
@@ -58,22 +58,22 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
         return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
     }
 
-    _details::GitFilesHelper{ repo }.setOrigHeadFile(targetBranchRef);
-    Reset{ repo }.resetHard(sourceBranchRef);
+    _details::GitFilesHelper{ *repo }.setOrigHeadFile(targetBranchRef);
+    Reset{ *repo }.resetHard(sourceBranchRef);
 
     return sourceBranchRef;
 }
 
 auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
 {
-    const auto index = repo.Index();
+    const auto index = repo->Index();
 
     if (index.isDirty())
     {
         return std::unexpected{ Error::DIRTY_WORKTREE };
     }
 
-    auto mergeBaseOutput = repo.executeGitCommand("merge-base", "HEAD", sourceBranch);
+    auto mergeBaseOutput = repo->executeGitCommand("merge-base", "HEAD", sourceBranch);
     if (mergeBaseOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to find merge base");
@@ -81,7 +81,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     auto& mergeBase = mergeBaseOutput.stdout;
 
-    const auto branches = repo.Branches();
+    const auto branches = repo->Branches();
     auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
     auto targetBranchRef = branches.getHashBranchRefersTo("HEAD");
 
@@ -90,14 +90,14 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         return std::unexpected{ Error::MERGE_NOTHING_TO_MERGE };
     }
 
-    auto readTreeOutput = repo.executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
+    auto readTreeOutput = repo->executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
 
     if (readTreeOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to read tree");
     }
 
-    _details::GitFilesHelper{ repo }.setOrigHeadFile(targetBranchRef);
+    _details::GitFilesHelper{ *repo }.setOrigHeadFile(targetBranchRef);
 
     _indexWorktree.copyIndexToWorktree();
 
@@ -122,7 +122,7 @@ auto Merge::canFastForward(const std::string_view sourceBranch) const -> bool
 auto Merge::canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool
 {
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
-    const auto commits = repo.Commits();
+    const auto commits = repo->Commits();
 
     return ancestor == commits.getHeadCommitHash();
 }
@@ -135,7 +135,7 @@ auto Merge::isAnythingToMerge(const std::string_view sourceBranch) const -> bool
 auto Merge::isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool
 {
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
-    const auto branches = repo.Branches();
+    const auto branches = repo->Branches();
     const auto sourceBranchRef = branches.getHashBranchRefersTo(sourceBranch);
 
     return ancestor != sourceBranchRef;
@@ -143,7 +143,7 @@ auto Merge::isAnythingToMerge(const std::string_view sourceBranch, const std::st
 
 auto Merge::isMergeInProgress() const -> bool
 {
-    const auto topLevelPath = repo.getTopLevelPath();
+    const auto topLevelPath = repo->getTopLevelPath();
     return std::filesystem::exists(topLevelPath / ".git/MERGE_HEAD");
 }
 
@@ -159,7 +159,7 @@ auto Merge::isThereAnyConflict() const -> std::expected<bool, Error>
 
 auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
 {
-    auto output = repo.executeGitCommand("merge-base", sourceBranch, targetBranch);
+    auto output = repo->executeGitCommand("merge-base", sourceBranch, targetBranch);
 
     if (output.return_code != 0)
     {
@@ -174,7 +174,7 @@ auto Merge::createMergeCommit(const std::string_view sourceBranchRef, const std:
     const auto parents = std::vector<std::string>{ std::string{ targetBranchRef }, std::string{ sourceBranchRef } };
 
     const auto mergeCommitHash = _createCommit.createCommit(message, description, parents, {});
-    _details::Refs{ repo }.updateRefHash("HEAD", mergeCommitHash);
+    _details::Refs{ *repo }.updateRefHash("HEAD", mergeCommitHash);
 
     return mergeCommitHash;
 }
@@ -187,7 +187,7 @@ auto Merge::startMergeConflict(const std::vector<IndexEntry>& unmergedFilesEntri
 
 auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const std::string_view message, const std::string_view description) const -> void
 {
-    const auto topLevelPath = repo.getTopLevelPath();
+    const auto topLevelPath = repo->getTopLevelPath();
     _details::FileUtility::createOrOverwriteFile(topLevelPath / ".git/MERGE_HEAD", sourceBranchRef);
     _details::FileUtility::createOrOverwriteFile(topLevelPath / ".git/MERGE_MODE", "no-ff");
     _threeWayMerge.createMergeMsgFile(message, description);
@@ -195,7 +195,7 @@ auto Merge::createNoFFMergeFiles(const std::string_view sourceBranchRef, const s
 
 auto Merge::removeNoFFMergeFiles() const -> void
 {
-    const auto topLevelPath = repo.getTopLevelPath();
+    const auto topLevelPath = repo->getTopLevelPath();
     std::filesystem::remove(topLevelPath / ".git/MERGE_HEAD");
     std::filesystem::remove(topLevelPath / ".git/MERGE_MODE");
     _threeWayMerge.removeMergeMsgFile();
@@ -203,7 +203,7 @@ auto Merge::removeNoFFMergeFiles() const -> void
 
 auto Merge::isThereAnyConflictImpl() const -> bool
 {
-    const auto gitLsFilesOutput = repo.executeGitCommand("ls-files", "-u");
+    const auto gitLsFilesOutput = repo->executeGitCommand("ls-files", "-u");
 
     if (gitLsFilesOutput.return_code != 0)
     {
@@ -239,8 +239,8 @@ auto Merge::continueMerge() const -> std::expected<std::string, Error>
     }
 
     const auto mergeMsg = _threeWayMerge.getMergeMsg();
-    const auto mergeHead = _details::FileUtility::readFile(repo.getTopLevelPath() / ".git/MERGE_HEAD");
-    const auto headCommitHash = repo.Commits().getHeadCommitHash();
+    const auto mergeHead = _details::FileUtility::readFile(repo->getTopLevelPath() / ".git/MERGE_HEAD");
+    const auto headCommitHash = repo->Commits().getHeadCommitHash();
 
     auto mergeCommitHash = createMergeCommit(mergeHead, headCommitHash, mergeMsg, "");
 

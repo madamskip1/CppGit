@@ -16,7 +16,7 @@
 namespace CppGit {
 
 Branches::Branches(const Repository& repo)
-    : repo(repo),
+    : repo(&repo),
       refs(repo),
       indexWorktree(repo)
 {
@@ -40,7 +40,7 @@ auto Branches::getLocalBranches() const -> std::vector<Branch>
 auto Branches::getCurrentBranchInfo() const -> Branch
 {
     auto currentBranchName = getCurrentBranchName();
-    const auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchName));
+    const auto output = repo->executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchName));
 
     if (output.return_code != 0)
     {
@@ -127,7 +127,7 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
     const auto* argLocal = local ? _details::Refs::LOCAL_BRANCH_PREFIX : "";
     const auto* argRemote = remote ? _details::Refs::REMOTE_BRANCH_PREFIX : "";
 
-    const auto output = repo.executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
+    const auto output = repo->executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
 
     if (output.return_code != 0)
     {
@@ -160,7 +160,7 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
 auto Branches::changeHEAD(const std::string_view target) const -> Error
 {
 
-    if (const auto index = repo.Index(); index.isDirty())
+    if (const auto index = repo->Index(); index.isDirty())
     {
         return Error::DIRTY_WORKTREE;
     }

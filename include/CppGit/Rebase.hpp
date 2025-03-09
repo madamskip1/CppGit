@@ -81,12 +81,12 @@ private:
 
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
-    const Repository& repo;
-    const Commits commits;
-    const _details::Refs refs;
-    const _details::IndexWorktree indexWorktree;
-    const _details::RebaseFilesHelper rebaseFilesHelper;
-    const _details::ApplyDiff applyDiff;
+    const Repository* repo;
+    Commits commits;
+    _details::Refs refs;
+    _details::IndexWorktree indexWorktree;
+    _details::RebaseFilesHelper rebaseFilesHelper;
+    _details::ApplyDiff applyDiff;
 };
 
 } // namespace CppGit

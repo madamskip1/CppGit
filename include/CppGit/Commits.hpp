@@ -41,8 +41,8 @@ public:
     [[nodiscard]] auto getCommitInfo(const std::string_view commitHash) const -> Commit;
 
 private:
-    const Repository& repo;
-    const _details::CreateCommit _createCommit;
+    const Repository* repo;
+    _details::CreateCommit _createCommit;
 };
 
 } // namespace CppGit

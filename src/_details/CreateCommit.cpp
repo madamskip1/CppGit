@@ -11,7 +11,7 @@
 namespace CppGit::_details {
 
 CreateCommit::CreateCommit(const Repository& repo)
-    : repo(repo)
+    : repo(&repo)
 {
 }
 
@@ -20,7 +20,7 @@ auto CreateCommit::createCommit(const std::string_view message, const std::strin
     auto treeHash = writeTree();
     const auto commitHash = commitTree(std::move(treeHash), message, description, parents, envp);
 
-    if (const auto updateIndexOutput = repo.executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
+    if (const auto updateIndexOutput = repo->executeGitCommand("update-index", "--refresh", "--again", "--quiet"); updateIndexOutput.return_code != 0)
     {
         throw std::runtime_error("Failed to update index");
     }
@@ -35,7 +35,7 @@ auto CreateCommit::createCommit(const std::string_view message, const std::vecto
 
 auto CreateCommit::writeTree() const -> std::string
 {
-    auto writeTreeOutput = repo.executeGitCommand("write-tree");
+    auto writeTreeOutput = repo->executeGitCommand("write-tree");
 
     if (writeTreeOutput.return_code != 0)
     {
@@ -75,7 +75,7 @@ auto CreateCommit::commitTree(std::string&& treeHash, const std::string_view mes
 
 auto CreateCommit::commitTreeImpl(std::vector<std::string> commitArgs, const std::vector<std::string>& envp) const -> std::string
 {
-    auto commitOutput = (envp.empty() ? repo.executeGitCommand("commit-tree", std::move(commitArgs)) : repo.executeGitCommand(envp, "commit-tree", std::move(commitArgs)));
+    auto commitOutput = (envp.empty() ? repo->executeGitCommand("commit-tree", std::move(commitArgs)) : repo->executeGitCommand(envp, "commit-tree", std::move(commitArgs)));
 
     if (commitOutput.return_code != 0)
     {

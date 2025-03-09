@@ -100,9 +100,9 @@ private:
 
     auto changeHEAD(const std::string_view target) const -> Error;
 
-    const Repository& repo;
-    const _details::Refs refs;
-    const _details::IndexWorktree indexWorktree;
+    const Repository* repo;
+    _details::Refs refs;
+    _details::IndexWorktree indexWorktree;
 };
 
 } // namespace CppGit

@@ -15,7 +15,7 @@
 namespace CppGit {
 
 Commits::Commits(const Repository& repo)
-    : repo(repo),
+    : repo(&repo),
       _createCommit(repo)
 {
 }
@@ -26,11 +26,11 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
 
     if (!parent.empty())
     {
-        _details::GitFilesHelper{ repo }.setOrigHeadFile(parent);
+        _details::GitFilesHelper{ *repo }.setOrigHeadFile(parent);
     }
 
     const auto newCommitHash = _createCommit.createCommit(message, description, { parent }, {});
-    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
+    _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
@@ -40,16 +40,16 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     const auto headCommitHash = getHeadCommitHash();
     const auto commitInfo = getCommitInfo(headCommitHash);
 
-    _details::GitFilesHelper{ repo }.setOrigHeadFile(headCommitHash);
-    const auto newCommitHash = _details::AmendCommit{ repo }.amend(commitInfo, message, description);
-    _details::Refs{ repo }.updateRefHash("HEAD", newCommitHash);
+    _details::GitFilesHelper{ *repo }.setOrigHeadFile(headCommitHash);
+    const auto newCommitHash = _details::AmendCommit{ *repo }.amend(commitInfo, message, description);
+    _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
 
 auto Commits::hasAnyCommits() const -> bool
 {
-    const auto output = repo.executeGitCommand("rev-parse", "--verify", "HEAD");
+    const auto output = repo->executeGitCommand("rev-parse", "--verify", "HEAD");
     if (output.return_code == 0)
     {
         return true;
@@ -65,13 +65,13 @@ auto Commits::hasAnyCommits() const -> bool
 
 auto Commits::getHeadCommitHash() const -> std::string
 {
-    const auto refs = _details::Refs{ repo };
+    const auto refs = _details::Refs{ *repo };
     return refs.getRefHash("HEAD");
 }
 
 auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit
 {
-    const auto output = repo.executeGitCommand("cat-file", "-p", commitHash);
+    const auto output = repo->executeGitCommand("cat-file", "-p", commitHash);
 
     if (output.return_code != 0)
     {

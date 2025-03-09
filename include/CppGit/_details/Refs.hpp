@@ -58,7 +58,7 @@ public:
     [[nodiscard]] static auto appendPrefixToRefIfNeeded(const std::string_view refName, bool remote) -> std::string;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 };
 
 } // namespace CppGit::_details

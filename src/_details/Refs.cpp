@@ -11,14 +11,14 @@
 namespace CppGit::_details {
 
 Refs::Refs(const Repository& repo)
-    : repo(repo)
+    : repo(&repo)
 {
 }
 
 
 auto Refs::getRefHash(const std::string_view refName) const -> std::string
 {
-    auto output = repo.executeGitCommand("rev-parse", refName);
+    auto output = repo->executeGitCommand("rev-parse", refName);
 
     if (output.return_code != 0)
     {
@@ -31,7 +31,7 @@ auto Refs::getRefHash(const std::string_view refName) const -> std::string
 
 auto Refs::getSymbolicRef(const std::string_view refName) const -> std::string
 {
-    auto output = repo.executeGitCommand("symbolic-ref", refName);
+    auto output = repo->executeGitCommand("symbolic-ref", refName);
 
     if (output.return_code != 0)
     {
@@ -44,7 +44,7 @@ auto Refs::getSymbolicRef(const std::string_view refName) const -> std::string
 
 auto Refs::refExists(const std::string_view refName) const -> bool
 {
-    const auto output = repo.executeGitCommand("show-ref", "--verify", "--quiet", refName);
+    const auto output = repo->executeGitCommand("show-ref", "--verify", "--quiet", refName);
 
     if (output.return_code > 1)
     {
@@ -57,7 +57,7 @@ auto Refs::refExists(const std::string_view refName) const -> bool
 
 auto Refs::updateRefHash(const std::string_view refName, const std::string_view newHash) const -> void
 {
-    const auto output = repo.executeGitCommand("update-ref", refName, newHash);
+    const auto output = repo->executeGitCommand("update-ref", refName, newHash);
 
     if (output.return_code != 0)
     {
@@ -68,7 +68,7 @@ auto Refs::updateRefHash(const std::string_view refName, const std::string_view 
 
 auto Refs::updateSymbolicRef(const std::string_view refName, const std::string_view newRef) const -> void
 {
-    const auto output = repo.executeGitCommand("symbolic-ref", refName, newRef);
+    const auto output = repo->executeGitCommand("symbolic-ref", refName, newRef);
 
     if (output.return_code != 0)
     {
@@ -78,7 +78,7 @@ auto Refs::updateSymbolicRef(const std::string_view refName, const std::string_v
 
 auto Refs::deleteRef(const std::string_view refName) const -> void
 {
-    const auto output = repo.executeGitCommand("update-ref", "-d", refName);
+    const auto output = repo->executeGitCommand("update-ref", "-d", refName);
 
     if (output.return_code != 0)
     {
@@ -88,7 +88,7 @@ auto Refs::deleteRef(const std::string_view refName) const -> void
 
 auto Refs::createRef(const std::string_view refName, const std::string_view hash) const -> void
 {
-    const auto output = repo.executeGitCommand("update-ref", refName, hash);
+    const auto output = repo->executeGitCommand("update-ref", refName, hash);
 
     if (output.return_code != 0)
     {
@@ -98,7 +98,7 @@ auto Refs::createRef(const std::string_view refName, const std::string_view hash
 
 auto Refs::detachHead(const std::string_view commitHash) const -> void
 {
-    auto HEADFile = std::ofstream{ repo.getGitDirectoryPath() / "HEAD" };
+    auto HEADFile = std::ofstream{ repo->getGitDirectoryPath() / "HEAD" };
     HEADFile << commitHash;
     HEADFile.close();
 }

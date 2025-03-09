@@ -10,7 +10,7 @@ public:
     auto setOrigHeadFile(const std::string_view commitHash) const -> void;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 };
 
 } // namespace CppGit::_details

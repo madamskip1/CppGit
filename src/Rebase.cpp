@@ -24,7 +24,7 @@
 
 namespace CppGit {
 Rebase::Rebase(const Repository& repo)
-    : repo{ repo },
+    : repo{ &repo },
       commits{ repo },
       refs{ repo },
       indexWorktree{ repo },
@@ -94,10 +94,10 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         {
             hashAfter = commits.getHeadCommitHash();
 
-            if (lastCommand->type != RebaseTodoCommandType::EDIT || Index{ repo }.areAnyStagedFiles())
+            if (lastCommand->type != RebaseTodoCommandType::EDIT || Index{ *repo }.areAnyStagedFiles())
             {
                 const auto headCommitInfo = commits.getCommitInfo(hashAfter);
-                hashAfter = _details::AmendCommit{ repo }.amend(headCommitInfo, messageAndDesc);
+                hashAfter = _details::AmendCommit{ *repo }.amend(headCommitInfo, messageAndDesc);
                 refs.updateRefHash("HEAD", hashAfter);
             }
 
@@ -108,7 +108,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             const auto authorScript = rebaseFilesHelper.getAuthorScriptFile(); // authorScript has struct like envp
             const auto parent = commits.getHeadCommitHash();
 
-            hashAfter = _details::CreateCommit{ repo }.createCommit(messageAndDesc, { parent }, authorScript);
+            hashAfter = _details::CreateCommit{ *repo }.createCommit(messageAndDesc, { parent }, authorScript);
             refs.updateRefHash("HEAD", hashAfter);
             rebaseFilesHelper.removeAuthorScriptFile();
         }
@@ -141,7 +141,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
 auto Rebase::isRebaseInProgress() const -> bool
 {
-    return std::filesystem::exists(repo.getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo");
+    return std::filesystem::exists(repo->getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo");
 }
 
 auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
@@ -153,7 +153,7 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
         throw std::runtime_error("Failed to find merge base");
     }
 
-    auto commitsHistory = repo.CommitsHistory();
+    auto commitsHistory = repo->CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
     auto commitsToRebase = commitsHistory.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
 
@@ -187,7 +187,7 @@ auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<Rebas
 
 auto Rebase::startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
 {
-    const auto branches = repo.Branches();
+    const auto branches = repo->Branches();
     const auto upstreamHash = refs.getRefHash(upstream);
     const auto headRef = refs.getRefHash("HEAD");
 
@@ -195,7 +195,7 @@ auto Rebase::startRebase(const std::string_view upstream, const std::vector<Reba
     rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranchName());
     rebaseFilesHelper.createOntoFile(upstreamHash);
     rebaseFilesHelper.createRebaseOrigHeadFile(headRef);
-    _details::GitFilesHelper{ repo }.setOrigHeadFile(headRef);
+    _details::GitFilesHelper{ *repo }.setOrigHeadFile(headRef);
     rebaseFilesHelper.generateTodoFile(rebaseCommands);
 
     branches.detachHead(upstreamHash);
@@ -379,7 +379,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-        const auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo);
+        const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo);
         refs.updateRefHash("HEAD", newCommitHash);
 
         return Error::NO_ERROR;
@@ -394,7 +394,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         return Error::REBASE_SQUASH;
     }
 
-    const auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo);
+    const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo);
     refs.updateRefHash("HEAD", newCommitHash);
 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
@@ -430,7 +430,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     const auto headCommitHash = commits.getHeadCommitHash();
     const auto headCommitInfo = commits.getCommitInfo(headCommitHash);
-    const auto newCommitHash = _details::AmendCommit{ repo }.amend(headCommitInfo, messageSquash);
+    const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo, messageSquash);
     refs.updateRefHash("HEAD", newCommitHash);
 
     return Error::NO_ERROR;
@@ -469,7 +469,7 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
         "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
     };
 
-    auto newCommitHash = _details::CreateCommit{ repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
+    auto newCommitHash = _details::CreateCommit{ *repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
     refs.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;

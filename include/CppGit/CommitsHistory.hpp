@@ -132,7 +132,8 @@ public:
     auto resetMessagePattern() -> CommitsHistory&;
 
 private:
-    const Repository& repo_;
+    const Repository* repo_;
+
     bool allBranches_{ false };
     int maxCount_{ -1 };
     int skip_{ -1 };

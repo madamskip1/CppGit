@@ -21,7 +21,7 @@ public:
     auto resetIndexToTree(const std::string_view treeHash) const -> void;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     auto copyIndexToWorktreeImpl(const bool force) const -> void;
 };

@@ -81,7 +81,7 @@ public:
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void
     {
-        const auto output = repo.executeGitCommand("restore", std::forward<Args>(args)...);
+        const auto output = repo->executeGitCommand("restore", std::forward<Args>(args)...);
 
         if (output.return_code != 0)
         {
@@ -146,7 +146,7 @@ public:
     [[nodiscard]] auto isDirty() const -> bool;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     auto getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>;
     auto getUntrackedAndIndexFilesList(const std::string_view pattern = "") const -> std::vector<std::string>;

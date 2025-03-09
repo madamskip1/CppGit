@@ -138,7 +138,7 @@ public:
     [[nodiscard]] auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 };

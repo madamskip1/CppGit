@@ -78,10 +78,10 @@ public:
     auto continueMerge() const -> std::expected<std::string, Error>;
 
 private:
-    const Repository& repo;
-    const _details::CreateCommit _createCommit;
-    const _details::ThreeWayMerge _threeWayMerge;
-    const _details::IndexWorktree _indexWorktree;
+    const Repository* repo;
+    _details::CreateCommit _createCommit;
+    _details::ThreeWayMerge _threeWayMerge;
+    _details::IndexWorktree _indexWorktree;
 
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;

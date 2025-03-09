@@ -14,9 +14,7 @@ class Diff
 {
 public:
     /// @param repo The repository to work with
-    explicit Diff(const Repository& repo)
-        : repo(repo)
-    { }
+    explicit Diff(const Repository& repo);
 
     /// @brief Get the diff of last commit
     /// @return A vector of DiffFile
@@ -53,7 +51,7 @@ public:
     [[nodiscard]] auto getDiffFile(const std::string_view commitHashA, const std::string_view commitHashB, const std::filesystem::path& path) const -> std::vector<DiffFile>;
 
 private:
-    const Repository& repo;
+    const Repository* repo;
 
     static auto getDiffFilesFromOutput(const GitCommandOutput& output) -> std::vector<DiffFile>;
 };

@@ -48,9 +48,9 @@ public:
     [[nodiscard]] auto isCherryPickInProgress() const -> bool;
 
 private:
-    const Repository& repo;
-    const _details::CreateCommit _createCommit;
-    const _details::ApplyDiff _applyDiff;
+    const Repository* repo;
+    _details::CreateCommit _createCommit;
+    _details::ApplyDiff _applyDiff;
 
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;

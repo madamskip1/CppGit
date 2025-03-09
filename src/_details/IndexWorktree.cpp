@@ -8,7 +8,7 @@
 namespace CppGit::_details {
 
 IndexWorktree::IndexWorktree(const Repository& repo)
-    : repo(repo)
+    : repo(&repo)
 {
 }
 
@@ -26,7 +26,7 @@ auto IndexWorktree::copyForceIndexToWorktree() const -> void
 
 auto IndexWorktree::resetIndexToTree(const std::string_view treeHash) const -> void
 {
-    const auto output = repo.executeGitCommand("read-tree", "--reset", "-u", treeHash);
+    const auto output = repo->executeGitCommand("read-tree", "--reset", "-u", treeHash);
 
     if (output.return_code != 0)
     {
@@ -36,7 +36,7 @@ auto IndexWorktree::resetIndexToTree(const std::string_view treeHash) const -> v
 
 auto IndexWorktree::copyIndexToWorktreeImpl(const bool force) const -> void
 {
-    const auto output = repo.executeGitCommand("checkout-index", "--all", (force ? "--force" : ""));
+    const auto output = repo->executeGitCommand("checkout-index", "--all", (force ? "--force" : ""));
 
     if (output.return_code != 0)
     {
