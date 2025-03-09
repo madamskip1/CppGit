@@ -23,6 +23,7 @@ enum class Error : uint8_t
     REBASE_REWORD,         ///< Stop at reword during rebase
     REBASE_SQUASH,         ///<  Stop at squash during rebase
     REBASE_EDIT,           ///< Stopped at edit during rebase
+    REBASE_EMPTY_DIFF,     ///< Empty diff during rebase (used only internally)
 
     // MERGE
     MERGE_NOTHING_TO_MERGE,       ///< Nothing to merge

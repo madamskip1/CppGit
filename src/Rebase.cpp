@@ -229,7 +229,7 @@ auto Rebase::processTodoList() const -> Error
         const auto todoResult = processTodoCommand(todoCommandValue);
         rebaseFilesHelper.appendDoneFile(todoCommandValue);
 
-        if (todoResult != Error::NO_ERROR)
+        if (todoResult != Error::NO_ERROR && todoResult != Error::REBASE_EMPTY_DIFF)
         {
             return todoResult;
         }
@@ -289,9 +289,17 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
 
     if (!pickResult.has_value())
     {
+        auto error = pickResult.error();
+
+        if (error == Error::REBASE_EMPTY_DIFF)
+        {
+            return error;
+        }
+
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
-        return pickResult.error();
+
+        return error;
     }
 
     if (isNextCommandFixupOrSquash())
@@ -318,7 +326,7 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
 
-    if (!pickResult.has_value())
+    if (!pickResult.has_value() && pickResult.error() != Error::REBASE_EMPTY_DIFF)
     {
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         return pickResult.error();
@@ -336,7 +344,7 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
 
-    if (!pickResult.has_value())
+    if (!pickResult.has_value() && pickResult.error() != Error::REBASE_EMPTY_DIFF)
     {
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         return pickResult.error();
@@ -445,9 +453,9 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
 
     const auto applyDiffResult = applyDiff.apply(commitInfo.getHash());
 
-    if (applyDiffResult == _details::ApplyDiffResult::EMPTY_DIFF || applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
+    if (applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
-        // TODO: what to do with empty commits?
+        return std::unexpected{ Error::REBASE_EMPTY_DIFF };
     }
 
     if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
