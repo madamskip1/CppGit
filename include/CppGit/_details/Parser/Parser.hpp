@@ -38,7 +38,7 @@ public:
     /// @param delimiter Delimiter
     /// @return Size of delimiter
     template <typename T>
-    [[nodiscard]] static auto getDelimiterSize(const T& delimiter) -> std::size_t
+    [[nodiscard]] static constexpr auto getDelimiterSize(const T& delimiter) -> std::size_t
     {
         if constexpr (std::is_same_v<T, char>)
         {
@@ -58,7 +58,7 @@ public:
     /// @param begin Begin string_view iterator
     /// @param end End string_view iterator
     /// @return String_view
-    [[nodiscard]] static auto string_viewIteratorToString_view(const std::string_view::const_iterator& begin, const std::string_view::const_iterator& end) -> std::string_view
+    [[nodiscard]] static constexpr auto string_viewIteratorToString_view(const std::string_view::const_iterator& begin, const std::string_view::const_iterator& end) -> std::string_view
     {
         const auto count = static_cast<std::string_view::size_type>(end - begin);
         return std::string_view{ begin, count };
