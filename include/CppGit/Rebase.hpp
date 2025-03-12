@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Branches.hpp"
 #include "Commits.hpp"
 #include "Error.hpp"
 #include "RebaseTodoCommand.hpp"
@@ -86,6 +87,7 @@ private:
     const Repository* repo;
 
     Commits commits;
+    Branches branches;
     _details::Refs refs;
     _details::IndexWorktree indexWorktree;
     _details::RebaseFilesHelper rebaseFilesHelper;

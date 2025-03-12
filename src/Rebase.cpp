@@ -26,6 +26,7 @@ namespace CppGit {
 Rebase::Rebase(const Repository& repo)
     : repo{ &repo },
       commits{ repo },
+      branches{ repo },
       refs{ repo },
       indexWorktree{ repo },
       rebaseFilesHelper{ repo },
@@ -189,7 +190,6 @@ auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<Rebas
 
 auto Rebase::startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
 {
-    const auto branches = repo->Branches();
     const auto upstreamHash = refs.getRefHash(upstream);
     const auto headRef = refs.getRefHash("HEAD");
 
@@ -446,9 +446,7 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
     if (headCommitHash == pickedParent)
     {
         // can FastForward
-        indexWorktree.resetIndexToTree(commitInfo.getHash());
-        indexWorktree.copyForceIndexToWorktree();
-        refs.detachHead(commitInfo.getHash());
+        branches.detachHead(commitInfo.getHash());
 
         return commitInfo.getHash();
     }
