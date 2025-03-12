@@ -6,6 +6,7 @@
 #include "CppGit/Repository.hpp"
 #include "CppGit/Reset.hpp"
 #include "CppGit/_details/ApplyDiff.hpp"
+#include "CppGit/_details/CreateCommit.hpp"
 #include "CppGit/_details/FileUtility.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/Refs.hpp"
@@ -21,9 +22,7 @@
 namespace CppGit {
 
 CherryPick::CherryPick(const Repository& repo)
-    : repo(&repo),
-      _createCommit(repo),
-      _applyDiff(repo)
+    : repo{ &repo }
 {
 }
 
@@ -36,7 +35,7 @@ auto CherryPick::cherryPickCommit(const std::string_view commitHash, const Cherr
 
     _details::GitFilesHelper{ *repo }.setOrigHeadFile(repo->Commits().getHeadCommitHash());
 
-    const auto applyDiffResult = _applyDiff.apply(commitHash);
+    const auto applyDiffResult = _details::ApplyDiff{ *repo }.apply(commitHash);
 
     if (applyDiffResult == _details::ApplyDiffResult::EMPTY_DIFF || applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
@@ -91,7 +90,7 @@ auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> 
     };
 
     auto parent = commits.hasAnyCommits() ? commits.getHeadCommitHash() : std::string{};
-    auto newCommitHash = _createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
+    auto newCommitHash = _details::CreateCommit{ *repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { parent }, envp);
     _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;

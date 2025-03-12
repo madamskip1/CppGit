@@ -1,4 +1,6 @@
 #include "Repository.hpp"
+#include "_details/GitFilesHelper.hpp"
+#include "_details/Refs.hpp"
 
 namespace CppGit {
 
@@ -19,6 +21,9 @@ public:
 
 private:
     const Repository* repo;
+
+    _details::GitFilesHelper gitFilesHelper;
+    _details::Refs refs;
 };
 
 } // namespace CppGit

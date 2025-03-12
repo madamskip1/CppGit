@@ -3,7 +3,7 @@
 #include "Error.hpp"
 #include "Index.hpp"
 #include "Repository.hpp"
-#include "_details/CreateCommit.hpp"
+#include "_details/GitFilesHelper.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
@@ -79,9 +79,10 @@ public:
 
 private:
     const Repository* repo;
-    _details::CreateCommit _createCommit;
-    _details::ThreeWayMerge _threeWayMerge;
-    _details::IndexWorktree _indexWorktree;
+
+    _details::ThreeWayMerge threeWayMerge;
+    _details::IndexWorktree indexWorktree;
+    _details::GitFilesHelper gitFilesHelper;
 
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;
     auto createMergeCommit(const std::string_view sourceBranchRef, const std::string_view targetBranchRef, const std::string_view message, const std::string_view description) const -> std::string;

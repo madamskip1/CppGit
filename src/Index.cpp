@@ -18,7 +18,7 @@
 namespace CppGit {
 
 Index::Index(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

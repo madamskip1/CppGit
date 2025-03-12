@@ -4,6 +4,7 @@
 #include "CppGit/Error.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/Repository.hpp"
+#include "CppGit/_details/IndexWorktree.hpp"
 #include "CppGit/_details/Parser/BranchesParser.hpp"
 
 #include <cstddef>
@@ -16,9 +17,8 @@
 namespace CppGit {
 
 Branches::Branches(const Repository& repo)
-    : repo(&repo),
-      refs(repo),
-      indexWorktree(repo)
+    : repo{ &repo },
+      refs{ repo }
 {
 }
 
@@ -182,6 +182,7 @@ auto Branches::changeHEAD(const std::string_view target) const -> Error
         refs.detachHead(hash);
     }
 
+    const auto indexWorktree = _details::IndexWorktree{ *repo };
     indexWorktree.resetIndexToTree(hash);
     indexWorktree.copyForceIndexToWorktree();
 

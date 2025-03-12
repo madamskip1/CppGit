@@ -4,7 +4,9 @@
 #include "Error.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
+#include "_details/AmendCommit.hpp"
 #include "_details/ApplyDiff.hpp"
+#include "_details/CreateCommit.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/RebaseFilesHelper.hpp"
 #include "_details/Refs.hpp"
@@ -82,11 +84,14 @@ private:
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
     const Repository* repo;
+
     Commits commits;
     _details::Refs refs;
     _details::IndexWorktree indexWorktree;
     _details::RebaseFilesHelper rebaseFilesHelper;
     _details::ApplyDiff applyDiff;
+    _details::AmendCommit amendCommit;
+    _details::CreateCommit createCommit;
 };
 
 } // namespace CppGit

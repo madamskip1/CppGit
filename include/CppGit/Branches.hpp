@@ -3,7 +3,6 @@
 #include "Branch.hpp"
 #include "Error.hpp"
 #include "Repository.hpp"
-#include "_details/IndexWorktree.hpp"
 #include "_details/Refs.hpp"
 
 #include <string>
@@ -101,8 +100,8 @@ private:
     auto changeHEAD(const std::string_view target) const -> Error;
 
     const Repository* repo;
+
     _details::Refs refs;
-    _details::IndexWorktree indexWorktree;
 };
 
 } // namespace CppGit

@@ -2,6 +2,7 @@
 
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/AmendCommit.hpp"
+#include "CppGit/_details/CreateCommit.hpp"
 #include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/Parser/CommitParser.hpp"
@@ -15,8 +16,9 @@
 namespace CppGit {
 
 Commits::Commits(const Repository& repo)
-    : repo(&repo),
-      _createCommit(repo)
+    : repo{ &repo },
+      refs{ repo },
+      gitFilesHelper{ repo }
 {
 }
 
@@ -26,11 +28,11 @@ auto Commits::createCommit(const std::string_view message, const std::string_vie
 
     if (!parent.empty())
     {
-        _details::GitFilesHelper{ *repo }.setOrigHeadFile(parent);
+        gitFilesHelper.setOrigHeadFile(parent);
     }
 
-    const auto newCommitHash = _createCommit.createCommit(message, description, { parent }, {});
-    _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
+    const auto newCommitHash = _details::CreateCommit{ *repo }.createCommit(message, description, { parent }, {});
+    refs.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
@@ -40,9 +42,9 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
     const auto headCommitHash = getHeadCommitHash();
     const auto commitInfo = getCommitInfo(headCommitHash);
 
-    _details::GitFilesHelper{ *repo }.setOrigHeadFile(headCommitHash);
+    gitFilesHelper.setOrigHeadFile(headCommitHash);
     const auto newCommitHash = _details::AmendCommit{ *repo }.amend(commitInfo, message, description);
-    _details::Refs{ *repo }.updateRefHash("HEAD", newCommitHash);
+    refs.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
@@ -65,7 +67,6 @@ auto Commits::hasAnyCommits() const -> bool
 
 auto Commits::getHeadCommitHash() const -> std::string
 {
-    const auto refs = _details::Refs{ *repo };
     return refs.getRefHash("HEAD");
 }
 

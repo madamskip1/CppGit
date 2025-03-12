@@ -8,20 +8,20 @@
 namespace CppGit {
 
 Commit::Commit(std::string hash, std::vector<std::string> parents, Signature author, std::string authorDate, Signature committer, std::string committerDate, std::string message, std::string description, std::string treeHash)
-    : hash(std::move(hash)),
-      authorDate(std::move(authorDate)),
-      committerDate(std::move(committerDate)),
-      message(std::move(message)),
-      description(std::move(description)),
-      treeHash(std::move(treeHash)),
-      author(std::move(author)),
-      committer(std::move(committer)),
-      parents(std::move(parents))
+    : hash{ std::move(hash) },
+      authorDate{ std::move(authorDate) },
+      committerDate{ std::move(committerDate) },
+      message{ std::move(message) },
+      description{ std::move(description) },
+      treeHash{ std::move(treeHash) },
+      author{ std::move(author) },
+      committer{ std::move(committer) },
+      parents{ std::move(parents) }
 {
 }
 
 Commit::Commit(std::string hash, std::vector<std::string> parents, std::string authorName, std::string authorEmail, std::string authorDate, std::string committerName, std::string committerEmail, std::string committerDate, std::string message, std::string description, std::string treeHash)
-    : Commit(std::move(hash), std::move(parents), Signature(std::move(authorName), std::move(authorEmail)), std::move(authorDate), Signature(std::move(committerName), std::move(committerEmail)), std::move(committerDate), std::move(message), std::move(description), std::move(treeHash))
+    : Commit{ std::move(hash), std::move(parents), Signature(std::move(authorName), std::move(authorEmail)), std::move(authorDate), Signature(std::move(committerName), std::move(committerEmail)), std::move(committerDate), std::move(message), std::move(description), std::move(treeHash) }
 {
 }
 

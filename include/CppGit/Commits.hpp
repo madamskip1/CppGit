@@ -2,7 +2,8 @@
 
 #include "Commit.hpp"
 #include "Repository.hpp"
-#include "_details/CreateCommit.hpp"
+#include "_details/GitFilesHelper.hpp"
+#include "_details/Refs.hpp"
 
 #include <string>
 #include <string_view>
@@ -42,7 +43,9 @@ public:
 
 private:
     const Repository* repo;
-    _details::CreateCommit _createCommit;
+
+    _details::Refs refs;
+    _details::GitFilesHelper gitFilesHelper;
 };
 
 } // namespace CppGit

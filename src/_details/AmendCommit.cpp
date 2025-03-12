@@ -22,12 +22,13 @@ auto AmendCommit::amend(const Commit& commit, const std::string_view newMessage,
     envp.emplace_back("GIT_AUTHOR_EMAIL=" + commit.getAuthor().email);
     envp.emplace_back("GIT_AUTHOR_DATE=" + commit.getAuthorDate());
 
+    const auto createCommit = CreateCommit{ *repo };
     if (!newMessage.empty())
     {
-        return CreateCommit{ *repo }.createCommit(newMessage, newDescription, commit.getParents(), envp);
+        return createCommit.createCommit(newMessage, newDescription, commit.getParents(), envp);
     }
 
-    return CreateCommit{ *repo }.createCommit(commit.getMessage(), commit.getDescription(), commit.getParents(), envp);
+    return createCommit.createCommit(commit.getMessage(), commit.getDescription(), commit.getParents(), envp);
 }
 
 } // namespace CppGit::_details

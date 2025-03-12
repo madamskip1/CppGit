@@ -8,7 +8,7 @@
 namespace CppGit::_details {
 
 IndexWorktree::IndexWorktree(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

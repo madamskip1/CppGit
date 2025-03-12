@@ -5,7 +5,7 @@
 namespace CppGit::_details {
 
 GitFilesHelper::GitFilesHelper(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 { }
 
 auto GitFilesHelper::setOrigHeadFile(const std::string_view commitHash) const -> void

@@ -29,7 +29,9 @@ Rebase::Rebase(const Repository& repo)
       refs{ repo },
       indexWorktree{ repo },
       rebaseFilesHelper{ repo },
-      applyDiff{ repo }
+      applyDiff{ repo },
+      amendCommit{ repo },
+      createCommit{ repo }
 {
 }
 auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
@@ -97,7 +99,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             if (lastCommand->type != RebaseTodoCommandType::EDIT || Index{ *repo }.areAnyStagedFiles())
             {
                 const auto headCommitInfo = commits.getCommitInfo(hashAfter);
-                hashAfter = _details::AmendCommit{ *repo }.amend(headCommitInfo, messageAndDesc);
+                hashAfter = amendCommit.amend(headCommitInfo, messageAndDesc);
                 refs.updateRefHash("HEAD", hashAfter);
             }
 
@@ -108,7 +110,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
             const auto authorScript = rebaseFilesHelper.getAuthorScriptFile(); // authorScript has struct like envp
             const auto parent = commits.getHeadCommitHash();
 
-            hashAfter = _details::CreateCommit{ *repo }.createCommit(messageAndDesc, { parent }, authorScript);
+            hashAfter = createCommit.createCommit(messageAndDesc, { parent }, authorScript);
             refs.updateRefHash("HEAD", hashAfter);
             rebaseFilesHelper.removeAuthorScriptFile();
         }
@@ -379,7 +381,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-        const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo);
+        const auto newCommitHash = amendCommit.amend(headCommitInfo);
         refs.updateRefHash("HEAD", newCommitHash);
 
         return Error::NO_ERROR;
@@ -394,7 +396,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         return Error::REBASE_SQUASH;
     }
 
-    const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo);
+    const auto newCommitHash = amendCommit.amend(headCommitInfo);
     refs.updateRefHash("HEAD", newCommitHash);
 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
@@ -430,7 +432,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     const auto headCommitHash = commits.getHeadCommitHash();
     const auto headCommitInfo = commits.getCommitInfo(headCommitHash);
-    const auto newCommitHash = _details::AmendCommit{ *repo }.amend(headCommitInfo, messageSquash);
+    const auto newCommitHash = amendCommit.amend(headCommitInfo, messageSquash);
     refs.updateRefHash("HEAD", newCommitHash);
 
     return Error::NO_ERROR;
@@ -469,7 +471,7 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
         "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
     };
 
-    auto newCommitHash = _details::CreateCommit{ *repo }.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
+    auto newCommitHash = createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
     refs.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;

@@ -2,8 +2,6 @@
 
 #include "Error.hpp"
 #include "Repository.hpp"
-#include "_details/ApplyDiff.hpp"
-#include "_details/CreateCommit.hpp"
 
 #include <cstdint>
 #include <expected>
@@ -49,9 +47,6 @@ public:
 
 private:
     const Repository* repo;
-    _details::CreateCommit _createCommit;
-    _details::ApplyDiff _applyDiff;
-
 
     auto commitCherryPicked(const std::string_view commitHash) const -> std::string;
     auto processEmptyDiff(const std::string_view commitHash, const CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>;

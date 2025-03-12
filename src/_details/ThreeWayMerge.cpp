@@ -16,7 +16,7 @@
 namespace CppGit::_details {
 
 ThreeWayMerge::ThreeWayMerge(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

@@ -11,7 +11,7 @@
 namespace CppGit::_details {
 
 Refs::Refs(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

@@ -11,7 +11,7 @@
 namespace CppGit::_details {
 
 CreateCommit::CreateCommit(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

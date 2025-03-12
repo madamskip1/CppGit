@@ -14,7 +14,7 @@
 
 namespace CppGit {
 CommitsHistory::CommitsHistory(const Repository& repo)
-    : repo_(&repo)
+    : repo{ &repo }
 {
 }
 
@@ -197,7 +197,7 @@ auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, con
 auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
-    const auto output = repo_->executeGitCommand("rev-list", std::move(arguments));
+    const auto output = repo->executeGitCommand("rev-list", std::move(arguments));
 
     if (output.return_code != 0)
     {
@@ -215,7 +215,7 @@ auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, c
     arguments.emplace_back("--no-commit-header");
     arguments.emplace_back("--date=raw");
 
-    auto output = repo_->executeGitCommand("rev-list", std::move(arguments));
+    auto output = repo->executeGitCommand("rev-list", std::move(arguments));
 
     if (output.return_code != 0)
     {

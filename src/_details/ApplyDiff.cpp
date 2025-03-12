@@ -15,7 +15,7 @@
 namespace CppGit::_details {
 
 ApplyDiff::ApplyDiff(const Repository& repo)
-    : repo(&repo)
+    : repo{ &repo }
 {
 }
 

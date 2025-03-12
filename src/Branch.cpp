@@ -6,10 +6,10 @@
 namespace CppGit {
 
 Branch::Branch(std::string refName, std::string upstreamPull, std::string upstreamPush, bool isLocalBranch)
-    : refName(std::move(refName)),
-      upstreamPull(std::move(upstreamPull)),
-      upstreamPush(std::move(upstreamPush)),
-      isLocal(isLocalBranch)
+    : refName{ std::move(refName) },
+      upstreamPull{ std::move(upstreamPull) },
+      upstreamPush{ std::move(upstreamPush) },
+      isLocal{ isLocalBranch }
 {
 }
 
