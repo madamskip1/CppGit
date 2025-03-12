@@ -11,6 +11,7 @@
 
 namespace CppGit {
 
+/// @brief Provides internal functionality to parse diff content
 class DiffParser final : protected Parser
 {
 public:

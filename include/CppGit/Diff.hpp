@@ -10,6 +10,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to get the diff of given commits or files
 class Diff
 {
 public:

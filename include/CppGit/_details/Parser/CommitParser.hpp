@@ -7,6 +7,7 @@
 
 namespace CppGit {
 
+/// @brief Provides internal functionality to parse commit logs
 class CommitParser final : protected Parser
 {
 public:

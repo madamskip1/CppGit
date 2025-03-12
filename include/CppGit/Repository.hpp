@@ -25,6 +25,8 @@ class Rebase;         // forward-declaration
 class Reset;          // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
+
+/// @brief Represents a git repository
 class Repository
 {
 public:

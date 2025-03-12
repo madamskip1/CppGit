@@ -6,6 +6,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to reset the repository to a specific commit
 class Reset
 {
 

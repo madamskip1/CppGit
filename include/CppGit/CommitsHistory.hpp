@@ -10,6 +10,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to get the commits log
 class CommitsHistory
 {
 public:

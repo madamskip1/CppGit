@@ -16,6 +16,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to rebase the current branch
 class Rebase
 {
 

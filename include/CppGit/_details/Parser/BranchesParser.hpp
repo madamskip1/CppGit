@@ -7,6 +7,7 @@
 
 namespace CppGit {
 
+/// @brief Provides internal functionality to parse branches
 class BranchesParser final : protected Parser
 {
 public:

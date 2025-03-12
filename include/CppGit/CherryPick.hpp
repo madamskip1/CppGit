@@ -10,13 +10,15 @@
 
 namespace CppGit {
 
+/// @brief Strategy to use when cherry picking an empty commit
 enum class CherryPickEmptyCommitStrategy : uint8_t
 {
-    STOP,
-    DROP,
-    KEEP
+    STOP, ///< Stop cherry picking, when an empty commit is encountered. CherryPicking will be stopped and the user will have to take action
+    DROP, ///< Drop the empty commit
+    KEEP  ///< Keep the empty commit
 };
 
+/// @brief Provides functionality to cherry pick commits
 class CherryPick
 {
 public:

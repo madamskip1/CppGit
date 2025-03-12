@@ -7,6 +7,8 @@
 #include <vector>
 
 namespace CppGit {
+
+/// @brief Provides internal functionality to parse index content
 class IndexParser final : protected Parser
 {
 public:

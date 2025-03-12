@@ -4,6 +4,7 @@
 
 namespace CppGit::_details {
 
+/// @brief Provides internal functionality to work with the index and worktree
 class IndexWorktree
 {
 public:

@@ -7,6 +7,7 @@
 
 namespace CppGit::_details {
 
+/// @brief Provides internal functionality to amend a commit
 class AmendCommit
 {
 public:

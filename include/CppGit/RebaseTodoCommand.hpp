@@ -25,6 +25,7 @@ enum class RebaseTodoCommandType : uint8_t
     UPDATE_REF ///< Update ref. NOT IMPLEMENTED
 };
 
+/// @brief Wrapper for RebaseTodoCommandType to allow implicit conversion to and from std::string
 class RebaseTodoCommandTypeWrapper
 {
 public:
@@ -172,6 +173,7 @@ public:
     }
 };
 
+/// @brief Represents a single command in a rebase todo list
 class RebaseTodoCommand
 {
 public:

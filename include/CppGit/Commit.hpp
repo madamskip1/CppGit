@@ -9,6 +9,7 @@ namespace CppGit {
 
 class Commits;
 
+/// @brief Represents a single commit
 class Commit
 {
     friend Commits;

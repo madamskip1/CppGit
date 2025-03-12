@@ -11,6 +11,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to work with branches
 class Branches
 {
 public:

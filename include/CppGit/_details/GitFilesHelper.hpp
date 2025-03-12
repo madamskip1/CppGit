@@ -4,6 +4,7 @@
 
 namespace CppGit::_details {
 
+/// @brief Provides internal helper methods to work with git files
 class GitFilesHelper
 {
 public:

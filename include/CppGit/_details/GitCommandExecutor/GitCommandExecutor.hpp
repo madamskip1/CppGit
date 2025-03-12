@@ -9,7 +9,7 @@
 
 namespace CppGit {
 
-
+/// @brief Base class for executing git commands
 class GitCommandExecutor
 {
 public:

@@ -9,6 +9,7 @@
 
 namespace CppGit::_details {
 
+/// @brief Provides internal helper methods to work with rebase files
 class RebaseFilesHelper
 {
 public:

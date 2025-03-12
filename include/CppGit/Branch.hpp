@@ -5,6 +5,7 @@
 
 namespace CppGit {
 
+/// @brief Represents a branch in a Git repository
 class Branch
 {
 public:

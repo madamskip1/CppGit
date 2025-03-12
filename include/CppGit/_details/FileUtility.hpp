@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 
+/// @brief Contains file utility functions
 namespace CppGit::_details::FileUtility {
 
 /// @brief Create or overwrite file with given content

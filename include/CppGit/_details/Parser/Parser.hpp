@@ -8,6 +8,7 @@
 
 namespace CppGit {
 
+/// @brief Provides internal helper methods to parse strings
 class Parser
 {
 public:

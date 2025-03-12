@@ -10,6 +10,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to work with commits
 class Commits
 {
 public:

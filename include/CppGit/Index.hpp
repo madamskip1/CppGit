@@ -19,6 +19,7 @@ struct IndexEntry
     std::filesystem::path path; ///< Path to the file
 };
 
+/// @brief Status of the file in the diff-index
 enum class DiffIndexStatus : uint8_t
 {
     ADDED,        // A
@@ -38,6 +39,7 @@ struct DiffIndexEntry
     DiffIndexStatus status; ///< Status of the file
 };
 
+/// @brief Status of the file in the ls-files
 enum class LsFilesStatus : uint8_t
 {
     TRACKED_NOT_UNMERGED_NOT_SKIP_WORKTREE, // H
@@ -57,6 +59,7 @@ struct LsFilesEntry
     LsFilesStatus status; ///< Status of the file
 };
 
+/// @brief Provides functionality to work with the git index
 class Index
 {
 public:

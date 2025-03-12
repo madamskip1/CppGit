@@ -18,6 +18,7 @@ enum class ApplyDiffResult : uint8_t
     CONFLICT    ///< Conflict occurred
 };
 
+/// @brief Provides internal functionality to apply diff
 class ApplyDiff
 {
 public:

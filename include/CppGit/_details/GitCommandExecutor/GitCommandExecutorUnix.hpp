@@ -8,6 +8,8 @@
 #include <vector>
 
 namespace CppGit {
+
+/// @brief Provides functionality to execute git commands on Unix systems
 class GitCommandExecutorUnix : public GitCommandExecutor
 {
 public:

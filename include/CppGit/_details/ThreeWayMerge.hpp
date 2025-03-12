@@ -10,6 +10,7 @@
 
 namespace CppGit::_details {
 
+/// @brief Provides internal functionality to perform a three-way merge
 class ThreeWayMerge
 {
     /// @brief Contains the three blobs of an unmerged file

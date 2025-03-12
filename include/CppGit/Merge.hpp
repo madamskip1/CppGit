@@ -13,6 +13,7 @@
 
 namespace CppGit {
 
+/// @brief Provides functionality to merge branches
 class Merge
 {
 public:
