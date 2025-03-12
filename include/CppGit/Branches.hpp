@@ -34,6 +34,12 @@ public:
     /// @return The name of the current branch
     [[nodiscard]] auto getCurrentBranchName() const -> std::string;
 
+    /// @brief Get the current branch name or the detached commit hash
+    ///     If the HEAD is pointing to a branch it returns the branch name
+    ///     Otherwise, if the HEAD is pointing to a commit it returns the commit hash
+    /// @return The name of the current branch or the detached commit hash
+    [[nodiscard]] auto getCurrentBranchNameOrDetachedHash() const -> std::string;
+
     /// @brief Get the current branch
     /// @return The current branch
     [[nodiscard]] auto getCurrentBranchInfo() const -> Branch;

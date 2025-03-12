@@ -1,6 +1,7 @@
 #include "CppGit/_details/Refs.hpp"
 
 #include "CppGit/Repository.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -98,9 +99,7 @@ auto Refs::createRef(const std::string_view refName, const std::string_view hash
 
 auto Refs::detachHead(const std::string_view commitHash) const -> void
 {
-    auto HEADFile = std::ofstream{ repo->getGitDirectoryPath() / "HEAD" };
-    HEADFile << commitHash;
-    HEADFile.close();
+    GitFilesHelper{ *repo }.setHeadFile(commitHash);
 }
 
 auto Refs::appendPrefixToRefIfNeeded(const std::string_view refName, bool remote) -> std::string

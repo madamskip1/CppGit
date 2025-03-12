@@ -13,4 +13,15 @@ auto GitFilesHelper::setOrigHeadFile(const std::string_view commitHash) const ->
     FileUtility::createOrOverwriteFile(repo->getGitDirectoryPath() / "ORIG_HEAD", commitHash);
 }
 
+
+auto GitFilesHelper::setHeadFile(const std::string_view refName) const -> void
+{
+    FileUtility::createOrOverwriteFile(repo->getGitDirectoryPath() / "HEAD", refName);
+}
+
+
+auto GitFilesHelper::getHeadFile() const -> std::string
+{
+    return FileUtility::readFile(repo->getGitDirectoryPath() / "HEAD");
+}
 } // namespace CppGit::_details

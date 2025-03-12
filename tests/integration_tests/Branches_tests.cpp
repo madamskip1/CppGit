@@ -402,3 +402,30 @@ TEST_F(BranchesTests, createBranchFromDetachedHead)
 
     EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
 }
+
+TEST_F(BranchesTests, getCurrentBranchNameOrDetachedHash_whenHeadPointingToBranch)
+{
+    const auto branches = repository->Branches();
+    auto commits = repository->Commits();
+
+
+    commits.createCommit("Initial commit");
+    const auto currentBranchNameOrDetachedHash = branches.getCurrentBranchNameOrDetachedHash();
+
+
+    EXPECT_EQ(currentBranchNameOrDetachedHash, "refs/heads/main");
+}
+
+TEST_F(BranchesTests, getCurrentBranchNameOrDetachedHash_whenHeadPointingToCommit)
+{
+    const auto branches = repository->Branches();
+    auto commits = repository->Commits();
+
+
+    const auto initialCommitHash = commits.createCommit("Initial commit");
+    branches.detachHead(initialCommitHash);
+    const auto currentBranchNameOrDetachedHash = branches.getCurrentBranchNameOrDetachedHash();
+
+
+    EXPECT_EQ(currentBranchNameOrDetachedHash, initialCommitHash);
+}

@@ -11,6 +11,9 @@ public:
 
     auto setOrigHeadFile(const std::string_view commitHash) const -> void;
 
+    auto setHeadFile(const std::string_view refName) const -> void;
+    auto getHeadFile() const -> std::string;
+
 private:
     const Repository* repo;
 };

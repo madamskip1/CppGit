@@ -4,6 +4,7 @@
 #include "CppGit/Error.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/Repository.hpp"
+#include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/IndexWorktree.hpp"
 #include "CppGit/_details/Parser/BranchesParser.hpp"
 
@@ -54,6 +55,20 @@ auto Branches::getCurrentBranchInfo() const -> Branch
 auto Branches::getCurrentBranchName() const -> std::string
 {
     return refs.getSymbolicRef("HEAD");
+}
+
+
+auto Branches::getCurrentBranchNameOrDetachedHash() const -> std::string
+{
+    const auto gitFilesHelper = _details::GitFilesHelper{ *repo };
+    auto headFileContent = gitFilesHelper.getHeadFile();
+    if (headFileContent.starts_with("ref: "))
+    {
+        constexpr auto REF_PREFIX_SIZE = 5;
+        return headFileContent.substr(REF_PREFIX_SIZE);
+    }
+
+    return headFileContent;
 }
 
 auto Branches::changeCurrentBranch(const std::string_view branchName) const -> Error
