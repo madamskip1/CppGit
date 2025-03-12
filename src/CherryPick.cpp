@@ -79,7 +79,7 @@ auto CherryPick::isCherryPickInProgress() const -> bool
 
 auto CherryPick::commitCherryPicked(const std::string_view commitHash) const -> std::string
 {
-    const auto commits = Commits{ *repo };
+    const auto commits = repo->Commits();
 
     const auto commitInfo = commits.getCommitInfo(commitHash);
 
@@ -135,7 +135,7 @@ auto CherryPick::cherryPickAbort() const -> Error
         return Error::NO_CHERRY_PICK_IN_PROGRESS;
     }
 
-    Reset{ *repo }.resetHard("HEAD");
+    repo->Reset().resetHard("HEAD");
     removeCherryPickHeadFile();
 
     return Error::NO_ERROR;

@@ -97,7 +97,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         {
             hashAfter = commits.getHeadCommitHash();
 
-            if (lastCommand->type != RebaseTodoCommandType::EDIT || Index{ *repo }.areAnyStagedFiles())
+            if (lastCommand->type != RebaseTodoCommandType::EDIT || repo->Index().areAnyStagedFiles())
             {
                 const auto headCommitInfo = commits.getCommitInfo(hashAfter);
                 hashAfter = amendCommit.amend(headCommitInfo, messageAndDesc);

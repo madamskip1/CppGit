@@ -61,7 +61,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
     }
 
     gitFilesHelper.setOrigHeadFile(targetBranchRef);
-    Reset{ *repo }.resetHard(sourceBranchRef);
+    repo->Reset().resetHard(sourceBranchRef);
 
     return sourceBranchRef;
 }
