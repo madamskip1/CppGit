@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../Repository.hpp"
 
 namespace CppGit::_details {

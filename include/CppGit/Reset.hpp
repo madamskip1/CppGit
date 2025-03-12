@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Repository.hpp"
 #include "_details/GitFilesHelper.hpp"
 #include "_details/Refs.hpp"
