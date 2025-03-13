@@ -2,7 +2,6 @@
 
 #include "CppGit/Branches.hpp"
 #include "CppGit/Commits.hpp"
-#include "CppGit/Error.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/Repository.hpp"
 #include "CppGit/Reset.hpp"
@@ -28,12 +27,12 @@ Merge::Merge(const Repository& repo)
 }
 
 
-auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, Error>
+auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, MergeResult>
 {
     return mergeFastForward(sourceBranch, "HEAD");
 }
 
-auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>
+auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, MergeResult>
 {
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
 
@@ -50,7 +49,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
 
     if (ancestor != targetBranchRef)
     {
-        return std::unexpected{ Error::MERGE_FF_BRANCHES_DIVERGENCE };
+        return std::unexpected{ MergeResult::FF_BRANCHES_DIVERGENCE };
     }
 
     gitFilesHelper.setOrigHeadFile(targetBranchRef);
@@ -59,7 +58,7 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::str
     return sourceBranchRef;
 }
 
-auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::expected<std::string, MergeResult>
 {
     const auto index = repo->Index();
 
@@ -73,7 +72,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
     if (mergeBase == sourceBranchRef)
     {
-        return std::unexpected{ Error::MERGE_NOTHING_TO_MERGE };
+        return std::unexpected{ MergeResult::NOTHING_TO_MERGE };
     }
 
     repo->executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
@@ -86,7 +85,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
     {
         startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, "HEAD", message, description);
 
-        return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
+        return std::unexpected{ MergeResult::NO_FF_CONFLICT };
     }
 
     return createMergeCommit(std::move(sourceBranchRef), std::move(targetBranchRef), message, description);
@@ -126,13 +125,8 @@ auto Merge::isMergeInProgress() const -> bool
     return std::filesystem::exists(topLevelPath / ".git/MERGE_HEAD");
 }
 
-auto Merge::isThereAnyConflict() const -> std::expected<bool, Error>
+auto Merge::isThereAnyConflict() const -> bool
 {
-    if (!isMergeInProgress())
-    {
-        return std::unexpected{ Error::NO_MERGE_IN_PROGRESS };
-    }
-
     return isThereAnyConflictImpl();
 }
 
@@ -180,29 +174,17 @@ auto Merge::isThereAnyConflictImpl() const -> bool
     return !gitLsFilesOutput.stdout.empty();
 }
 
-auto Merge::abortMerge() const -> Error
+auto Merge::abortMerge() const -> void
 {
-    if (!isMergeInProgress())
-    {
-        return Error::NO_MERGE_IN_PROGRESS;
-    }
-
     indexWorktree.resetIndexToTree("HEAD");
     removeNoFFMergeFiles();
-
-    return Error::NO_ERROR;
 }
 
-auto Merge::continueMerge() const -> std::expected<std::string, Error>
+auto Merge::continueMerge() const -> std::expected<std::string, MergeResult>
 {
-    if (!isMergeInProgress())
-    {
-        return std::unexpected{ Error::NO_MERGE_IN_PROGRESS };
-    }
-
     if (isThereAnyConflictImpl())
     {
-        return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
+        return std::unexpected{ MergeResult::NO_FF_CONFLICT };
     }
 
     const auto mergeMsg = threeWayMerge.getMergeMsg();

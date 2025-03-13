@@ -1,17 +1,25 @@
 #pragma once
 
-#include "Error.hpp"
 #include "Index.hpp"
 #include "Repository.hpp"
 #include "_details/GitFilesHelper.hpp"
 #include "_details/IndexWorktree.hpp"
 #include "_details/ThreeWayMerge.hpp"
 
+#include <cstdint>
 #include <expected>
 #include <string>
 #include <string_view>
 
 namespace CppGit {
+
+/// @brief Result of a merge operation
+enum class MergeResult : uint8_t
+{
+    NOTHING_TO_MERGE,       ///< Nothing to merge
+    FF_BRANCHES_DIVERGENCE, ///< Branches have diverged
+    NO_FF_CONFLICT,         ///< Conflict during non-fast-forward merge
+};
 
 /// @brief Provides functionality to merge branches
 class Merge
@@ -23,22 +31,22 @@ public:
     /// @brief Merge source branch onto current branch using fast-forward merge
     ///    Will fail if merge fast-forward is not possible
     /// @param sourceBranch Source branch name to merge
-    /// @return Source branch's commit hash if merge FF is successful, otherwise error code
-    auto mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, Error>;
+    /// @return Source branch's commit hash if merge FF is successful, otherwise Merge Result error code
+    auto mergeFastForward(const std::string_view sourceBranch) const -> std::expected<std::string, MergeResult>;
 
     /// @brief Merge source branch onto target branch using fast-forward
     ///     Will fail if merge fast-forward is not possible
     /// @param sourceBranch Source branch name to merge
     /// @param targetBranch Target branch name to merge onto
-    /// @return Source branch's commit hash if merge FF is successful, otherwise error code
-    auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>;
+    /// @return Source branch's commit hash if merge FF is successful, otherwise Merge Result error code
+    auto mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, MergeResult>;
 
     /// @brief Merge source branch onto current branch using no-fast-forward merge
     /// @param sourceBranch Source branch name to merge
     /// @param message Merge commit message
     /// @param description Merge commit description (optional)
-    /// @return Merge commit hash if merge No-FF is successful, otherwise error code
-    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
+    /// @return Merge commit hash if merge No-FF is successful, otherwise Merge Result error code
+    auto mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, MergeResult>;
 
     /// @brief Check whether fast-forward merge source branch onto current branch is possible
     /// @param sourceBranch Source branch name that would be merged
@@ -68,15 +76,14 @@ public:
 
     /// @brief Check whether there is any conflict in current merge
     /// @return True if there is any conflict, otherwise false
-    [[nodiscard]] auto isThereAnyConflict() const -> std::expected<bool, Error>;
+    [[nodiscard]] auto isThereAnyConflict() const -> bool;
 
     /// @brief Abort current merge in progress
-    /// @return Error code if there is no merge in progress, otherwise no error
-    auto abortMerge() const -> Error;
+    auto abortMerge() const -> void;
 
     /// @brief Continue current merge in progress
-    /// @return Merge commit hash if merge is successful, otherwise error code
-    auto continueMerge() const -> std::expected<std::string, Error>;
+    /// @return Merge commit hash if merge is successful, otherwise Merge Result error code
+    auto continueMerge() const -> std::expected<std::string, MergeResult>;
 
 private:
     const Repository* repo;

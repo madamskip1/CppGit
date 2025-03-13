@@ -24,12 +24,6 @@ enum class Error : uint8_t
     REBASE_EDIT,            ///< Stopped at edit during rebase
     REBASE_EMPTY_DIFF,      ///< Empty diff during rebase (used only internally)
     REBASE_UNKNOWN_COMMAND, ///< Unknown command during rebase
-
-    // MERGE
-    MERGE_NOTHING_TO_MERGE,       ///< Nothing to merge
-    MERGE_FF_BRANCHES_DIVERGENCE, ///< Branches have diverged
-    MERGE_NO_FF_CONFLICT,         ///< Conflict during non-fast-forward merge
-    NO_MERGE_IN_PROGRESS,         ///< No merge in progress
 };
 
 } // namespace CppGit
