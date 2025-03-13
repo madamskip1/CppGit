@@ -1,5 +1,4 @@
 #pragma once
-#include "Error.hpp"
 #include "Repository.hpp"
 
 #include <cstdint>
@@ -69,14 +68,12 @@ public:
 
     /// @brief Add a file to the index
     /// @param filePattern File(s) pattern
-    /// @return Error code
-    auto add(const std::string_view filePattern) const -> Error;
+    auto add(const std::string_view filePattern) const -> void;
 
     /// @brief Remove a file from the index
     /// @param filePattern File(s) pattern
     /// @param force Whether to force remove
-    /// @return Error code
-    auto remove(const std::string_view filePattern, const bool force = false) const -> Error;
+    auto remove(const std::string_view filePattern, const bool force = false) const -> void;
 
     /// @brief Remove file(s) from stagged state
     /// @tparam Args File(s) arguments types
@@ -84,12 +81,7 @@ public:
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void
     {
-        const auto output = repo->executeGitCommand("restore", std::forward<Args>(args)...);
-
-        if (output.return_code != 0)
-        {
-            throw std::runtime_error("Failed to restore file");
-        }
+        repo->executeGitCommand("restore", std::forward<Args>(args)...);
     }
 
     /// @brief  Remove all files from staged state

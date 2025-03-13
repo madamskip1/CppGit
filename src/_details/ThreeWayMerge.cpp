@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -101,12 +100,6 @@ auto ThreeWayMerge::unpackFile(const std::string_view fileBlob) const -> std::st
     }
 
     auto output = repo->executeGitCommand("unpack-file", fileBlob);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to unpack file");
-    }
-
     return std::move(output.stdout);
 }
 

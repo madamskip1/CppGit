@@ -10,20 +10,6 @@ class MergeTests : public BaseRepositoryFixture
 {
 };
 
-TEST_F(MergeTests, canFastForward_emptyRepo_sameBranch)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(static_cast<void>(merge.canFastForward("main")), std::runtime_error); // Static cast to prevent warning from discard value
-}
-
-TEST_F(MergeTests, canFastForward_emptyRepo_head)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(static_cast<void>(merge.canFastForward("HEAD")), std::runtime_error); // Static cast to prevent warning from discard value
-}
-
 TEST_F(MergeTests, canFastForward_sameBranch)
 {
     const auto commits = repository->Commits();
@@ -107,20 +93,6 @@ TEST_F(MergeTests, canFastForward_changesInBothBranches)
     EXPECT_FALSE(merge.canFastForward("main"));
 }
 
-TEST_F(MergeTests, anythingToMerge_emptyRepo_sameBranch)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(static_cast<void>(merge.isAnythingToMerge("main")), std::runtime_error); // Static cast to prevent warning from discard value
-}
-
-TEST_F(MergeTests, anythingToMerge_emptyRepo_head)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(static_cast<void>(merge.isAnythingToMerge("HEAD")), std::runtime_error); // Static cast to prevent warning from discard value
-}
-
 TEST_F(MergeTests, anythingToMerge_sameBranch)
 {
     const auto commits = repository->Commits();
@@ -201,13 +173,6 @@ TEST_F(MergeTests, anythingToMerge_changesInBothBranches)
 
 
     EXPECT_TRUE(merge.isAnythingToMerge("main"));
-}
-
-TEST_F(MergeTests, mergeFastForward_emptyRepo_sameBranch)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(merge.mergeFastForward("main"), std::runtime_error);
 }
 
 TEST_F(MergeTests, mergeFastForward_sameBranch)
@@ -306,29 +271,6 @@ TEST_F(MergeTests, mergeFastForward_changesInBothBranches)
     EXPECT_EQ(mergeFFResult.error(), CppGit::Error::MERGE_FF_BRANCHES_DIVERGENCE);
 }
 
-TEST_F(MergeTests, mergeFastForward_dirtyRepo)
-{
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
-
-
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-
-    const auto mergeFFResult = merge.mergeFastForward("main");
-
-
-    ASSERT_FALSE(mergeFFResult.has_value());
-    EXPECT_EQ(mergeFFResult.error(), CppGit::Error::DIRTY_WORKTREE);
-}
-
 TEST_F(MergeTests, mergeFastForward_untrackedFile)
 {
     const auto commits = repository->Commits();
@@ -348,13 +290,6 @@ TEST_F(MergeTests, mergeFastForward_untrackedFile)
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), secondCommitHash);
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
-}
-
-TEST_F(MergeTests, mergeNoFastForward_emptyRepo_sameBranch)
-{
-    const auto merge = repository->Merge();
-
-    EXPECT_THROW(merge.mergeNoFastForward("main", "Merge commit"), std::runtime_error);
 }
 
 TEST_F(MergeTests, mergeNoFastForward_sameBranch)
@@ -440,29 +375,6 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
     EXPECT_EQ(mergeNoFFResult.error(), CppGit::Error::MERGE_NOTHING_TO_MERGE);
-}
-
-TEST_F(MergeTests, mergeNoFastForward_dirtyRepo)
-{
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto index = repository->Index();
-    const auto merge = repository->Merge();
-
-
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-
-    const auto mergeNoFFResult = merge.mergeNoFastForward("second_branch", "merge commit");
-
-
-    ASSERT_FALSE(mergeNoFFResult.has_value());
-    EXPECT_EQ(mergeNoFFResult.error(), CppGit::Error::DIRTY_WORKTREE);
 }
 
 TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)

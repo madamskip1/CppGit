@@ -41,12 +41,6 @@ TEST(IndexParserTests, parseStagedListCache)
     EXPECT_EQ(indexEntries[1], "file.exe");
 }
 
-TEST(IndexParserTests, parseStageDetailedEntry_Empty)
-{
-    constexpr auto* indexEntryLine = "";
-    EXPECT_THROW(CppGit::IndexParser::parseStageDetailedEntry(indexEntryLine), std::runtime_error);
-}
-
 TEST(IndexParserTests, parseStageDetailedList_Empty)
 {
     constexpr auto* indexContent = "";
@@ -133,12 +127,6 @@ TEST(IndexParserTests, parseDiffIndexWithStatusEntry_Unknown)
 
     EXPECT_EQ(diffIndexEntry.path, "file.txt");
     EXPECT_EQ(diffIndexEntry.status, CppGit::DiffIndexStatus::UNKNOWN);
-}
-
-TEST(IndexParserTests, parseDiffIndexWithStatusEntry_Empty)
-{
-    constexpr auto* diffIndexLine = "";
-    EXPECT_THROW(CppGit::IndexParser::parseDiffIndexWithStatusEntry(diffIndexLine), std::runtime_error);
 }
 
 TEST(IndexParserTests, parseDiffIndexWithStatus_Empty)
@@ -235,12 +223,6 @@ TEST(IndexParserTests, parseLsFilesEntry_ResolveUndo)
 
     EXPECT_EQ(lsFilesEntry.path, "file.txt");
     EXPECT_EQ(lsFilesEntry.status, CppGit::LsFilesStatus::RESOLVE_UNDO);
-}
-
-TEST(IndexParserTests, parseLsFilesEntry_Empty)
-{
-    constexpr auto* lsFilesLine = "";
-    EXPECT_THROW(CppGit::IndexParser::parseLsFilesEntry(lsFilesLine), std::runtime_error);
 }
 
 TEST(IndexParserTests, parseLsFilesList_Empty)

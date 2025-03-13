@@ -6,7 +6,6 @@
 #include "CppGit/_details/Parser/Parser.hpp"
 
 #include <format>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -199,11 +198,6 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
     auto arguments = prepareCommandsArgument(fromRef, toRef);
     const auto output = repo->executeGitCommand("rev-list", std::move(arguments));
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while getting commits log hashes");
-    }
-
     return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
@@ -216,11 +210,6 @@ auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, c
     arguments.emplace_back("--date=raw");
 
     auto output = repo->executeGitCommand("rev-list", std::move(arguments));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while getting commits log detailed");
-    }
 
     auto commits = std::vector<Commit>();
     output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line

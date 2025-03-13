@@ -1,7 +1,6 @@
 #include "CppGit/Branches.hpp"
 
 #include "CppGit/Branch.hpp"
-#include "CppGit/Error.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
@@ -9,7 +8,6 @@
 #include "CppGit/_details/Parser/BranchesParser.hpp"
 
 #include <cstddef>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -43,11 +41,6 @@ auto Branches::getCurrentBranchInfo() const -> Branch
     auto currentBranchName = getCurrentBranchName();
     const auto output = repo->executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, std::move(currentBranchName));
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get current branch");
-    }
-
     const auto branch = BranchesParser::parseBranch(output.stdout);
     return branch;
 }
@@ -71,21 +64,20 @@ auto Branches::getCurrentBranchNameOrDetachedHash() const -> std::string
     return headFileContent;
 }
 
-auto Branches::changeCurrentBranch(const std::string_view branchName) const -> Error
+auto Branches::changeCurrentBranch(const std::string_view branchName) const -> void
 {
     const auto branchNameWithPrefix = _details::Refs::appendPrefixToRefIfNeeded(branchName, false);
-
-    return changeHEAD(branchNameWithPrefix);
+    changeHEAD(branchNameWithPrefix);
 }
 
-auto Branches::changeCurrentBranch(const Branch& branch) const -> Error
+auto Branches::changeCurrentBranch(const Branch& branch) const -> void
 {
-    return changeCurrentBranch(branch.getRefName());
+    changeCurrentBranch(branch.getRefName());
 }
 
-auto Branches::detachHead(const std::string_view commitHash) const -> Error
+auto Branches::detachHead(const std::string_view commitHash) const -> void
 {
-    return changeHEAD(commitHash);
+    changeHEAD(commitHash);
 }
 
 auto Branches::branchExists(const std::string_view branchName, bool remote) const -> bool
@@ -144,11 +136,6 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
 
     const auto output = repo->executeGitCommand("for-each-ref", "--format=" + std::string{ BranchesParser::BRANCHES_FORMAT }, argLocal, argRemote);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get branches");
-    }
-
     const auto& outputStdoutSV = std::string_view{ output.stdout };
     std::vector<Branch> branches;
     std::size_t start = 0;
@@ -172,14 +159,8 @@ auto Branches::getBranchesImpl(bool local, bool remote) const -> std::vector<Bra
     return branches;
 }
 
-auto Branches::changeHEAD(const std::string_view target) const -> Error
+auto Branches::changeHEAD(const std::string_view target) const -> void
 {
-
-    if (const auto index = repo->Index(); index.isDirty())
-    {
-        return Error::DIRTY_WORKTREE;
-    }
-
     const auto hash = [&target, this]() {
         if (target.starts_with("refs/"))
         {
@@ -200,8 +181,6 @@ auto Branches::changeHEAD(const std::string_view target) const -> Error
     const auto indexWorktree = _details::IndexWorktree{ *repo };
     indexWorktree.resetIndexToTree(hash);
     indexWorktree.copyForceIndexToWorktree();
-
-    return Error::NO_ERROR;
 }
 
 } // namespace CppGit

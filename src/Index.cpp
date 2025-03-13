@@ -1,15 +1,12 @@
 #include "CppGit/Index.hpp"
 
-#include "CppGit/Commit.hpp"
 #include "CppGit/Commits.hpp"
-#include "CppGit/Error.hpp"
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/Parser/IndexParser.hpp"
 #include "CppGit/_details/Parser/Parser.hpp"
 
 #include <algorithm>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -22,13 +19,13 @@ Index::Index(const Repository& repo)
 {
 }
 
-auto Index::add(const std::string_view filePattern) const -> Error
+auto Index::add(const std::string_view filePattern) const -> void
 {
     auto filesList = getUntrackedAndIndexFilesList(filePattern);
 
     if (filesList.empty())
     {
-        return Error::PATTERN_NOT_MATCHING_ANY_FILES;
+        return;
     }
 
     auto args = std::vector<std::string>{};
@@ -46,23 +43,16 @@ auto Index::add(const std::string_view filePattern) const -> Error
                        return std::forward<decltype(file)>(file);
                    });
 
-    const auto output = repo->executeGitCommand("update-index", std::move(args));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while updating index.");
-    }
-
-    return Error::NO_ERROR;
+    repo->executeGitCommand("update-index", std::move(args));
 }
 
-auto Index::remove(const std::string_view filePattern, const bool force) const -> Error
+auto Index::remove(const std::string_view filePattern, const bool force) const -> void
 {
     auto filesList = getFilesInIndexList(filePattern);
 
     if (filesList.empty())
     {
-        return Error::PATTERN_NOT_MATCHING_ANY_FILES;
+        return;
     }
 
     auto args = std::vector<std::string>{};
@@ -84,14 +74,7 @@ auto Index::remove(const std::string_view filePattern, const bool force) const -
                        return std::forward<decltype(file)>(file);
                    });
 
-    const auto output = repo->executeGitCommand("update-index", std::move(args));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Error while updating index.");
-    }
-
-    return Error::NO_ERROR;
+    repo->executeGitCommand("update-index", std::move(args));
 }
 
 auto Index::restoreAllStaged() const -> void
@@ -127,12 +110,7 @@ auto Index::restoreAllStaged() const -> void
         args.push_back(std::move(fileInfo));
     }
 
-    const auto output = repo->executeGitCommand("update-index", std::move(args));
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to restore all staged files");
-    }
+    repo->executeGitCommand("update-index", std::move(args));
 }
 
 auto Index::isFileStaged(const std::string_view file) const -> bool
@@ -146,22 +124,12 @@ auto Index::getFilesInIndexList(const std::string_view filePattern) const -> std
 {
     const auto output = repo->executeGitCommand("ls-files", "--cache", "--", filePattern);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
-
     return IndexParser::parseStageSimpleCacheList(output.stdout);
 }
 
 auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) const -> std::vector<IndexEntry>
 {
     const auto output = repo->executeGitCommand("ls-files", "--stage", "--", filePattern);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
 
     return IndexParser::parseStageDetailedList(output.stdout);
 }
@@ -170,11 +138,6 @@ auto Index::getFilesInIndexListWithDetails(const std::string_view filePattern) c
 auto Index::getUntrackedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
     const auto output = repo->executeGitCommand("ls-files", "--others", "--exclude-standard", "--", filePattern);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list untracked files");
-    }
 
     if (output.stdout.empty())
     {
@@ -199,23 +162,12 @@ auto Index::getStagedFilesList(const std::string_view filePattern) const -> std:
 auto Index::getStagedFilesListWithStatus(const std::string_view filePattern) const -> std::vector<DiffIndexEntry>
 {
     const auto output = repo->executeGitCommand("diff-index", "--cached", "--name-status", "HEAD", "--", filePattern);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
-
     return IndexParser::parseDiffIndexWithStatus(output.stdout);
 }
 
 auto Index::getNotStagedFilesList(const std::string_view filePattern) const -> std::vector<std::string>
 {
     const auto output = repo->executeGitCommand("ls-files", "--modified", "--deleted", "--others", "--exclude-standard", "--deduplicate", "--", filePattern);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list not staged files");
-    }
 
     if (output.stdout.empty())
     {
@@ -229,11 +181,6 @@ auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) 
 {
     const auto output = repo->executeGitCommand("ls-files", "--unmerged", "--", filePattern);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list unmerged files");
-    }
-
     if (output.stdout.empty())
     {
         return std::vector<IndexEntry>{};
@@ -245,19 +192,12 @@ auto Index::getUnmergedFilesListWithDetails(const std::string_view filePattern) 
 auto Index::areAnyStagedFiles() const -> bool
 {
     const auto output = getStagedFilesListOutput();
-
     return !output.empty();
 }
 
 auto Index::areAnyNotStagedTrackedFiles() const -> bool
 {
     const auto output = repo->executeGitCommand("ls-files", "--modified", "--deleted", "--exclude-standard", "--deduplicate");
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to check if there are any not staged tracked files");
-    }
-
     return !output.stdout.empty();
 }
 
@@ -267,11 +207,6 @@ auto Index::isDirty() const -> bool
     const auto headCommit = commits.getCommitInfo("HEAD");
 
     auto output = repo->executeGitCommand("diff-index", "--quiet", "--exit-code", headCommit.getTreeHash());
-    if (output.return_code > 1)
-    {
-        throw std::runtime_error("Failed to check if index is dirty");
-    }
-
     return output.return_code == 1;
 }
 
@@ -299,11 +234,6 @@ auto Index::getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) co
 
     const auto output = repo->executeGitCommand("ls-tree", std::move(args));
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get head files hash");
-    }
-
     if (output.stdout.empty())
     {
         return {};
@@ -316,11 +246,6 @@ auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const 
 {
     const auto output = repo->executeGitCommand("ls-files", "--others", "--cached", "--exclude-standard", "--", pattern);
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list untracked and index files");
-    }
-
     if (output.stdout.empty())
     {
         return std::vector<std::string>{};
@@ -332,12 +257,6 @@ auto Index::getUntrackedAndIndexFilesList(const std::string_view pattern) const 
 auto Index::getStagedFilesListOutput(const std::string_view filePattern) const -> std::string
 {
     const auto output = repo->executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list staged files");
-    }
-
     return output.stdout;
 }
 

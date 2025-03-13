@@ -265,7 +265,7 @@ TEST_F(ResetTests, resetSoft_detachedHEAD)
 
 
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
-    EXPECT_THROW(static_cast<void>(branches.getCurrentBranchName()), std::runtime_error);
+    EXPECT_EQ(branches.getCurrentBranchNameOrDetachedHash(), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! 2");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }
@@ -293,7 +293,7 @@ TEST_F(ResetTests, resetHard_detachedHEAD)
 
 
     EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
-    EXPECT_THROW(static_cast<void>(branches.getCurrentBranchName()), std::runtime_error);
+    EXPECT_EQ(branches.getCurrentBranchNameOrDetachedHash(), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
 }

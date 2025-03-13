@@ -8,7 +8,6 @@
 #include "CppGit/_details/ThreeWayMerge.hpp"
 
 #include <filesystem>
-#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -56,8 +55,6 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
                 return ApplyDiffResult::CONFLICT;
             }
         }
-
-        throw std::runtime_error("Failed to apply diff");
     }
 
     return ApplyDiffResult::APPLIED;
@@ -66,12 +63,6 @@ auto ApplyDiff::apply(const std::string_view commitHash) const -> ApplyDiffResul
 auto ApplyDiff::getDiff(const std::string_view commitHash) const -> std::string
 {
     auto output = repo->executeGitCommand("diff-tree", "--patch", commitHash);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get diff");
-    }
-
     return std::move(output.stdout);
 }
 

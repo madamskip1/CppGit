@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Branch.hpp"
-#include "Error.hpp"
 #include "Repository.hpp"
 #include "_details/Refs.hpp"
 
@@ -47,19 +46,16 @@ public:
 
     /// @brief Change the current branch
     /// @param branchName The name of the branch to change to
-    /// @return An error code
-    auto changeCurrentBranch(const std::string_view branchName) const -> Error;
+    auto changeCurrentBranch(const std::string_view branchName) const -> void;
 
     /// @brief Change the current branch
     /// @param branch The branch to change to
-    /// @return An error code
-    auto changeCurrentBranch(const Branch& branch) const -> Error;
+    auto changeCurrentBranch(const Branch& branch) const -> void;
 
     /// @brief Detach the HEAD
     ///   Efective it do a checkout to the commit hash
     /// @param commitHash The commit hash to detach the HEAD to
-    /// @return An error code
-    auto detachHead(const std::string_view commitHash) const -> Error;
+    auto detachHead(const std::string_view commitHash) const -> void;
 
     /// @brief Check if a branch exists
     /// @param branchName The name of the branch to check
@@ -104,7 +100,7 @@ public:
 private:
     auto getBranchesImpl(bool local, bool remote) const -> std::vector<Branch>;
 
-    auto changeHEAD(const std::string_view target) const -> Error;
+    auto changeHEAD(const std::string_view target) const -> void;
 
     const Repository* repo;
 

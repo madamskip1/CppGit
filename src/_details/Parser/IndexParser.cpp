@@ -6,7 +6,6 @@
 #include <charconv>
 #include <iterator>
 #include <regex>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -18,10 +17,8 @@ auto IndexParser::parseStageDetailedEntry(const std::string_view indexEntryLine)
     constexpr auto pattern = R"((^\d{6})\s+(.{40})\s+(\d)\s+(\S+)$)";
     auto match = std::cmatch{};
 
-    if (const auto regex = std::regex{ pattern }; !std::regex_match(indexEntryLine.cbegin(), indexEntryLine.cend(), match, regex))
-    {
-        throw std::runtime_error("Invalid index entry line");
-    }
+    const auto regex = std::regex{ pattern };
+    std::regex_match(indexEntryLine.cbegin(), indexEntryLine.cend(), match, regex);
 
     auto fileMode = 0;
     std::from_chars(match[1].first, match[1].second, fileMode);
@@ -108,10 +105,8 @@ auto IndexParser::parseDiffIndexWithStatusEntry(const std::string_view diffIndex
     constexpr auto pattern = R"((\w)\s+(.+))";
     auto match = std::cmatch{};
 
-    if (const auto regex = std::regex{ pattern }; !std::regex_match(diffIndexLine.cbegin(), diffIndexLine.cend(), match, regex))
-    {
-        throw std::runtime_error("Invalid diff index entry line");
-    }
+    const auto regex = std::regex{ pattern };
+    std::regex_match(diffIndexLine.cbegin(), diffIndexLine.cend(), match, regex);
 
     return DiffIndexEntry{ .path = match[2].str(), .status = getDiffIndexStatus(match[1].str()) };
 }
@@ -177,10 +172,8 @@ auto IndexParser::parseLsFilesEntry(const std::string_view lsFilesLine) -> LsFil
     constexpr auto pattern = R"(([\w\?])\s+(.+))";
     auto match = std::cmatch{};
 
-    if (const auto regex = std::regex{ pattern }; !std::regex_match(lsFilesLine.cbegin(), lsFilesLine.cend(), match, regex))
-    {
-        throw std::runtime_error("Invalid ls-files entry line");
-    }
+    const auto regex = std::regex{ pattern };
+    std::regex_match(lsFilesLine.cbegin(), lsFilesLine.cend(), match, regex);
 
     return LsFilesEntry{ .path = match[2].str(), .status = getLsFilesStatus(match[1].str()) };
 }

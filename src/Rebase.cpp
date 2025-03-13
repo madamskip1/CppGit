@@ -17,7 +17,6 @@
 #include <expected>
 #include <filesystem>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -151,11 +150,6 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
 {
     auto rebaseBase = repo->executeGitCommand("merge-base", "HEAD", upstream);
 
-    if (rebaseBase.return_code != 0)
-    {
-        throw std::runtime_error("Failed to find merge base");
-    }
-
     auto commitsHistory = repo->CommitsHistory();
     commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
     auto commitsToRebase = commitsHistory.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
@@ -281,7 +275,7 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return processSquash(rebaseTodoCommand);
     }
 
-    throw std::runtime_error("Todo command not yet implemented");
+    return Error::REBASE_UNKNOWN_COMMAND;
 }
 
 auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error

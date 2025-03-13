@@ -9,12 +9,11 @@
 #include "CppGit/Merge.hpp"
 #include "CppGit/Rebase.hpp"
 #include "CppGit/Reset.hpp"
+#include "CppGit/_details/FileUtility.hpp"
 
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -90,11 +89,6 @@ auto Repository::getTopLevelPath() const -> std::filesystem::path
 {
     auto output = executeGitCommand("rev-parse", "--show-toplevel");
 
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get top level path");
-    }
-
     if (output.stdout.contains('\n'))
     {
         output.stdout.replace(output.stdout.find('\n'), 1, "");
@@ -152,16 +146,11 @@ auto Repository::isValidGitRepository() const -> bool
     {
         return false;
     }
-
-    if (auto output = executeGitCommand("rev-parse", "--is-inside-work-tree"); output.return_code != 0)
-    {
-        return false;
-    }
-
-    return true;
+    auto output = executeGitCommand("rev-parse", "--is-inside-work-tree");
+    return output.return_code == 0;
 }
 
-auto Repository::initRepository(const bool bare, const std::string_view mainBranchName) const -> bool
+auto Repository::initRepository(const bool bare, const std::string_view mainBranchName) const -> void
 {
     std::filesystem::path gitDir = path;
 
@@ -170,58 +159,18 @@ auto Repository::initRepository(const bool bare, const std::string_view mainBran
         gitDir /= ".git";
     }
 
-    if (std::filesystem::exists(path))
-    {
-        if (!std::filesystem::is_directory(path))
-        {
-            throw std::runtime_error("Path is not a directory");
-        }
+    std::filesystem::create_directories(gitDir);
 
-        if (bare)
-        {
-            if (!std::filesystem::is_empty(path))
-            {
-                throw std::runtime_error("Directory is not empty");
-            }
-        }
-        else
-        {
-            if (std::filesystem::exists(gitDir))
-            {
-                throw std::runtime_error("Git directory already exists");
-            }
-        }
-    }
-
-    if (!std::filesystem::create_directories(gitDir))
-    {
-        throw std::runtime_error("Failed to create git directory");
-    }
-
-    if (auto objectsDir = gitDir / "objects"; !std::filesystem::create_directories(objectsDir))
-    {
-        throw std::runtime_error("Failed to create objects directory");
-    }
+    const auto objectsDir = gitDir / "objects";
+    std::filesystem::create_directories(objectsDir);
 
     auto refsDir = gitDir / "refs";
-    if (!std::filesystem::create_directories(refsDir))
-    {
-        throw std::runtime_error("Failed to create refs directory");
-    }
+    std::filesystem::create_directories(refsDir);
+    std::filesystem::create_directory(refsDir / "heads");
+    std::filesystem::create_directory(refsDir / "tags");
 
-    if (!std::filesystem::create_directory(refsDir / "heads")
-        || !std::filesystem::create_directory(refsDir / "tags"))
-    {
-        throw std::runtime_error("Failed to create heads or tags directory");
-    }
-
-    std::ofstream headFile(gitDir / "HEAD");
-    if (!headFile.is_open())
-    {
-        throw std::runtime_error("Failed to create HEAD file");
-    }
-    headFile << "ref: refs/heads/" << mainBranchName;
-    headFile.close();
+    const auto headFileContent = std::string{ "ref: refs/heads/" } + std::string{ mainBranchName };
+    _details::FileUtility::createOrOverwriteFile(gitDir / "HEAD", headFileContent);
 
     const auto configContent = std::string{ "[core]\n" }
                              + "\trepositoryformatversion = 0\n"
@@ -229,25 +178,13 @@ auto Repository::initRepository(const bool bare, const std::string_view mainBran
                              + "\tbare = " + std::string{ bare ? "true" : "false" }
                              + std::string{ bare ? "" : "\n\tlogallrefupdates = true\n" };
 
-    std::ofstream config(gitDir / "config");
-    if (!config.is_open())
-    {
-        throw std::runtime_error("Failed to create config file");
-    }
-    config << configContent;
-    config.close();
-
-    return true;
+    _details::FileUtility::createOrOverwriteFile(gitDir / "config", configContent);
 }
 
 auto Repository::getRemoteUrls() const -> std::unordered_set<std::string>
 {
     auto remote_output = executeGitCommand("remote", "get-url", "--all", "origin");
 
-    if (remote_output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get remote urls");
-    }
     if (remote_output.stdout.empty())
     {
         return {};
@@ -268,10 +205,6 @@ auto Repository::getConfig() const -> std::vector<GitConfigEntry>
 {
     auto config_output = executeGitCommand("config", "--list", "--local");
 
-    if (config_output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get config");
-    }
     if (config_output.stdout.empty())
     {
         return {};
@@ -310,20 +243,8 @@ auto Repository::getDescription() const -> std::string
     {
         descriptionPath = std::filesystem::path{ descriptionPathInBareGit };
     }
-    else
-    {
-        throw std::runtime_error("Failed to get description");
-    }
 
-    std::ifstream descriptionFile(descriptionPath);
-    if (!descriptionFile.is_open())
-    {
-        throw std::runtime_error("Failed to open description file");
-    }
-
-    std::stringstream buffer;
-    buffer << descriptionFile.rdbuf();
-    auto description = buffer.str();
+    auto description = _details::FileUtility::readFile(descriptionPath);
 
     if (auto unnamedPos = description.find("Unnamed repository");
         unnamedPos == 0)

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -11,18 +10,19 @@ namespace CppGit {
 /// @brief Type of rebase todo command
 enum class RebaseTodoCommandType : uint8_t
 {
-    PICK,      ///< Pick commit
-    REWORD,    ///< Stop to edit commit message
-    EDIT,      ///< Stop to edit commit
-    SQUASH,    ///< Squash commit with previous commit and stop to edit commit message
-    FIXUP,     ///< Fixup commit with previous commit
-    EXEC,      ///< Execute shell command. NOT IMPLEMENTED
-    BREAK,     ///< Stop for a break
-    DROP,      ///< Drop commit
-    LABEL,     ///< Label commit. NOT IMPLEMENTED
-    RESET,     ///< Reset to label(?) NOT IMPLEMENTED
-    MERGE,     ///< Merge commit. NOT IMPLEMENTED
-    UPDATE_REF ///< Update ref. NOT IMPLEMENTED
+    PICK,       ///< Pick commit
+    REWORD,     ///< Stop to edit commit message
+    EDIT,       ///< Stop to edit commit
+    SQUASH,     ///< Squash commit with previous commit and stop to edit commit message
+    FIXUP,      ///< Fixup commit with previous commit
+    EXEC,       ///< Execute shell command. NOT IMPLEMENTED
+    BREAK,      ///< Stop for a break
+    DROP,       ///< Drop commit
+    LABEL,      ///< Label commit. NOT IMPLEMENTED
+    RESET,      ///< Reset to label(?) NOT IMPLEMENTED
+    MERGE,      ///< Merge commit. NOT IMPLEMENTED
+    UPDATE_REF, ///< Update ref. NOT IMPLEMENTED
+    UNKNOWN     ///< Unknown command
 };
 
 /// @brief Wrapper for RebaseTodoCommandType to allow implicit conversion to and from std::string
@@ -75,8 +75,9 @@ public:
             return "merge";
         case RebaseTodoCommandType::UPDATE_REF:
             return "update_ref";
-        [[unlikely]] default:
-            throw std::invalid_argument("Unknown rebase todo command");
+        case RebaseTodoCommandType::UNKNOWN:
+        default:
+            return "unknown";
         }
     }
 
@@ -110,8 +111,9 @@ public:
             return "m";
         case RebaseTodoCommandType::UPDATE_REF:
             return "u";
-        [[unlikely]] default:
-            throw std::invalid_argument("Unknown rebase todo command");
+        case RebaseTodoCommandType::UNKNOWN:
+        default:
+            return "unknown";
         }
     }
 
@@ -169,7 +171,7 @@ public:
             return RebaseTodoCommandType::UPDATE_REF;
         }
 
-        throw std::invalid_argument("Unknown rebase todo command: " + std::string(command));
+        return RebaseTodoCommandType::UNKNOWN;
     }
 };
 

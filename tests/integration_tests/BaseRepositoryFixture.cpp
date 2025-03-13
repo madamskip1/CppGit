@@ -8,7 +8,7 @@
 void BaseRepositoryFixture::SetUp()
 {
     repository = std::make_unique<CppGit::Repository>(repositoryPath);
-    ASSERT_TRUE(repository->initRepository());
+    repository->initRepository();
     ASSERT_TRUE(repository->isValidGitRepository());
 }
 

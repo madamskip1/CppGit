@@ -22,6 +22,11 @@ auto GitFilesHelper::setHeadFile(const std::string_view refName) const -> void
 
 auto GitFilesHelper::getHeadFile() const -> std::string
 {
-    return FileUtility::readFile(repo->getGitDirectoryPath() / "HEAD");
+    auto headFileContent = FileUtility::readFile(repo->getGitDirectoryPath() / "HEAD");
+    if (headFileContent.ends_with('\n')) // Even we set it without \n some git commands may add it
+    {
+        headFileContent.pop_back();
+    }
+    return headFileContent;
 }
 } // namespace CppGit::_details

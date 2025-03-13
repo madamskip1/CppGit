@@ -8,7 +8,6 @@
 #include "CppGit/_details/Parser/CommitParser.hpp"
 #include "CppGit/_details/Refs.hpp"
 
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -52,17 +51,7 @@ auto Commits::amendCommit(const std::string_view message, const std::string_view
 auto Commits::hasAnyCommits() const -> bool
 {
     const auto output = repo->executeGitCommand("rev-parse", "--verify", "HEAD");
-    if (output.return_code == 0)
-    {
-        return true;
-    }
-
-    if (output.stderr == "fatal: Needed a single revision")
-    {
-        return false;
-    }
-
-    throw std::runtime_error("Failed to check if there are any commits");
+    return output.return_code == 0;
 }
 
 auto Commits::getHeadCommitHash() const -> std::string
@@ -73,14 +62,9 @@ auto Commits::getHeadCommitHash() const -> std::string
 auto Commits::getCommitInfo(const std::string_view commitHash) const -> Commit
 {
     const auto output = repo->executeGitCommand("cat-file", "-p", commitHash);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get commit info");
-    }
-
     auto parsedCommit = CommitParser::parseCommit_CatFile(output.stdout);
     parsedCommit.hash = std::string{ commitHash };
+
     return parsedCommit;
 }
 

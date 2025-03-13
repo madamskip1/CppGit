@@ -10,13 +10,6 @@
 class DiffTests : public BaseRepositoryFixture
 { };
 
-TEST_F(DiffTests, emptyRepo)
-{
-    const auto diff = repository->Diff();
-
-    ASSERT_THROW(diff.getDiff(), std::runtime_error);
-}
-
 TEST_F(DiffTests, singleEmptyCommit)
 {
     const auto commits = repository->Commits();

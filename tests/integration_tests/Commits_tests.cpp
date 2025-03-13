@@ -20,13 +20,6 @@ TEST_F(CommitsTests, emptyRepo_checkIfThereAreAnyCommits)
     ASSERT_FALSE(commits.hasAnyCommits());
 }
 
-TEST_F(CommitsTests, getHeadCommitHash_noCommits)
-{
-    const auto commits = repository->Commits();
-
-    EXPECT_THROW(commits.getHeadCommitHash(), std::runtime_error);
-}
-
 TEST_F(CommitsTests, createCommit_empty)
 {
     const auto commits = repository->Commits();
@@ -117,13 +110,6 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! file2");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
-}
-
-TEST_F(CommitsTests, amendCommit_noCommits)
-{
-    const auto commits = repository->Commits();
-
-    EXPECT_THROW(commits.amendCommit(), std::runtime_error);
 }
 
 TEST_F(CommitsTests, amendCommit_noChanges)

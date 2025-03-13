@@ -3,8 +3,6 @@
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 
-#include <fstream>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -20,12 +18,6 @@ Refs::Refs(const Repository& repo)
 auto Refs::getRefHash(const std::string_view refName) const -> std::string
 {
     auto output = repo->executeGitCommand("rev-parse", refName);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get hash");
-    }
-
     return std::move(output.stdout);
 }
 
@@ -33,12 +25,6 @@ auto Refs::getRefHash(const std::string_view refName) const -> std::string
 auto Refs::getSymbolicRef(const std::string_view refName) const -> std::string
 {
     auto output = repo->executeGitCommand("symbolic-ref", refName);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get symbolic ref");
-    }
-
     return std::move(output.stdout);
 }
 
@@ -46,55 +32,29 @@ auto Refs::getSymbolicRef(const std::string_view refName) const -> std::string
 auto Refs::refExists(const std::string_view refName) const -> bool
 {
     const auto output = repo->executeGitCommand("show-ref", "--verify", "--quiet", refName);
-
-    if (output.return_code > 1)
-    {
-        throw std::runtime_error("Failed to check if ref exists");
-    }
-
     return output.return_code == 0;
 }
 
 
 auto Refs::updateRefHash(const std::string_view refName, const std::string_view newHash) const -> void
 {
-    const auto output = repo->executeGitCommand("update-ref", refName, newHash);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to update ref hash");
-    }
+    repo->executeGitCommand("update-ref", refName, newHash);
 }
 
 
 auto Refs::updateSymbolicRef(const std::string_view refName, const std::string_view newRef) const -> void
 {
-    const auto output = repo->executeGitCommand("symbolic-ref", refName, newRef);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to update symbolic ref");
-    }
+    repo->executeGitCommand("symbolic-ref", refName, newRef);
 }
 
 auto Refs::deleteRef(const std::string_view refName) const -> void
 {
-    const auto output = repo->executeGitCommand("update-ref", "-d", refName);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to delete ref");
-    }
+    repo->executeGitCommand("update-ref", "-d", refName);
 }
 
 auto Refs::createRef(const std::string_view refName, const std::string_view hash) const -> void
 {
-    const auto output = repo->executeGitCommand("update-ref", refName, hash);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to create ref");
-    }
+    repo->executeGitCommand("update-ref", refName, hash);
 }
 
 auto Refs::detachHead(const std::string_view commitHash) const -> void

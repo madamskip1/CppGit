@@ -8,13 +8,11 @@
 #include "CppGit/Reset.hpp"
 #include "CppGit/_details/CreateCommit.hpp"
 #include "CppGit/_details/FileUtility.hpp"
-#include "CppGit/_details/GitCommandExecutor/GitCommandOutput.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/IndexWorktree.hpp"
 
 #include <expected>
 #include <filesystem>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -37,11 +35,6 @@ auto Merge::mergeFastForward(const std::string_view sourceBranch) const -> std::
 
 auto Merge::mergeFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::expected<std::string, Error>
 {
-    if (const auto index = repo->Index(); index.isDirty())
-    {
-        return std::unexpected{ Error::DIRTY_WORKTREE };
-    }
-
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
 
     const auto branches = repo->Branches();
@@ -70,16 +63,7 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 {
     const auto index = repo->Index();
 
-    if (index.isDirty())
-    {
-        return std::unexpected{ Error::DIRTY_WORKTREE };
-    }
-
     auto mergeBaseOutput = repo->executeGitCommand("merge-base", "HEAD", sourceBranch);
-    if (mergeBaseOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to find merge base");
-    }
 
     auto& mergeBase = mergeBaseOutput.stdout;
 
@@ -92,15 +76,9 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
         return std::unexpected{ Error::MERGE_NOTHING_TO_MERGE };
     }
 
-    auto readTreeOutput = repo->executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
-
-    if (readTreeOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to read tree");
-    }
+    repo->executeGitCommand("read-tree", "-m", std::move(mergeBase), "HEAD", sourceBranch);
 
     gitFilesHelper.setOrigHeadFile(targetBranchRef);
-
     indexWorktree.copyIndexToWorktree();
 
 
@@ -110,7 +88,6 @@ auto Merge::mergeNoFastForward(const std::string_view sourceBranch, const std::s
 
         return std::unexpected{ Error::MERGE_NO_FF_CONFLICT };
     }
-
 
     return createMergeCommit(std::move(sourceBranchRef), std::move(targetBranchRef), message, description);
 }
@@ -162,12 +139,6 @@ auto Merge::isThereAnyConflict() const -> std::expected<bool, Error>
 auto Merge::getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string
 {
     auto output = repo->executeGitCommand("merge-base", sourceBranch, targetBranch);
-
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to find merge base");
-    }
-
     return std::move(output.stdout);
 }
 
@@ -206,12 +177,6 @@ auto Merge::removeNoFFMergeFiles() const -> void
 auto Merge::isThereAnyConflictImpl() const -> bool
 {
     const auto gitLsFilesOutput = repo->executeGitCommand("ls-files", "-u");
-
-    if (gitLsFilesOutput.return_code != 0)
-    {
-        throw std::runtime_error("Failed to list files");
-    }
-
     return !gitLsFilesOutput.stdout.empty();
 }
 

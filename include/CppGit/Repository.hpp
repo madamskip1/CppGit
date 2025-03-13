@@ -1,7 +1,5 @@
 #pragma once
 
-
-#include "Error.hpp"
 #include "_details/GitCommandExecutor/GitCommandExecutorUnix.hpp"
 #include "_details/GitCommandExecutor/GitCommandOutput.hpp"
 
@@ -134,8 +132,7 @@ public:
     /// @brief Initialize repository
     /// @param bare Whether to initialize bare repository
     /// @param mainBranchName Main branch name (default: "main")
-    /// @return True if repository was initialized, false otherwise
-    auto initRepository(const bool bare = false, const std::string_view mainBranchName = "main") const -> bool;
+    auto initRepository(const bool bare = false, const std::string_view mainBranchName = "main") const -> void;
 
     /// @brief Get remote URL
     /// @return Remote URL

@@ -5,7 +5,6 @@
 #include "CppGit/_details/Parser/DiffParser.hpp"
 
 #include <filesystem>
-#include <stdexcept>
 #include <vector>
 
 namespace CppGit {
@@ -56,14 +55,7 @@ auto Diff::getDiffFile(const std::string_view commitHashA, const std::string_vie
 
 auto Diff::getDiffFilesFromOutput(const GitCommandOutput& output) -> std::vector<DiffFile>
 {
-    if (output.return_code != 0)
-    {
-        throw std::runtime_error("Failed to get diff");
-    }
-
     auto diffParser = DiffParser{};
-    const auto diffFiles = diffParser.parse(output.stdout);
-
-    return diffFiles;
+    return diffParser.parse(output.stdout);
 }
 } // namespace CppGit

@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <regex>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -19,10 +18,7 @@ auto CommitParser::parseCommit_CatFile(const std::string_view commitLog) -> Comm
 
 
     auto match = std::cmatch{};
-    if (!std::regex_search(commitLog.begin(), commitLog.end(), match, regex))
-    {
-        throw std::runtime_error("Invalid commit log");
-    }
+    std::regex_search(commitLog.begin(), commitLog.end(), match, regex);
 
     constexpr auto treeHashIndex = std::size_t{ 1 };
     constexpr auto parentIndex = std::size_t{ 2 };
@@ -69,10 +65,6 @@ auto CommitParser::parseCommit_PrettyFormat(const std::string_view commitLog, co
 {
     const std::vector<std::string_view> commitTokens = splitToStringViewsVector(commitLog, delimiter);
     const std::vector<std::string_view> formatTokens = splitToStringViewsVector(format, delimiter);
-    if (commitTokens.size() < formatTokens.size())
-    {
-        throw std::runtime_error("Invalid format or commit log");
-    }
 
     std::string hash;
     std::vector<std::string> parents;

@@ -238,10 +238,9 @@ TEST_F(BranchesTests, changeBranch_shortName)
 
 
     branches.createBranch("new_branch");
-    const auto changeBranchResult = branches.changeCurrentBranch("new_branch");
+    branches.changeCurrentBranch("new_branch");
 
 
-    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     const auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -252,10 +251,9 @@ TEST_F(BranchesTests, changeBranch_fullName)
 
 
     branches.createBranch("new_branch");
-    const auto changeBranchResult = branches.changeCurrentBranch("refs/heads/new_branch");
+    branches.changeCurrentBranch("refs/heads/new_branch");
 
 
-    EXPECT_EQ(changeBranchResult, CppGit::Error::NO_ERROR);
     const auto currentBranch = branches.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
@@ -351,27 +349,6 @@ TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "untracked.txt"));
 }
 
-TEST_F(BranchesTests, changeBranch_shouldFailIfWorktreeDirty)
-{
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-
-
-    branches.createBranch("new_branch");
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    commits.createCommit("Added new file");
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    index.add("file.txt");
-
-    const auto changeBranchResult = branches.changeCurrentBranch("new_branch");
-
-
-    EXPECT_EQ(changeBranchResult, CppGit::Error::DIRTY_WORKTREE);
-}
-
 TEST_F(BranchesTests, detachHead)
 {
     const auto branches = repository->Branches();
@@ -381,10 +358,9 @@ TEST_F(BranchesTests, detachHead)
     const auto initialCommitHash = commits.createCommit("Initial commit");
     commits.createCommit("Second commit");
 
-    const auto detachHeadResult = branches.detachHead(initialCommitHash);
+    branches.detachHead(initialCommitHash);
 
 
-    EXPECT_EQ(detachHeadResult, CppGit::Error::NO_ERROR);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
 }
 

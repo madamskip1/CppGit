@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <iterator>
 #include <regex>
-#include <stdexcept>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -89,9 +88,6 @@ auto DiffParser::parse(const std::string_view diffContent) -> std::vector<DiffFi
             diffFile.diffStatus = DiffStatus::BINARY_CHANGED;
             currentState = ParseState::WAITING_FOR_DIFF;
             break;
-
-        [[unlikely]] default:
-            throw std::logic_error("Invalid parser state");
         }
 
         if (peakNextLine(iterator, endIterator).starts_with("diff"))
@@ -207,13 +203,8 @@ auto DiffParser::parseHeaderLine(const std::string_view line, const HeaderLineTy
     case HeaderLineType::DELETED_FILE:
         std::regex_match(line.cbegin(), line.cend(), match, std::regex{ indexPattern });
         return HeaderLine{ .type = HeaderLineType::INDEX, .value = std::make_tuple(string_viewIteratorToString_view(match[1].first, match[1].second), string_viewIteratorToString_view(match[2].first, match[2].second), getIntValueFromStringViewMatch(match, 3)) };
-
-    // if the previous line was an index line, the next line is not a header line
-    // so we shouldn't reach this case
-    [[unlikely]] case HeaderLineType::INDEX:
-        [[fallthrough]];
-    [[unlikely]] default:
-        throw std::logic_error("Invalid previous header line type");
+    default:
+        break;
     }
 
     return {};

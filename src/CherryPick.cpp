@@ -28,11 +28,6 @@ CherryPick::CherryPick(const Repository& repo)
 
 auto CherryPick::cherryPickCommit(const std::string_view commitHash, const CherryPickEmptyCommitStrategy emptyCommitStrategy) const -> std::expected<std::string, Error>
 {
-    if (repo->Index().isDirty())
-    {
-        return std::unexpected{ Error::DIRTY_WORKTREE };
-    }
-
     _details::GitFilesHelper{ *repo }.setOrigHeadFile(repo->Commits().getHeadCommitHash());
 
     const auto applyDiffResult = _details::ApplyDiff{ *repo }.apply(commitHash);
@@ -154,9 +149,9 @@ auto CppGit::CherryPick::processEmptyDiff(const std::string_view commitHash, con
     case CherryPickEmptyCommitStrategy::STOP:
         createCherryPickHeadFile(commitHash);
         return std::unexpected{ Error::CHERRY_PICK_EMPTY_COMMIT };
-    [[unlikely]] default:
-        throw std::logic_error{ "Unknown CherryPickEmptyCommitStrategy" };
     }
+
+    return std::unexpected{ Error::CHERRY_PICK_UNKNOWN_EMPTY_COMMIT_STRATEGY };
 }
 
 } // namespace CppGit
