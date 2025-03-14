@@ -100,7 +100,7 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_stop)
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_EMPTY_COMMIT);
+    EXPECT_EQ(cherryPickedHash.error(), CppGit::CherryPickResult::EMPTY_COMMIT_OR_EMPTY_DIFF);
     EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), secondCommitHash);
@@ -130,19 +130,6 @@ TEST_F(CherryPickTests, cherryPickEmptyCommitFromCurrentBranch_commitAfterStop)
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
 }
 
-TEST_F(CherryPickTests, tryCommitEmptyCherryPickedCommitWhenNoCherryPickInProgress)
-{
-    const auto cherryPick = repository->CherryPick();
-    const auto commits = repository->Commits();
-
-    commits.createCommit("Initial commit");
-
-    const auto cherryPickedHash = cherryPick.commitEmptyCherryPickedCommit();
-
-    ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::NO_CHERRY_PICK_IN_PROGRESS);
-}
-
 TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 {
     const auto commits = repository->Commits();
@@ -168,7 +155,7 @@ TEST_F(CherryPickTests, cherryPickDiffAlreadyExistFromAnotherCommitBranch)
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_EMPTY_COMMIT);
+    EXPECT_EQ(cherryPickedHash.error(), CppGit::CherryPickResult::EMPTY_COMMIT_OR_EMPTY_DIFF);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
@@ -203,7 +190,7 @@ TEST_F(CherryPickTests, cherryPick_conflict_diffAlreadyExistButThenChanged)
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
+    EXPECT_EQ(cherryPickedHash.error(), CppGit::CherryPickResult::CONFLICT);
     EXPECT_EQ(fourthCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), fourthCommitHash);
@@ -281,7 +268,7 @@ TEST_F(CherryPickTests, cherryPick_bothConflictAndNotFiles)
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
+    EXPECT_EQ(cherryPickedHash.error(), CppGit::CherryPickResult::CONFLICT);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
@@ -321,7 +308,7 @@ TEST_F(CherryPickTests, cherryPick_conflictTwoFiles)
 
 
     ASSERT_FALSE(cherryPickedHash.has_value());
-    EXPECT_EQ(cherryPickedHash.error(), CppGit::Error::CHERRY_PICK_CONFLICT);
+    EXPECT_EQ(cherryPickedHash.error(), CppGit::CherryPickResult::CONFLICT);
     EXPECT_EQ(thirdCommitHash, commits.getHeadCommitHash());
     EXPECT_TRUE(cherryPick.isCherryPickInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
@@ -353,25 +340,11 @@ TEST_F(CherryPickTests, cherryPick_abort)
 
     cherryPick.cherryPickCommit(secondCommitHash, CppGit::CherryPickEmptyCommitStrategy::STOP);
 
-    const auto abortResult = cherryPick.cherryPickAbort();
+    cherryPick.cherryPickAbort();
 
-
-    ASSERT_TRUE(abortResult == CppGit::Error::NO_ERROR);
 
     EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified 2");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "CHERRY_PICK_HEAD"));
-}
-
-TEST_F(CherryPickTests, cherryPick_abort_noCherryPickInProgress)
-{
-    const auto cherryPick = repository->CherryPick();
-    const auto commits = repository->Commits();
-
-    commits.createCommit("Initial commit");
-
-    const auto abortResult = cherryPick.cherryPickAbort();
-
-    EXPECT_EQ(abortResult, CppGit::Error::NO_CHERRY_PICK_IN_PROGRESS);
 }
