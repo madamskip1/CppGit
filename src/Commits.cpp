@@ -1,5 +1,6 @@
 #include "CppGit/Commits.hpp"
 
+#include "CppGit/Commit.hpp"
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/AmendCommit.hpp"
 #include "CppGit/_details/CreateCommit.hpp"

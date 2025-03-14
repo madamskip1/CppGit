@@ -1,7 +1,6 @@
 #include "CppGit/Branches.hpp"
 
 #include "CppGit/Branch.hpp"
-#include "CppGit/Index.hpp"
 #include "CppGit/Repository.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/IndexWorktree.hpp"

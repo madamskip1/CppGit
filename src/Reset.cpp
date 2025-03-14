@@ -1,8 +1,11 @@
 #include "CppGit/Reset.hpp"
 
+#include "CppGit/Repository.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 #include "CppGit/_details/IndexWorktree.hpp"
 #include "CppGit/_details/Refs.hpp"
+
+#include <string_view>
 
 namespace CppGit {
 
