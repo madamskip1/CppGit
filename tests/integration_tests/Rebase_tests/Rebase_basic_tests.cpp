@@ -92,7 +92,7 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -146,7 +146,7 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
@@ -208,7 +208,7 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -270,7 +270,7 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -320,12 +320,10 @@ TEST_F(RebaseBasicTests, conflict_abort)
 
     const auto rebaseResult = rebase.rebase("main");
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto rebaseAbortResult = rebase.abortRebase();
+    rebase.abortRebase();
 
-
-    ASSERT_EQ(rebaseAbortResult, CppGit::Error::NO_ERROR);
 
     EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
     const auto currentBranchName = branches.getCurrentBranchName();
@@ -362,7 +360,7 @@ TEST_F(RebaseBasicTests, conflict_continue)
 
     const auto rebaseResult = rebase.rebase("main");
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
     index.add("file.txt");
@@ -390,27 +388,6 @@ TEST_F(RebaseBasicTests, conflict_continue)
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
-}
-
-TEST_F(RebaseBasicTests, abort_noRebaseInProgress)
-{
-    const auto rebase = repository->Rebase();
-
-    createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    const auto rebaseAbortResult = rebase.abortRebase();
-
-    EXPECT_EQ(rebaseAbortResult, CppGit::Error::NO_REBASE_IN_PROGRESS);
-}
-
-TEST_F(RebaseBasicTests, continue_noRebaseInProgress)
-{
-    const auto rebase = repository->Rebase();
-
-    createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    const auto rebaseContinueResult = rebase.continueRebase();
-
-    ASSERT_FALSE(rebaseContinueResult.has_value());
-    EXPECT_EQ(rebaseContinueResult.error(), CppGit::Error::NO_REBASE_IN_PROGRESS);
 }
 
 TEST_F(RebaseBasicTests, skipPreviouslyAppliedCommit)

@@ -38,7 +38,7 @@ TEST_F(RebaseInteractiveBreakTests, stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -88,7 +88,7 @@ TEST_F(RebaseInteractiveBreakTests, continueRebase)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto continueBreakResult = rebase.continueRebase();
 
@@ -130,7 +130,7 @@ TEST_F(RebaseInteractiveBreakTests, fastForward_breakAfter)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
     EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
@@ -176,7 +176,7 @@ TEST_F(RebaseInteractiveBreakTests, noFastForward_breakAfter)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
     EXPECT_NE(commits.getHeadCommitHash(), secondCommitHash);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();

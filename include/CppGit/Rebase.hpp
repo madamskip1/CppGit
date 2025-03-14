@@ -2,7 +2,6 @@
 
 #include "Branches.hpp"
 #include "Commits.hpp"
-#include "Error.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
 #include "_details/AmendCommit.hpp"
@@ -12,9 +11,24 @@
 #include "_details/RebaseFilesHelper.hpp"
 #include "_details/Refs.hpp"
 
+#include <cstdint>
 #include <expected>
 
 namespace CppGit {
+
+/// @brief Result of a rebase operation
+enum class RebaseResult : uint8_t
+{
+    CONFLICT,          ///< Conflict during rebase
+    BREAK,             ///<  Stop at break during rebase
+    REWORD,            ///< Stop at reword during rebase
+    SQUASH,            ///<  Stop at squash during rebase
+    EDIT,              ///< Stopped at edit during rebase
+
+    COMMAND_PROCESSED, ///< Command processed successfully (used only internally)
+    UNKNOWN_COMMAND,   ///< Unknown command during rebase (used only internally)
+    EMPTY_DIFF,        ///< Empty diff during rebase (used only internally)
+};
 
 /// @brief Provides functionality to rebase the current branch
 class Rebase
@@ -26,29 +40,28 @@ public:
 
     /// @brief Rebase current branch onto upstream branch
     /// @param upstream Upstream branch name to rebase onto
-    /// @return Rebased head commit hash if rebase is successful, otherwise error code
-    auto rebase(const std::string_view upstream) const -> std::expected<std::string, Error>;
+    /// @return Rebased head commit hash if rebase is successful, otherwise Rebase Result error code
+    auto rebase(const std::string_view upstream) const -> std::expected<std::string, RebaseResult>;
 
     /// @brief Rebase current branch onto upstream branch with custom rebase commands
     /// @param upstream Upstream branch name to rebase onto
     /// @param rebaseCommands Custom rebase commands
-    /// @return Rebased head commit hash if rebase is successful, otherwise error code
-    auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
+    /// @return Rebased head commit hash if rebase is successful, otherwise Rebase Result error code
+    auto interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>;
 
     /// @brief Continue stopped rebase
-    /// @return Rebased head commit hash if rebase is successful, otherwise error code
-    auto continueRebase() const -> std::expected<std::string, Error>;
+    /// @return Rebased head commit hash if rebase is successful, otherwise Rebase Result error code
+    auto continueRebase() const -> std::expected<std::string, RebaseResult>;
 
     /// @brief Continue stopped rebase and set new commit message if there is a commit that can have its message changed
     ///     May change commit message if: reword, edit, squash or merge conflict
     /// @param message New commit message
     /// @param description New commit description (optional)
-    /// @return Rebased head commit hash if rebase is successful, otherwise error code
-    auto continueRebase(const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, Error>;
+    /// @return Rebased head commit hash if rebase is successful, otherwise Rebase Result error code
+    auto continueRebase(const std::string_view message, const std::string_view description = "") const -> std::expected<std::string, RebaseResult>;
 
     /// @brief Abort rebase in progress
-    /// @return Error code if there is no rebase in progress, otherwise no error
-    auto abortRebase() const -> Error;
+    auto abortRebase() const -> void;
 
     /// @brief Check whether there is a rebase in progress
     /// @return True if there is a rebase in progress, otherwise false
@@ -65,21 +78,21 @@ public:
     [[nodiscard]] auto getStoppedMessage() const -> std::string;
 
 private:
-    auto rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>;
+    auto rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>;
     auto startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void;
     auto endRebase() const -> std::string;
 
-    auto processTodoList() const -> Error;
-    auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    static auto processBreakCommand(const RebaseTodoCommand& /*unused*/) -> Error;
-    auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    static auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) -> Error;
-    auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
-    auto processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error;
+    auto processTodoList() const -> RebaseResult;
+    auto processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
+    auto processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
+    static auto processBreakCommand(const RebaseTodoCommand& /*unused*/) -> RebaseResult;
+    auto processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
+    auto processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
+    static auto processDrop(const RebaseTodoCommand& rebaseTodoCommand) -> RebaseResult;
+    auto processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
+    auto processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult;
 
-    auto pickCommit(const Commit& commitInfo) const -> std::expected<std::string, Error>;
+    auto pickCommit(const Commit& commitInfo) const -> std::expected<std::string, RebaseResult>;
 
     auto isNextCommandFixupOrSquash() const -> bool;
 

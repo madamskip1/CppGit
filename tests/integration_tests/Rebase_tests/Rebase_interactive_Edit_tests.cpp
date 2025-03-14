@@ -33,7 +33,7 @@ TEST_F(RebaseInteractiveEditTests, stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::EDIT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -81,7 +81,7 @@ TEST_F(RebaseInteractiveEditTests, continue_changes)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::EDIT);
 
     CppGit::_details::FileUtility::createOrAppendFile(repositoryPath / "file1.txt", " Modified");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
@@ -135,7 +135,7 @@ TEST_F(RebaseInteractiveEditTests, continue_noChanges)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::EDIT);
 
     const auto continueEditResult = rebase.continueRebase();
 
@@ -177,13 +177,13 @@ TEST_F(RebaseInteractiveEditTests, breakAfter_noChanges)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::EDIT);
 
     const auto continueRebaseResult = rebase.continueRebase();
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -226,7 +226,7 @@ TEST_F(RebaseInteractiveEditTests, breakAfter_changes)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_EDIT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::EDIT);
 
     CppGit::_details::FileUtility::createOrAppendFile(repositoryPath / "file.txt", "");
     index.add("file.txt");
@@ -234,7 +234,7 @@ TEST_F(RebaseInteractiveEditTests, breakAfter_changes)
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -291,7 +291,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -355,7 +355,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_continue)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
@@ -417,7 +417,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_breakAfter)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
@@ -425,7 +425,7 @@ TEST_F(RebaseInteractiveEditTests, conflict_breakAfter)
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);

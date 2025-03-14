@@ -4,7 +4,6 @@
 #include "CppGit/Commit.hpp"
 #include "CppGit/Commits.hpp"
 #include "CppGit/CommitsHistory.hpp"
-#include "CppGit/Error.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/RebaseTodoCommand.hpp"
 #include "CppGit/Repository.hpp"
@@ -34,45 +33,34 @@ Rebase::Rebase(const Repository& repo)
       createCommit{ repo }
 {
 }
-auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, Error>
+
+auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, RebaseResult>
 {
     auto rebaseComamnds = getDefaultTodoCommands(upstream);
     return rebaseImpl(upstream, rebaseComamnds);
 }
 
-auto Rebase::interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
+auto Rebase::interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
 {
     return rebaseImpl(upstream, rebaseCommands);
 }
 
-auto Rebase::abortRebase() const -> Error
+auto Rebase::abortRebase() const -> void
 {
-    if (!isRebaseInProgress())
-    {
-        return Error::NO_REBASE_IN_PROGRESS;
-    }
-
     indexWorktree.resetIndexToTree(rebaseFilesHelper.getOrigHead());
     indexWorktree.copyForceIndexToWorktree();
     refs.updateSymbolicRef("HEAD", rebaseFilesHelper.getHeadName());
 
     rebaseFilesHelper.deleteAllRebaseFiles();
-
-    return Error::NO_ERROR;
 }
 
-auto Rebase::continueRebase() const -> std::expected<std::string, Error>
+auto Rebase::continueRebase() const -> std::expected<std::string, RebaseResult>
 {
     return continueRebase("", "");
 }
 
-auto Rebase::continueRebase(const std::string_view message, const std::string_view description) const -> std::expected<std::string, Error>
+auto Rebase::continueRebase(const std::string_view message, const std::string_view description) const -> std::expected<std::string, RebaseResult>
 {
-    if (!isRebaseInProgress())
-    {
-        return std::unexpected{ Error::NO_REBASE_IN_PROGRESS };
-    }
-
     if (auto lastCommand = rebaseFilesHelper.getLastDoneCommand(); lastCommand->type != RebaseTodoCommandType::BREAK)
     {
         const auto messageAndDesc = [&message, &description, this] {
@@ -133,7 +121,7 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         rebaseFilesHelper.removeRebaseHeadFile();
     }
 
-    if (const auto processTodoListResult = processTodoList(); processTodoListResult != Error::NO_ERROR)
+    if (const auto processTodoListResult = processTodoList(); processTodoListResult != RebaseResult::COMMAND_PROCESSED)
     {
         return std::unexpected{ processTodoListResult };
     }
@@ -170,11 +158,11 @@ auto Rebase::getStoppedMessage() const -> std::string
     return rebaseFilesHelper.getMessageFile();
 }
 
-auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, Error>
+auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
 {
     startRebase(upstream, rebaseCommands);
 
-    if (auto todoResult = processTodoList(); todoResult != Error::NO_ERROR)
+    if (auto todoResult = processTodoList(); todoResult != RebaseResult::COMMAND_PROCESSED)
     {
         return std::unexpected{ todoResult };
     }
@@ -209,7 +197,7 @@ auto Rebase::endRebase() const -> std::string
     return currentHash;
 }
 
-auto Rebase::processTodoList() const -> Error
+auto Rebase::processTodoList() const -> RebaseResult
 {
     auto todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
 
@@ -225,7 +213,7 @@ auto Rebase::processTodoList() const -> Error
         const auto todoResult = processTodoCommand(todoCommandValue);
         rebaseFilesHelper.appendDoneFile(todoCommandValue);
 
-        if (todoResult != Error::NO_ERROR && todoResult != Error::REBASE_EMPTY_DIFF)
+        if (todoResult != RebaseResult::COMMAND_PROCESSED && todoResult != RebaseResult::EMPTY_DIFF)
         {
             return todoResult;
         }
@@ -235,10 +223,10 @@ auto Rebase::processTodoList() const -> Error
         todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
     }
 
-    return Error::NO_ERROR;
+    return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     if (rebaseTodoCommand.type == RebaseTodoCommandType::PICK)
     {
@@ -275,10 +263,10 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         return processSquash(rebaseTodoCommand);
     }
 
-    return Error::REBASE_UNKNOWN_COMMAND;
+    return RebaseResult::UNKNOWN_COMMAND;
 }
 
-auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
@@ -287,7 +275,7 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     {
         auto error = pickResult.error();
 
-        if (error == Error::REBASE_EMPTY_DIFF)
+        if (error == RebaseResult::EMPTY_DIFF)
         {
             return error;
         }
@@ -307,22 +295,22 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
         rebaseFilesHelper.appendRewrittenListFile(rebaseTodoCommand.hash, newCommitHash);
     }
 
-    return Error::NO_ERROR;
+    return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processBreakCommand(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> Error
+auto Rebase::processBreakCommand(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
 {
-    return Error::REBASE_BREAK;
+    return RebaseResult::BREAK;
 }
 
-auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
 
-    if (!pickResult.has_value() && pickResult.error() != Error::REBASE_EMPTY_DIFF)
+    if (!pickResult.has_value() && pickResult.error() != RebaseResult::EMPTY_DIFF)
     {
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         return pickResult.error();
@@ -330,17 +318,17 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
-    return Error::REBASE_REWORD;
+    return RebaseResult::REWORD;
 }
 
-auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
 
-    if (!pickResult.has_value() && pickResult.error() != Error::REBASE_EMPTY_DIFF)
+    if (!pickResult.has_value() && pickResult.error() != RebaseResult::EMPTY_DIFF)
     {
         rebaseFilesHelper.createAuthorScriptFile(commitInfo.getAuthor().name, commitInfo.getAuthor().email, commitInfo.getAuthorDate());
         return pickResult.error();
@@ -348,15 +336,15 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Er
 
     rebaseFilesHelper.createAmendFile(pickResult.value());
 
-    return Error::REBASE_EDIT;
+    return RebaseResult::EDIT;
 }
 
-auto Rebase::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> Error
+auto Rebase::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
 {
-    return Error::NO_ERROR;
+    return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     const auto headCommitHash = commits.getHeadCommitHash();
     const auto headCommitInfo = commits.getCommitInfo(headCommitHash);
@@ -367,7 +355,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
 
-        return Error::REBASE_CONFLICT;
+        return RebaseResult::CONFLICT;
     }
 
     if (isNextCommandFixupOrSquash())
@@ -378,7 +366,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         const auto newCommitHash = amendCommit.amend(headCommitInfo);
         refs.updateRefHash("HEAD", newCommitHash);
 
-        return Error::NO_ERROR;
+        return RebaseResult::COMMAND_PROCESSED;
     }
 
     if (rebaseFilesHelper.areAnySquashInCurrentFixup())
@@ -387,7 +375,7 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.createMessageFile(headCommitInfo.getMessageAndDescription());
 
-        return Error::REBASE_SQUASH;
+        return RebaseResult::SQUASH;
     }
 
     const auto newCommitHash = amendCommit.amend(headCommitInfo);
@@ -397,10 +385,10 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> E
     rebaseFilesHelper.appendRewrittenListWithRewrittenPending(newCommitHash);
     rebaseFilesHelper.removeCurrentFixupFile();
 
-    return Error::NO_ERROR;
+    return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> Error
+auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     const auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
 
@@ -410,7 +398,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
         rebaseFilesHelper.createMessageFile(messageSquash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
-        return Error::REBASE_CONFLICT;
+        return RebaseResult::CONFLICT;
     }
 
     if (!isNextCommandFixupOrSquash())
@@ -418,7 +406,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
         rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
         rebaseFilesHelper.createMessageFile(messageSquash);
 
-        return Error::REBASE_SQUASH;
+        return RebaseResult::SQUASH;
     }
 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
@@ -429,10 +417,10 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     const auto newCommitHash = amendCommit.amend(headCommitInfo, messageSquash);
     refs.updateRefHash("HEAD", newCommitHash);
 
-    return Error::NO_ERROR;
+    return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::string, Error>
+auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::string, RebaseResult>
 {
     const auto& pickedParent = commitInfo.getParents()[0];
     const auto headCommitHash = commits.getHeadCommitHash();
@@ -449,12 +437,12 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
 
     if (applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
-        return std::unexpected{ Error::REBASE_EMPTY_DIFF };
+        return std::unexpected{ RebaseResult::EMPTY_DIFF };
     }
 
     if (applyDiffResult == _details::ApplyDiffResult::CONFLICT)
     {
-        return std::unexpected{ Error::REBASE_CONFLICT };
+        return std::unexpected{ RebaseResult::CONFLICT };
     }
 
     const auto envp = std::vector<std::string>{

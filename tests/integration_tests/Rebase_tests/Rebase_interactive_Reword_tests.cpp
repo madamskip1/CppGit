@@ -35,7 +35,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -86,7 +86,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -136,7 +136,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_changeMessage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase("New message");
 
@@ -181,7 +181,7 @@ TEST_F(RebaseInteractiveRewordTests, fastForward_continue_noChangeMessage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase();
 
@@ -229,7 +229,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_changeMesage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase("New message");
 
@@ -277,7 +277,7 @@ TEST_F(RebaseInteractiveRewordTests, noFastForward_continue_NoChangeMessage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase();
 
@@ -323,7 +323,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_changeMessageAndDescription)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase("New message", "New description");
 
@@ -369,7 +369,7 @@ TEST_F(RebaseInteractiveRewordTests, continue_keepOldMessage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase();
 
@@ -411,13 +411,13 @@ TEST_F(RebaseInteractiveRewordTests, breakAfter)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_REWORD);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::REWORD);
 
     const auto continueRewordResult = rebase.continueRebase("New message");
 
 
     ASSERT_FALSE(continueRewordResult.has_value());
-    EXPECT_EQ(continueRewordResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(continueRewordResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -474,7 +474,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_stop)
 
 
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 2);
@@ -538,7 +538,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
@@ -600,7 +600,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_continue_changeMesssage)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
@@ -662,7 +662,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
 
     const auto rebaseResult = rebase.interactiveRebase(initialCommitHash, todoCommands);
     ASSERT_FALSE(rebaseResult.has_value());
-    EXPECT_EQ(rebaseResult.error(), CppGit::Error::REBASE_CONFLICT);
+    EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello World 1, resolved!");
     index.add("file1.txt");
@@ -670,7 +670,7 @@ TEST_F(RebaseInteractiveRewordTests, conflict_breakAfter)
 
 
     ASSERT_FALSE(continueRebaseResult.has_value());
-    EXPECT_EQ(continueRebaseResult.error(), CppGit::Error::REBASE_BREAK);
+    EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
     const auto commitsLog = commitsHistory.getCommitsLogDetailed();
     ASSERT_EQ(commitsLog.size(), 3);
