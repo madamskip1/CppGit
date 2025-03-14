@@ -13,4 +13,6 @@ auto GitCommandExecutor::execute(const std::vector<std::string>& environmentVari
     return executeImpl(environmentVariables, repoPath, command, args);
 }
 
+GitCommandExecutor::~GitCommandExecutor() = default;
+
 } // namespace CppGit

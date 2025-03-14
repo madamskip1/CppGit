@@ -13,7 +13,7 @@ namespace CppGit {
 class GitCommandExecutor
 {
 public:
-    virtual ~GitCommandExecutor() = default;
+    virtual ~GitCommandExecutor();
 
     /// @brief Execute a git command
     /// @tparam Args Types of the arguments
