@@ -7,6 +7,13 @@ if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     set(CMAKE_CXX_STANDARD 23)
 endif()
 
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+if (ENABLE_ASAN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+    set(ENV{ASAN_OPTIONS} "detect_leaks=1")
+endif()
+
 add_library(${PROJECT_NAME})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
