@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ "$(pwd)" == */analysis_scripts ]]; then
+  cd ..
+fi
+
+mkdir -p build
 cd build
 
 cmake -DCMAKE_BUILD_TYPE=Debug ..
