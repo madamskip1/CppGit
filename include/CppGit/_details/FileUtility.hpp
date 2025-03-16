@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -12,6 +13,7 @@ namespace CppGit::_details::FileUtility {
 /// @param path File path
 /// @param args Content
 template <typename T, typename... Args>
+    requires std::convertible_to<T, std::filesystem::path>
 inline auto createOrOverwriteFile(T&& path, Args&&... args) -> void
 {
     auto file = std::ofstream{ std::forward<T>(path) };
@@ -25,6 +27,7 @@ inline auto createOrOverwriteFile(T&& path, Args&&... args) -> void
 /// @param path File path
 /// @param args Content
 template <typename T, typename... Args>
+    requires std::convertible_to<T, std::filesystem::path>
 inline auto createOrAppendFile(T&& path, Args&&... args) -> void
 {
     auto file = std::ofstream{ std::forward<T>(path), std::ios::app };
@@ -37,6 +40,7 @@ inline auto createOrAppendFile(T&& path, Args&&... args) -> void
 /// @param path File path
 /// @return File content
 template <typename T>
+    requires std::convertible_to<T, std::filesystem::path>
 [[nodiscard]] inline auto readFile(T&& path)
 {
     auto file = std::ifstream{ std::forward<T>(path) };
