@@ -49,6 +49,10 @@ public:
         {
             return delimiter.size();
         }
+        else if constexpr (std::is_array_v<T> && std::is_same_v<std::remove_extent_t<T>, char>)
+        {
+            return std::size_t{ std::size(delimiter) - 1 };
+        }
         else
         {
             return std::strlen(delimiter);
