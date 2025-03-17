@@ -3,7 +3,7 @@
 
 #include <CppGit/Branches.hpp>
 #include <CppGit/Commits.hpp>
-#include <CppGit/CommitsHistory.hpp>
+#include <CppGit/CommitsLog.hpp>
 #include <CppGit/Index.hpp>
 #include <CppGit/Rebase.hpp>
 #include <CppGit/RebaseTodoCommand.hpp>
@@ -20,8 +20,8 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
     const auto branches = repository->Branches();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     commits.createCommit("Initial commit");
@@ -54,8 +54,8 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     commits.createCommit("Initial commit");
@@ -87,8 +87,8 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     const auto branches = repository->Branches();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -115,16 +115,16 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
     EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/second_branch");
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 4);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
-    EXPECT_EQ(commitsLog[2].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[2].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[2]);
-    EXPECT_EQ(commitsLog[3].getMessage(), "Fourth commit");
-    EXPECT_EQ(commitsLog[3].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[3]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 4);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getHash(), secondCommitHash);
+    EXPECT_EQ(log[2].getMessage(), "Third commit");
+    EXPECT_EQ(log[2].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[2]);
+    EXPECT_EQ(log[3].getMessage(), "Fourth commit");
+    EXPECT_EQ(log[3].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[3]);
 
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
@@ -140,8 +140,8 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     const auto branches = repository->Branches();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -165,12 +165,12 @@ TEST_F(RebaseInteractiveBasicTests, sameBranch)
     EXPECT_EQ(currentBranchName, "refs/heads/main");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 4);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getHash(), secondCommitHash);
-    EXPECT_EQ(commitsLog[2].getHash(), thirdCommitHash);
-    EXPECT_EQ(commitsLog[3].getHash(), fourthCommitHash);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 4);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getHash(), secondCommitHash);
+    EXPECT_EQ(log[2].getHash(), thirdCommitHash);
+    EXPECT_EQ(log[3].getHash(), fourthCommitHash);
 
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));

@@ -3,7 +3,7 @@
 #include "CppGit/Branches.hpp"
 #include "CppGit/CherryPick.hpp"
 #include "CppGit/Commits.hpp"
-#include "CppGit/CommitsHistory.hpp"
+#include "CppGit/CommitsLog.hpp"
 #include "CppGit/Diff.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/Merge.hpp"
@@ -40,9 +40,9 @@ auto Repository::Commits() const -> CppGit::Commits
     return CppGit::Commits(*this);
 }
 
-auto Repository::CommitsHistory() const -> CppGit::CommitsHistory
+auto Repository::CommitsLog() const -> CppGit::CommitsLog
 {
-    return CppGit::CommitsHistory(*this);
+    return CppGit::CommitsLog(*this);
 }
 
 auto Repository::Diff() const -> CppGit::Diff

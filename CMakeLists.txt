@@ -32,7 +32,7 @@ target_sources(${PROJECT_NAME}
         src/Branches.cpp
         src/Index.cpp
         src/Commits.cpp
-        src/CommitsHistory.cpp
+        src/CommitsLog.cpp
         src/Diff.cpp
         src/Merge.cpp
         src/CherryPick.cpp

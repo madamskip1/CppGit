@@ -2,7 +2,7 @@
 
 #include <CppGit/Branches.hpp>
 #include <CppGit/Commits.hpp>
-#include <CppGit/CommitsHistory.hpp>
+#include <CppGit/CommitsLog.hpp>
 #include <CppGit/Index.hpp>
 #include <CppGit/Rebase.hpp>
 #include <CppGit/RebaseTodoCommand.hpp>
@@ -21,8 +21,8 @@ TEST_F(RebaseInteractiveFixupTest, fixupCommit)
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -45,12 +45,12 @@ TEST_F(RebaseInteractiveFixupTest, fixupCommit)
     EXPECT_EQ(currentBranchName, "refs/heads/main");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Second commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -66,8 +66,8 @@ TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -95,12 +95,12 @@ TEST_F(RebaseInteractiveFixupTest, fixupTwoCommits)
     EXPECT_EQ(currentBranchName, "refs/heads/main");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Second commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -116,8 +116,8 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -141,12 +141,12 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_noRewrritenListsBefore)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Second commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -178,8 +178,8 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -207,15 +207,15 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 3);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
-    EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
-    EXPECT_EQ(commitsLog[2].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[2]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 3);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
+    EXPECT_EQ(log[2].getMessage(), "Fourth commit");
+    EXPECT_EQ(log[2].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[2]);
 
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -227,7 +227,7 @@ TEST_F(RebaseInteractiveFixupTest, breakAfter_rewrritenListsBefore)
                                 + "pick " + fourthCommitHash + " Fourth commit\n"
                                 + "fixup " + fifthCommitHash + " Fifth commit\n"
                                 + "break\n";
-    const auto rewrittenListExpected = thirdCommitHash + " " + commitsLog[1].getHash() + "\n"
+    const auto rewrittenListExpected = thirdCommitHash + " " + log[1].getHash() + "\n"
                                      + fourthCommitHash + " " + commits.getHeadCommitHash() + "\n"
                                      + fifthCommitHash + " " + commits.getHeadCommitHash() + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
@@ -251,8 +251,8 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -278,12 +278,12 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Second commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Second commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -304,7 +304,7 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_noRewrritenListsBe
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "head-name"), "refs/heads/main");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "onto"), initialCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "orig-head"), thirdCommitHash);
-    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + commitsLog[1].getHash() + "\n");
+    EXPECT_EQ(CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list"), thirdCommitHash + " " + log[1].getHash() + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
 }
 
@@ -313,8 +313,8 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -347,15 +347,15 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 3);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
-    EXPECT_EQ(commitsLog[2].getMessage(), "Fourth commit");
-    EXPECT_EQ(commitsLog[2].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[2]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 3);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
+    EXPECT_EQ(log[2].getMessage(), "Fourth commit");
+    EXPECT_EQ(log[2].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[2]);
 
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file1.txt"));
 
@@ -383,10 +383,10 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_rewrritenListsBefo
     // and new rewritten from fixup
     const auto rewrittenList = CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list");
     const auto splittedRewrittenList = CppGit::Parser::splitToStringViewsVector(rewrittenList, "\n");
-    EXPECT_EQ(splittedRewrittenList[0], thirdCommitHash + " " + commitsLog[1].getHash());
-    EXPECT_NE(splittedRewrittenList[1], fourthCommitHash + " " + commitsLog[2].getHash());
+    EXPECT_EQ(splittedRewrittenList[0], thirdCommitHash + " " + log[1].getHash());
+    EXPECT_NE(splittedRewrittenList[1], fourthCommitHash + " " + log[2].getHash());
     EXPECT_TRUE(std::regex_match(std::string{ splittedRewrittenList[1] }, std::regex{ "(^" + fourthCommitHash + " " + R"([\d\w]{40})$)" }));
-    EXPECT_EQ(splittedRewrittenList[2], fifthCommitHash + " " + commitsLog[2].getHash());
+    EXPECT_EQ(splittedRewrittenList[2], fifthCommitHash + " " + log[2].getHash());
 }
 
 TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrriten)
@@ -394,8 +394,8 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -425,12 +425,12 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     ASSERT_FALSE(rebaseContinueResult.has_value());
     EXPECT_EQ(rebaseContinueResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file1.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -459,9 +459,9 @@ TEST_F(RebaseInteractiveFixupTest, fixupAfterBreak_breakAfter_pickAsFirstRewrrit
     // and new rewritten from fixup
     const auto rewrittenList = CppGit::_details::FileUtility::readFile(rebaseDirPath / "rewritten-list");
     const auto splittedRewrittenList = CppGit::Parser::splitToStringViewsVector(rewrittenList, "\n");
-    EXPECT_NE(splittedRewrittenList[0], thirdCommitHash + " " + commitsLog[1].getHash());
+    EXPECT_NE(splittedRewrittenList[0], thirdCommitHash + " " + log[1].getHash());
     EXPECT_TRUE(std::regex_match(std::string{ splittedRewrittenList[0] }, std::regex{ "(^" + thirdCommitHash + " " + R"([\d\w]{40})$)" }));
-    EXPECT_EQ(splittedRewrittenList[1], fourthCommitHash + " " + commitsLog[1].getHash());
+    EXPECT_EQ(splittedRewrittenList[1], fourthCommitHash + " " + log[1].getHash());
 }
 
 TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
@@ -469,8 +469,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -496,12 +496,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_stop)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\n=======\nHello World 1, new!\n>>>>>>> " + fourthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -535,8 +535,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -572,12 +572,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_continue)
     EXPECT_EQ(currentBranchName, "refs/heads/main");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -593,8 +593,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -627,12 +627,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -642,8 +642,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringLastFixup_breakAfterContinue)
                                 + "pick " + thirdCommitHash + " Third commit\n"
                                 + "fixup " + fourthCommitHash + " Fourth commit\n"
                                 + "break\n";
-    const auto rewrittenListExpected = thirdCommitHash + " " + commitsLog[1].getHash() + "\n"
-                                     + fourthCommitHash + " " + commitsLog[1].getHash() + "\n";
+    const auto rewrittenListExpected = thirdCommitHash + " " + log[1].getHash() + "\n"
+                                     + fourthCommitHash + " " + log[1].getHash() + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -665,8 +665,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -696,12 +696,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_stop)
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "<<<<<<< HEAD\n=======\nHello World 1, new!\n>>>>>>> " + fourthCommitHash + "\n");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -736,8 +736,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
     const auto branches = repository->Branches();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -777,12 +777,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_continue)
     EXPECT_EQ(currentBranchName, "refs/heads/main");
     EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), continueRebaseResult.value());
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -799,8 +799,8 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue
     const auto commits = repository->Commits();
     const auto rebase = repository->Rebase();
     const auto index = repository->Index();
-    auto commitsHistory = repository->CommitsHistory();
-    commitsHistory.setOrder(CppGit::CommitsHistory::Order::REVERSE);
+    auto commitsLog = repository->CommitsLog();
+    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
 
 
     const auto initialCommitHash = commits.createCommit("Initial commit");
@@ -837,12 +837,12 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue
     ASSERT_FALSE(continueRebaseResult.has_value());
     EXPECT_EQ(continueRebaseResult.error(), CppGit::RebaseResult::BREAK);
 
-    const auto commitsLog = commitsHistory.getCommitsLogDetailed();
-    ASSERT_EQ(commitsLog.size(), 2);
-    EXPECT_EQ(commitsLog[0].getHash(), initialCommitHash);
-    EXPECT_EQ(commitsLog[1].getMessage(), "Third commit");
-    EXPECT_EQ(commitsLog[1].getDescription(), "Third commit description");
-    checkTestAuthorPreservedCommitterModified(commitsLog[1]);
+    const auto log = commitsLog.getCommitsLogDetailed();
+    ASSERT_EQ(log.size(), 2);
+    EXPECT_EQ(log[0].getHash(), initialCommitHash);
+    EXPECT_EQ(log[1].getMessage(), "Third commit");
+    EXPECT_EQ(log[1].getDescription(), "Third commit description");
+    checkTestAuthorPreservedCommitterModified(log[1]);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file1.txt"), "Hello World 1, resolved!");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello World 2!");
@@ -854,9 +854,9 @@ TEST_F(RebaseInteractiveFixupTest, conflictDuringNotLastFixup_breakAfterContinue
                                 + "fixup " + fourthCommitHash + " Fourth commit\n"
                                 + "fixup " + fifthCommitHash + " Fifth commit\n"
                                 + "break\n";
-    const auto rewrittenListExpected = thirdCommitHash + " " + commitsLog[1].getHash() + "\n"
-                                     + fourthCommitHash + " " + commitsLog[1].getHash() + "\n"
-                                     + fifthCommitHash + " " + commitsLog[1].getHash() + "\n";
+    const auto rewrittenListExpected = thirdCommitHash + " " + log[1].getHash() + "\n"
+                                     + fourthCommitHash + " " + log[1].getHash() + "\n"
+                                     + fifthCommitHash + " " + log[1].getHash() + "\n";
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "REBASE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));

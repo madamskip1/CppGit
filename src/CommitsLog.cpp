@@ -1,4 +1,4 @@
-#include "CppGit/CommitsHistory.hpp"
+#include "CppGit/CommitsLog.hpp"
 
 #include "CppGit/Commit.hpp"
 #include "CppGit/Repository.hpp"
@@ -12,116 +12,116 @@
 #include <vector>
 
 namespace CppGit {
-CommitsHistory::CommitsHistory(const Repository& repo)
+CommitsLog::CommitsLog(const Repository& repo)
     : repo{ &repo }
 {
 }
 
-auto CommitsHistory::getCommitsLogHashesOnly(const std::string_view ref) const -> std::vector<std::string>
+auto CommitsLog::getCommitsLogHashesOnly(const std::string_view ref) const -> std::vector<std::string>
 {
     return getCommitsLogHashesOnlyImpl("", ref);
 }
 
-auto CommitsHistory::getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLog::getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     return getCommitsLogHashesOnlyImpl(fromRef, toRef);
 }
 
-auto CommitsHistory::getCommitsLogDetailed(const std::string_view ref) const -> std::vector<Commit>
+auto CommitsLog::getCommitsLogDetailed(const std::string_view ref) const -> std::vector<Commit>
 {
     return getCommitsLogDetailedImpl("", ref);
 }
 
-auto CommitsHistory::getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+auto CommitsLog::getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     return getCommitsLogDetailedImpl(fromRef, toRef);
 }
 
-auto CommitsHistory::setAllBranches(const bool allBranches) -> CommitsHistory&
+auto CommitsLog::setAllBranches(const bool allBranches) -> CommitsLog&
 {
     allBranches_ = allBranches;
     return *this;
 }
 
-auto CommitsHistory::resetAllBranches() -> CommitsHistory&
+auto CommitsLog::resetAllBranches() -> CommitsLog&
 {
     allBranches_ = false;
     return *this;
 }
 
-auto CommitsHistory::setMaxCount(int maxCount) -> CommitsHistory&
+auto CommitsLog::setMaxCount(int maxCount) -> CommitsLog&
 {
     maxCount_ = maxCount;
     return *this;
 }
-auto CommitsHistory::resetMaxCount() -> CommitsHistory&
+auto CommitsLog::resetMaxCount() -> CommitsLog&
 {
     maxCount_ = -1;
     return *this;
 }
-auto CommitsHistory::setSkip(int skip) -> CommitsHistory&
+auto CommitsLog::setSkip(int skip) -> CommitsLog&
 {
     skip_ = skip;
     return *this;
 }
-auto CommitsHistory::resetSkip() -> CommitsHistory&
+auto CommitsLog::resetSkip() -> CommitsLog&
 {
     skip_ = -1;
     return *this;
 }
-auto CommitsHistory::setLogMerges(LOG_MERGES logMerges) -> CommitsHistory&
+auto CommitsLog::setLogMerges(LOG_MERGES logMerges) -> CommitsLog&
 {
     logMerges_ = logMerges;
     return *this;
 }
-auto CommitsHistory::resetLogMerges() -> CommitsHistory&
+auto CommitsLog::resetLogMerges() -> CommitsLog&
 {
     logMerges_ = LOG_MERGES::ALL;
     return *this;
 }
-auto CommitsHistory::setOrder(Order order) -> CommitsHistory&
+auto CommitsLog::setOrder(Order order) -> CommitsLog&
 {
     order_ = order;
     return *this;
 }
-auto CommitsHistory::resetOrder() -> CommitsHistory&
+auto CommitsLog::resetOrder() -> CommitsLog&
 {
     order_ = Order::CHRONOLOGICAL;
     return *this;
 }
-auto CommitsHistory::setAuthorPattern(std::string_view authorPattern) -> CommitsHistory&
+auto CommitsLog::setAuthorPattern(std::string_view authorPattern) -> CommitsLog&
 {
     authorPattern_ = authorPattern;
     return *this;
 }
-auto CommitsHistory::resetAuthorPattern() -> CommitsHistory&
+auto CommitsLog::resetAuthorPattern() -> CommitsLog&
 {
     authorPattern_ = "";
     return *this;
 }
-auto CommitsHistory::setCommitterPattern(std::string_view committerPattern) -> CommitsHistory&
+auto CommitsLog::setCommitterPattern(std::string_view committerPattern) -> CommitsLog&
 {
     committerPattern_ = committerPattern;
     return *this;
 }
-auto CommitsHistory::resetCommitterPattern() -> CommitsHistory&
+auto CommitsLog::resetCommitterPattern() -> CommitsLog&
 {
     committerPattern_ = "";
     return *this;
 }
-auto CommitsHistory::setMessagePattern(std::string_view messagePattern) -> CommitsHistory&
+auto CommitsLog::setMessagePattern(std::string_view messagePattern) -> CommitsLog&
 {
     messagePattern_ = messagePattern;
     return *this;
 }
 
-auto CommitsHistory::resetMessagePattern() -> CommitsHistory&
+auto CommitsLog::resetMessagePattern() -> CommitsLog&
 {
     messagePattern_ = "";
     return *this;
 }
 
-auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLog::prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = std::vector<std::string>();
     if (allBranches_)
@@ -193,7 +193,7 @@ auto CommitsHistory::prepareCommandsArgument(const std::string_view fromRef, con
     return arguments;
 }
 
-auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLog::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
     const auto output = repo->executeGitCommand("rev-list", std::move(arguments));
@@ -201,7 +201,7 @@ auto CommitsHistory::getCommitsLogHashesOnlyImpl(const std::string_view fromRef,
     return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
-auto CommitsHistory::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+auto CommitsLog::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
     auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";

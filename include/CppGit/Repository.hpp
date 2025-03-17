@@ -12,15 +12,15 @@
 
 namespace CppGit {
 
-class Branches;       // forward-declaration
-class Index;          // forward-declaration
-class Commits;        // forward-declaration
-class CommitsHistory; // forward-declaration
-class Diff;           // forward-declaration
-class Merge;          // forward-declaration
-class CherryPick;     // forward-declaration
-class Rebase;         // forward-declaration
-class Reset;          // forward-declaration
+class Branches;   // forward-declaration
+class Index;      // forward-declaration
+class Commits;    // forward-declaration
+class CommitsLog; // forward-declaration
+class Diff;       // forward-declaration
+class Merge;      // forward-declaration
+class CherryPick; // forward-declaration
+class Rebase;     // forward-declaration
+class Reset;      // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 
@@ -68,9 +68,9 @@ public:
     /// @return Commits object
     [[nodiscard]] auto Commits() const -> CppGit::Commits;
 
-    /// @brief Return commits history object with current repository
-    /// @return CommitsHistory object
-    [[nodiscard]] auto CommitsHistory() const -> CppGit::CommitsHistory;
+    /// @brief Return commits log object with current repository
+    /// @return CommitsLog object
+    [[nodiscard]] auto CommitsLog() const -> CppGit::CommitsLog;
 
     /// @brief Return diff object with current repository
     /// @return Diff object

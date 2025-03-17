@@ -8,7 +8,7 @@ target_sources(${PROJECT_NAME}_integration_tests
         InitRepository_tests.cpp
         Index_tests.cpp
         Commits_tests.cpp
-        CommitsHistory_tests.cpp
+        CommitsLog_tests.cpp
         Branches_tests.cpp
         Diff_tests.cpp
         Merge_tests.cpp

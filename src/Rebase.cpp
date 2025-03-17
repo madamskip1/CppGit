@@ -3,7 +3,7 @@
 #include "CppGit/Branches.hpp"
 #include "CppGit/Commit.hpp"
 #include "CppGit/Commits.hpp"
-#include "CppGit/CommitsHistory.hpp"
+#include "CppGit/CommitsLog.hpp"
 #include "CppGit/Index.hpp"
 #include "CppGit/RebaseTodoCommand.hpp"
 #include "CppGit/Repository.hpp"
@@ -139,9 +139,9 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
 {
     auto rebaseBase = repo->executeGitCommand("merge-base", "HEAD", upstream);
 
-    auto commitsHistory = repo->CommitsHistory();
-    commitsHistory.setOrder(CommitsHistory::Order::REVERSE);
-    auto commitsToRebase = commitsHistory.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
+    auto commitsLog = repo->CommitsLog();
+    commitsLog.setOrder(CommitsLog::Order::REVERSE);
+    auto commitsToRebase = commitsLog.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
 
     auto rebaseCommands = std::vector<RebaseTodoCommand>{};
 
