@@ -8,28 +8,28 @@
 namespace CppGit::_details {
 
 /// @brief Provides internal functionality to amend a commit
-class AmendCommit
+class CommitAmender
 {
 public:
     /// @param repo The repository to work with
-    explicit AmendCommit(const Repository& repo);
-    AmendCommit() = delete;
+    explicit CommitAmender(const Repository& repository);
+    CommitAmender() = delete;
 
     /// @brief Amend commit
     ///     The new commit will preserve the message and description of the original commit
     /// @param commit Commit to be amended
     /// @return Amended commit hash
-    auto amend(const Commit& commit) const -> std::string;
+    auto amendCommit(const Commit& commit) const -> std::string;
 
     /// @brief Amend commit
     /// @param commit Commit to be amended
     /// @param newMessage New commit message
     /// @param newDescription New commit description
     /// @return Amended commit hash
-    auto amend(const Commit& commit, const std::string_view newMessage, const std::string_view newDescription = "") const -> std::string;
+    auto amendCommit(const Commit& commit, const std::string_view newMessage, const std::string_view newDescription = "") const -> std::string;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 };
 
 } // namespace CppGit::_details

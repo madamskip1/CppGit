@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Branches.hpp"
-#include "Commits.hpp"
+#include "BranchesManager.hpp"
+#include "CommitsManager.hpp"
 #include "RebaseTodoCommand.hpp"
 #include "Repository.hpp"
-#include "_details/AmendCommit.hpp"
-#include "_details/ApplyDiff.hpp"
-#include "_details/CreateCommit.hpp"
-#include "_details/IndexWorktree.hpp"
+#include "_details/CommitAmender.hpp"
+#include "_details/CommitCreator.hpp"
+#include "_details/DiffApplier.hpp"
+#include "_details/IndexWorktreeManager.hpp"
 #include "_details/RebaseFilesHelper.hpp"
-#include "_details/Refs.hpp"
+#include "_details/ReferencesManager.hpp"
 
 #include <cstdint>
 #include <expected>
@@ -31,12 +31,12 @@ enum class RebaseResult : uint8_t
 };
 
 /// @brief Provides functionality to rebase the current branch
-class Rebase
+class Rebaser
 {
 
 public:
     /// @param repo The repository to work with
-    explicit Rebase(const Repository& repo);
+    explicit Rebaser(const Repository& repository);
 
     /// @brief Rebase current branch onto upstream branch
     /// @param upstream Upstream branch name to rebase onto
@@ -98,16 +98,16 @@ private:
 
     auto getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string;
 
-    const Repository* repo;
+    const Repository* repository;
 
-    Commits commits;
-    Branches branches;
-    _details::Refs refs;
-    _details::IndexWorktree indexWorktree;
+    CommitsManager commitsManager;
+    BranchesManager branchesManager;
+    _details::ReferencesManager referencesManager;
+    _details::IndexWorktreeManager indexWorktreeManager;
     _details::RebaseFilesHelper rebaseFilesHelper;
-    _details::ApplyDiff applyDiff;
-    _details::AmendCommit amendCommit;
-    _details::CreateCommit createCommit;
+    _details::DiffApplier diffApplier;
+    _details::CommitAmender commitAmender;
+    _details::CommitCreator commitCreator;
 };
 
 } // namespace CppGit

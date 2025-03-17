@@ -1,6 +1,6 @@
-#include "CppGit/_details/ThreeWayMerge.hpp"
+#include "CppGit/_details/ThreeWayMerger.hpp"
 
-#include "CppGit/Index.hpp"
+#include "CppGit/IndexManager.hpp"
 #include "CppGit/Repository.hpp"
 
 #include <filesystem>
@@ -14,16 +14,16 @@
 
 namespace CppGit::_details {
 
-ThreeWayMerge::ThreeWayMerge(const Repository& repo)
-    : repo{ &repo }
+ThreeWayMerger::ThreeWayMerger(const Repository& repository)
+    : repository{ &repository }
 {
 }
 
-auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void
+auto ThreeWayMerger::mergeConflictedFiles(const std::vector<IndexEntry>& unmergedFilesEntries, const std::string_view sourceLabel, const std::string_view targetLabel) const -> void
 {
     auto unmergedFiles = createUnmergedFileMap(unmergedFilesEntries);
 
-    const auto repoRootPath = repo->getTopLevelPath();
+    const auto repoRootPath = repository->getTopLevelPath();
 
     for (const auto& [file, unmergedFile] : unmergedFiles)
     {
@@ -36,9 +36,9 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
             baseTempFile = "/dev/null";
         }
 
-        repo->executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
+        repository->executeGitCommand("merge-file", "-L", targetLabel, "-L", "ancestor", "-L", sourceLabel, targetTempFile, baseTempFile, sourceTempFile);
 
-        repo->executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
+        repository->executeGitCommand("checkout-index", "-f", "--stage=2", "--", file);
 
         auto baseTempFilePath = std::filesystem::path{ repoRootPath / baseTempFile };
 
@@ -61,9 +61,9 @@ auto ThreeWayMerge::mergeConflictedFiles(const std::vector<IndexEntry>& unmerged
     }
 }
 
-auto ThreeWayMerge::createMergeMsgFile(const std::string_view msg, const std::string_view description) const -> void
+auto ThreeWayMerger::createMergeMsgFile(const std::string_view msg, const std::string_view description) const -> void
 {
-    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repository->getGitDirectoryPath() / "MERGE_MSG";
     auto file = std::ofstream{ path };
     file << msg;
     if (!description.empty())
@@ -74,16 +74,16 @@ auto ThreeWayMerge::createMergeMsgFile(const std::string_view msg, const std::st
     file.close();
 }
 
-auto ThreeWayMerge::removeMergeMsgFile() const -> void
+auto ThreeWayMerger::removeMergeMsgFile() const -> void
 {
-    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repository->getGitDirectoryPath() / "MERGE_MSG";
     std::filesystem::remove(path);
 }
 
 
-auto ThreeWayMerge::getMergeMsg() const -> std::string
+auto ThreeWayMerger::getMergeMsg() const -> std::string
 {
-    const auto path = repo->getGitDirectoryPath() / "MERGE_MSG";
+    const auto path = repository->getGitDirectoryPath() / "MERGE_MSG";
     auto file = std::ifstream{ path };
     auto msg = std::string{};
     std::getline(file, msg, '\0');
@@ -92,18 +92,18 @@ auto ThreeWayMerge::getMergeMsg() const -> std::string
     return msg;
 }
 
-auto ThreeWayMerge::unpackFile(const std::string_view fileBlob) const -> std::string
+auto ThreeWayMerger::unpackFile(const std::string_view fileBlob) const -> std::string
 {
     if (fileBlob.empty())
     {
         return std::string{};
     }
 
-    auto output = repo->executeGitCommand("unpack-file", fileBlob);
+    auto output = repository->executeGitCommand("unpack-file", fileBlob);
     return std::move(output.stdout);
 }
 
-auto ThreeWayMerge::createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>
+auto ThreeWayMerger::createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>
 {
     std::unordered_map<std::string, UnmergedFileBlobs> unmergedFiles;
 

@@ -59,12 +59,12 @@ struct LsFilesEntry
 };
 
 /// @brief Provides functionality to work with the git index
-class Index
+class IndexManager
 {
 public:
     /// @param repo The repository to work with
-    explicit Index(const Repository& repo);
-    Index() = delete;
+    explicit IndexManager(const Repository& repository);
+    IndexManager() = delete;
 
     /// @brief Add a file to the index
     /// @param filePattern File(s) pattern
@@ -81,7 +81,7 @@ public:
     template <typename... Args>
     auto restoreStaged(Args&&... args) const -> void
     {
-        repo->executeGitCommand("restore", std::forward<Args>(args)...);
+        repository->executeGitCommand("restore", std::forward<Args>(args)...);
     }
 
     /// @brief  Remove all files from staged state
@@ -100,7 +100,7 @@ public:
     /// @brief Get list of files in the index with details
     /// @param filePattern File(s) pattern to filter
     /// @return List of files in the index with details
-    [[nodiscard]] auto getFilesInIndexListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
+    [[nodiscard]] auto getFilesInIndexDetailedList(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
 
     /// @brief Get list of untracked files
@@ -126,7 +126,7 @@ public:
     /// @brief Get list of unmerged files (conflicted)
     /// @param filePattern File(s) pattern to filter
     /// @return List of unmerged files
-    [[nodiscard]] auto getUnmergedFilesListWithDetails(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
+    [[nodiscard]] auto getUnmergedFilesDetailedList(const std::string_view filePattern = "") const -> std::vector<IndexEntry>;
 
     /// @brief Check whether there are any staged files
     /// @return True if there are any staged files, false otherwise
@@ -141,7 +141,7 @@ public:
     [[nodiscard]] auto isDirty() const -> bool;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     auto getHeadFilesHashForGivenFiles(std::vector<DiffIndexEntry>& files) const -> std::vector<std::string>;
     auto getUntrackedAndIndexFilesList(const std::string_view pattern = "") const -> std::vector<std::string>;

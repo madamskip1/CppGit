@@ -1,4 +1,4 @@
-#include "CppGit/CommitsLog.hpp"
+#include "CppGit/CommitsLogManager.hpp"
 
 #include "CppGit/Commit.hpp"
 #include "CppGit/Repository.hpp"
@@ -12,116 +12,116 @@
 #include <vector>
 
 namespace CppGit {
-CommitsLog::CommitsLog(const Repository& repo)
-    : repo{ &repo }
+CommitsLogManager::CommitsLogManager(const Repository& repository)
+    : repository{ &repository }
 {
 }
 
-auto CommitsLog::getCommitsLogHashesOnly(const std::string_view ref) const -> std::vector<std::string>
+auto CommitsLogManager::getCommitsLogHashesOnly(const std::string_view ref) const -> std::vector<std::string>
 {
     return getCommitsLogHashesOnlyImpl("", ref);
 }
 
-auto CommitsLog::getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLogManager::getCommitsLogHashesOnly(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     return getCommitsLogHashesOnlyImpl(fromRef, toRef);
 }
 
-auto CommitsLog::getCommitsLogDetailed(const std::string_view ref) const -> std::vector<Commit>
+auto CommitsLogManager::getCommitsLogDetailed(const std::string_view ref) const -> std::vector<Commit>
 {
     return getCommitsLogDetailedImpl("", ref);
 }
 
-auto CommitsLog::getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+auto CommitsLogManager::getCommitsLogDetailed(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     return getCommitsLogDetailedImpl(fromRef, toRef);
 }
 
-auto CommitsLog::setAllBranches(const bool allBranches) -> CommitsLog&
+auto CommitsLogManager::setAllBranches(const bool allBranches) -> CommitsLogManager&
 {
     allBranches_ = allBranches;
     return *this;
 }
 
-auto CommitsLog::resetAllBranches() -> CommitsLog&
+auto CommitsLogManager::resetAllBranches() -> CommitsLogManager&
 {
     allBranches_ = false;
     return *this;
 }
 
-auto CommitsLog::setMaxCount(int maxCount) -> CommitsLog&
+auto CommitsLogManager::setMaxCount(int maxCount) -> CommitsLogManager&
 {
     maxCount_ = maxCount;
     return *this;
 }
-auto CommitsLog::resetMaxCount() -> CommitsLog&
+auto CommitsLogManager::resetMaxCount() -> CommitsLogManager&
 {
     maxCount_ = -1;
     return *this;
 }
-auto CommitsLog::setSkip(int skip) -> CommitsLog&
+auto CommitsLogManager::setSkip(int skip) -> CommitsLogManager&
 {
     skip_ = skip;
     return *this;
 }
-auto CommitsLog::resetSkip() -> CommitsLog&
+auto CommitsLogManager::resetSkip() -> CommitsLogManager&
 {
     skip_ = -1;
     return *this;
 }
-auto CommitsLog::setLogMerges(LOG_MERGES logMerges) -> CommitsLog&
+auto CommitsLogManager::setLogMerges(LOG_MERGES logMerges) -> CommitsLogManager&
 {
     logMerges_ = logMerges;
     return *this;
 }
-auto CommitsLog::resetLogMerges() -> CommitsLog&
+auto CommitsLogManager::resetLogMerges() -> CommitsLogManager&
 {
     logMerges_ = LOG_MERGES::ALL;
     return *this;
 }
-auto CommitsLog::setOrder(Order order) -> CommitsLog&
+auto CommitsLogManager::setOrder(Order order) -> CommitsLogManager&
 {
     order_ = order;
     return *this;
 }
-auto CommitsLog::resetOrder() -> CommitsLog&
+auto CommitsLogManager::resetOrder() -> CommitsLogManager&
 {
     order_ = Order::CHRONOLOGICAL;
     return *this;
 }
-auto CommitsLog::setAuthorPattern(std::string_view authorPattern) -> CommitsLog&
+auto CommitsLogManager::setAuthorPattern(std::string_view authorPattern) -> CommitsLogManager&
 {
     authorPattern_ = authorPattern;
     return *this;
 }
-auto CommitsLog::resetAuthorPattern() -> CommitsLog&
+auto CommitsLogManager::resetAuthorPattern() -> CommitsLogManager&
 {
     authorPattern_ = "";
     return *this;
 }
-auto CommitsLog::setCommitterPattern(std::string_view committerPattern) -> CommitsLog&
+auto CommitsLogManager::setCommitterPattern(std::string_view committerPattern) -> CommitsLogManager&
 {
     committerPattern_ = committerPattern;
     return *this;
 }
-auto CommitsLog::resetCommitterPattern() -> CommitsLog&
+auto CommitsLogManager::resetCommitterPattern() -> CommitsLogManager&
 {
     committerPattern_ = "";
     return *this;
 }
-auto CommitsLog::setMessagePattern(std::string_view messagePattern) -> CommitsLog&
+auto CommitsLogManager::setMessagePattern(std::string_view messagePattern) -> CommitsLogManager&
 {
     messagePattern_ = messagePattern;
     return *this;
 }
 
-auto CommitsLog::resetMessagePattern() -> CommitsLog&
+auto CommitsLogManager::resetMessagePattern() -> CommitsLogManager&
 {
     messagePattern_ = "";
     return *this;
 }
 
-auto CommitsLog::prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLogManager::prepareCommandsArgument(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = std::vector<std::string>();
     if (allBranches_)
@@ -193,15 +193,15 @@ auto CommitsLog::prepareCommandsArgument(const std::string_view fromRef, const s
     return arguments;
 }
 
-auto CommitsLog::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
+auto CommitsLogManager::getCommitsLogHashesOnlyImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<std::string>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
-    const auto output = repo->executeGitCommand("rev-list", std::move(arguments));
+    const auto output = repository->executeGitCommand("rev-list", std::move(arguments));
 
     return Parser::splitToStringsVector(output.stdout, '\n');
 }
 
-auto CommitsLog::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
+auto CommitsLogManager::getCommitsLogDetailedImpl(const std::string_view fromRef, const std::string_view toRef) const -> std::vector<Commit>
 {
     auto arguments = prepareCommandsArgument(fromRef, toRef);
     auto formatString = std::string{ "--pretty=" } + CommitParser::COMMIT_LOG_DEFAULT_FORMAT + "$:>";
@@ -209,7 +209,7 @@ auto CommitsLog::getCommitsLogDetailedImpl(const std::string_view fromRef, const
     arguments.emplace_back("--no-commit-header");
     arguments.emplace_back("--date=raw");
 
-    auto output = repo->executeGitCommand("rev-list", std::move(arguments));
+    auto output = repository->executeGitCommand("rev-list", std::move(arguments));
 
     auto commits = std::vector<Commit>();
     output.stdout.erase(output.stdout.size() - 3); // remove $:> from last line

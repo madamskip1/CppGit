@@ -7,12 +7,12 @@
 
 namespace CppGit {
 
-class Commits;
+class CommitsManager;
 
 /// @brief Represents a single commit
 class Commit
 {
-    friend Commits;
+    friend CommitsManager;
 
 public:
     Commit(std::string hash,

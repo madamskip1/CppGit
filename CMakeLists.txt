@@ -29,15 +29,15 @@ target_sources(${PROJECT_NAME}
         src/Repository.cpp
         src/Commit.cpp
         src/Branch.cpp
-        src/Branches.cpp
-        src/Index.cpp
-        src/Commits.cpp
-        src/CommitsLog.cpp
-        src/Diff.cpp
-        src/Merge.cpp
-        src/CherryPick.cpp
-        src/Rebase.cpp
-        src/Reset.cpp
+        src/BranchesManager.cpp
+        src/IndexManager.cpp
+        src/CommitsManager.cpp
+        src/CommitsLogManager.cpp
+        src/DiffGenerator.cpp
+        src/Merger.cpp
+        src/CherryPicker.cpp
+        src/Rebaser.cpp
+        src/Resetter.cpp
 
         # _details (internal)
 
@@ -49,12 +49,12 @@ target_sources(${PROJECT_NAME}
         src/_details/GitCommandExecutor/GitCommandExecutor.cpp
         src/_details/GitCommandExecutor/GitCommandExecutorUnix.cpp
 
-        src/_details/CreateCommit.cpp
-        src/_details/AmendCommit.cpp
-        src/_details/ThreeWayMerge.cpp
-        src/_details/Refs.cpp
-        src/_details/IndexWorktree.cpp
-        src/_details/ApplyDiff.cpp
+        src/_details/CommitCreator.cpp
+        src/_details/CommitAmender.cpp
+        src/_details/ThreeWayMerger.cpp
+        src/_details/ReferencesManager.cpp
+        src/_details/IndexWorktreeManager.cpp
+        src/_details/DiffApplier.cpp
         src/_details/RebaseFilesHelper.cpp
         src/_details/GitFilesHelper.cpp
 )

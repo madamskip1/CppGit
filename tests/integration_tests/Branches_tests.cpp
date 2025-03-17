@@ -1,9 +1,9 @@
 #include "BaseRepositoryFixture.hpp"
 
 #include <CppGit/Branch.hpp>
-#include <CppGit/Branches.hpp>
-#include <CppGit/Commits.hpp>
-#include <CppGit/Index.hpp>
+#include <CppGit/BranchesManager.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/IndexManager.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -14,8 +14,8 @@ public:
     void SetUp() override
     {
         BaseRepositoryFixture::SetUp();
-        auto commits = repository->Commits();
-        initialCommitHash = commits.createCommit("Initial commit");
+        auto commitsManager = repository->CommitsManager();
+        initialCommitHash = commitsManager.createCommit("Initial commit");
     }
 
 protected:
@@ -24,9 +24,9 @@ protected:
 
 TEST_F(BranchesTests, branchesAfterInitialCommit_getAllBranches)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
 
     ASSERT_EQ(allBranches.size(), 1);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
@@ -34,18 +34,18 @@ TEST_F(BranchesTests, branchesAfterInitialCommit_getAllBranches)
 
 TEST_F(BranchesTests, branchesAfterInitialCommit_getCurrentBranchRef)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
 
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
 }
 
 TEST_F(BranchesTests, branchesAfterInitialCommit_getLocalBranches)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto allBranches = branches.getLocalBranches();
+    const auto allBranches = branchesManager.getLocalBranches();
 
     ASSERT_EQ(allBranches.size(), 1);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
@@ -53,179 +53,179 @@ TEST_F(BranchesTests, branchesAfterInitialCommit_getLocalBranches)
 
 TEST_F(BranchesTests, branchesAfterInitialCommit_getRemoteBranches)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto allBranches = branches.getRemoteBranches();
+    const auto allBranches = branchesManager.getRemoteBranches();
 
     ASSERT_EQ(allBranches.size(), 0);
 }
 
 TEST_F(BranchesTests, createLocalBranch_fullName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("refs/heads/new_branch");
+    branchesManager.createBranch("refs/heads/new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo("refs/heads/new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("refs/heads/new_branch"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createLocalBranch_shortName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("new_branch");
+    branchesManager.createBranch("new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromBranch_fullName)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    branches.createBranch("new_branch");
-    const auto secondCommitHash = commits.createCommit("second commit");
-    branches.createBranch("refs/heads/new_branch_from_new", "refs/heads/new_branch");
+    branchesManager.createBranch("new_branch");
+    const auto secondCommitHash = commitsManager.createCommit("second commit");
+    branchesManager.createBranch("refs/heads/new_branch_from_new", "refs/heads/new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 3);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
     EXPECT_EQ(allBranches[2].getRefName(), "refs/heads/new_branch_from_new");
-    EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("main"), secondCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromBranch_shortName)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    branches.createBranch("new_branch");
-    const auto secondCommitHash = commits.createCommit("second commit");
-    branches.createBranch("new_branch_from_new", "refs/heads/new_branch");
+    branchesManager.createBranch("new_branch");
+    const auto secondCommitHash = commitsManager.createCommit("second commit");
+    branchesManager.createBranch("new_branch_from_new", "refs/heads/new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 3);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
     EXPECT_EQ(allBranches[2].getRefName(), "refs/heads/new_branch_from_new");
-    EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("main"), secondCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromBranch_shortRefName)
 {
-    const auto branches = repository->Branches();
-    auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    auto commitsManager = repository->CommitsManager();
 
 
-    branches.createBranch("new_branch");
-    const auto secondCommitHash = commits.createCommit("second commit");
-    branches.createBranch("refs/heads/new_branch_from_new", "new_branch");
+    branchesManager.createBranch("new_branch");
+    const auto secondCommitHash = commitsManager.createCommit("second commit");
+    branchesManager.createBranch("refs/heads/new_branch_from_new", "new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 3);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch");
     EXPECT_EQ(allBranches[2].getRefName(), "refs/heads/new_branch_from_new");
-    EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("main"), secondCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch_from_new"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, createBranchFromCommitHash)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    const auto secondCommitHash = commits.createCommit("second commit");
-    branches.createBranch("refs/heads/new_branch_from_commit", initialCommitHash);
+    const auto secondCommitHash = commitsManager.createCommit("second commit");
+    branchesManager.createBranch("refs/heads/new_branch_from_commit", initialCommitHash);
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 2);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
     EXPECT_EQ(allBranches[1].getRefName(), "refs/heads/new_branch_from_commit");
-    EXPECT_EQ(branches.getHashBranchRefersTo("main"), secondCommitHash);
-    EXPECT_EQ(branches.getHashBranchRefersTo("refs/heads/new_branch_from_commit"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("main"), secondCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("refs/heads/new_branch_from_commit"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, deleteBranch_fullName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("new_branch");
-    branches.deleteBranch("refs/heads/new_branch");
+    branchesManager.createBranch("new_branch");
+    branchesManager.deleteBranch("refs/heads/new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 1);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
 }
 
 TEST_F(BranchesTests, deleteBranch_shortName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("new_branch");
-    branches.deleteBranch("new_branch");
+    branchesManager.createBranch("new_branch");
+    branchesManager.deleteBranch("new_branch");
 
 
-    const auto allBranches = branches.getAllBranches();
+    const auto allBranches = branchesManager.getAllBranches();
     ASSERT_EQ(allBranches.size(), 1);
     EXPECT_EQ(allBranches[0].getRefName(), "refs/heads/main");
 }
 
 TEST_F(BranchesTests, getCurrentBranchHashRefsTo_fullName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto hash = branches.getHashBranchRefersTo("refs/heads/main");
+    const auto hash = branchesManager.getHashBranchRefersTo("refs/heads/main");
     EXPECT_EQ(hash, initialCommitHash);
 }
 
 TEST_F(BranchesTests, getCurrentBranchHashRefsTo_shortName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
-    const auto hash = branches.getHashBranchRefersTo("main");
+    const auto hash = branchesManager.getHashBranchRefersTo("main");
     EXPECT_EQ(hash, initialCommitHash);
 }
 
 
 TEST_F(BranchesTests, currentBranchInfo)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     EXPECT_EQ(currentBranch.getUpstreamPull(), "");
     EXPECT_EQ(currentBranch.getUpstreamPush(), "");
@@ -234,69 +234,69 @@ TEST_F(BranchesTests, currentBranchInfo)
 
 TEST_F(BranchesTests, changeBranch_shortName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("new_branch");
-    branches.changeCurrentBranch("new_branch");
+    branchesManager.createBranch("new_branch");
+    branchesManager.changeBranch("new_branch");
 
 
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
 
 TEST_F(BranchesTests, changeBranch_fullName)
 {
-    const auto branches = repository->Branches();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    branches.createBranch("new_branch");
-    branches.changeCurrentBranch("refs/heads/new_branch");
+    branchesManager.createBranch("new_branch");
+    branchesManager.changeBranch("refs/heads/new_branch");
 
 
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/new_branch");
 }
 
 
 TEST_F(BranchesTests, changeBranch_shouldDeleteFile)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    branches.createBranch("new_branch");
-    branches.changeCurrentBranch("new_branch");
+    branchesManager.createBranch("new_branch");
+    branchesManager.changeBranch("new_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Added new file");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Added new file");
 
-    branches.changeCurrentBranch("main");
+    branchesManager.changeBranch("main");
 
 
-    const auto currentBranch = branches.getCurrentBranchInfo();
+    const auto currentBranch = branchesManager.getCurrentBranchInfo();
     EXPECT_EQ(currentBranch.getRefName(), "refs/heads/main");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
 }
 
 TEST_F(BranchesTests, changeBranch_shouldCreateFile)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    branches.createBranch("new_branch");
+    branchesManager.createBranch("new_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Added new file");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Added new file");
 
-    branches.changeCurrentBranch("new_branch");
+    branchesManager.changeBranch("new_branch");
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "file.txt"));
-    branches.changeCurrentBranch("main");
+    branchesManager.changeBranch("main");
 
 
     EXPECT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
@@ -304,24 +304,24 @@ TEST_F(BranchesTests, changeBranch_shouldCreateFile)
 
 TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    branches.createBranch("new_branch");
+    branchesManager.createBranch("new_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Main branch");
-    index.add("file.txt");
-    commits.createCommit("Added new file");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Added new file");
 
-    branches.changeCurrentBranch("new_branch");
+    branchesManager.changeBranch("new_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! New branch");
-    index.add("file.txt");
-    commits.createCommit("Changed file content");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Changed file content");
 
-    branches.changeCurrentBranch("main");
+    branchesManager.changeBranch("main");
 
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Main branch");
@@ -329,20 +329,20 @@ TEST_F(BranchesTests, changeBranch_shouldChangeFileContent)
 
 TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    branches.createBranch("new_branch");
+    branchesManager.createBranch("new_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "tracked.txt", "");
-    index.add("tracked.txt");
-    commits.createCommit("Added tracked file");
+    indexManager.add("tracked.txt");
+    commitsManager.createCommit("Added tracked file");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "untracked.txt", "");
 
-    branches.changeCurrentBranch("new_branch");
+    branchesManager.changeBranch("new_branch");
 
 
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / "tracked.txt"));
@@ -351,14 +351,14 @@ TEST_F(BranchesTests, changeBranch_shouldKeepUntrackedFile)
 
 TEST_F(BranchesTests, detachHead)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    commits.createCommit("Second commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    commitsManager.createCommit("Second commit");
 
-    branches.detachHead(initialCommitHash);
+    branchesManager.detachHead(initialCommitHash);
 
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD"), initialCommitHash);
@@ -366,27 +366,27 @@ TEST_F(BranchesTests, detachHead)
 
 TEST_F(BranchesTests, createBranchFromDetachedHead)
 {
-    const auto branches = repository->Branches();
-    const auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    commits.createCommit("Second commit");
-    branches.detachHead(initialCommitHash);
-    branches.createBranch("new_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    commitsManager.createCommit("Second commit");
+    branchesManager.detachHead(initialCommitHash);
+    branchesManager.createBranch("new_branch");
 
 
-    EXPECT_EQ(branches.getHashBranchRefersTo("new_branch"), initialCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo("new_branch"), initialCommitHash);
 }
 
 TEST_F(BranchesTests, getCurrentBranchNameOrDetachedHash_whenHeadPointingToBranch)
 {
-    const auto branches = repository->Branches();
-    auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
-    const auto currentBranchNameOrDetachedHash = branches.getCurrentBranchNameOrDetachedHash();
+    commitsManager.createCommit("Initial commit");
+    const auto currentBranchNameOrDetachedHash = branchesManager.getCurrentBranchNameOrDetachedHash();
 
 
     EXPECT_EQ(currentBranchNameOrDetachedHash, "refs/heads/main");
@@ -394,13 +394,13 @@ TEST_F(BranchesTests, getCurrentBranchNameOrDetachedHash_whenHeadPointingToBranc
 
 TEST_F(BranchesTests, getCurrentBranchNameOrDetachedHash_whenHeadPointingToCommit)
 {
-    const auto branches = repository->Branches();
-    auto commits = repository->Commits();
+    const auto branchesManager = repository->BranchesManager();
+    auto commitsManager = repository->CommitsManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.detachHead(initialCommitHash);
-    const auto currentBranchNameOrDetachedHash = branches.getCurrentBranchNameOrDetachedHash();
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.detachHead(initialCommitHash);
+    const auto currentBranchNameOrDetachedHash = branchesManager.getCurrentBranchNameOrDetachedHash();
 
 
     EXPECT_EQ(currentBranchNameOrDetachedHash, initialCommitHash);

@@ -1,6 +1,6 @@
 #include "CppGit/_details/Parser/IndexParser.hpp"
 
-#include "CppGit/Index.hpp"
+#include "CppGit/IndexManager.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -44,7 +44,7 @@ auto IndexParser::parseStageDetailedList(const std::string_view indexContent) ->
 }
 
 
-auto IndexParser::parseStageSimpleCacheList(const std::string_view indexContent) -> std::vector<std::string>
+auto IndexParser::parseCacheFilenameList(const std::string_view indexContent) -> std::vector<std::string>
 {
     const auto listSV = splitToStringViewsVector(indexContent, '\n');
     auto result = std::vector<std::string>{};
@@ -111,7 +111,7 @@ auto IndexParser::parseDiffIndexWithStatusEntry(const std::string_view diffIndex
     return DiffIndexEntry{ .path = match[2].str(), .status = getDiffIndexStatus(match[1].str()) };
 }
 
-auto IndexParser::parseDiffIndexWithStatus(const std::string_view diffIndexContent) -> std::vector<DiffIndexEntry>
+auto IndexParser::parseDiffIndexWithStatusList(const std::string_view diffIndexContent) -> std::vector<DiffIndexEntry>
 {
     if (diffIndexContent.empty())
     {

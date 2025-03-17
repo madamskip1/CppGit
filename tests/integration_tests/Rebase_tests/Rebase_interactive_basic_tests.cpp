@@ -1,12 +1,12 @@
 
 #include "RebaseFixture.hpp"
 
-#include <CppGit/Branches.hpp>
-#include <CppGit/Commits.hpp>
-#include <CppGit/CommitsLog.hpp>
-#include <CppGit/Index.hpp>
-#include <CppGit/Rebase.hpp>
+#include <CppGit/BranchesManager.hpp>
+#include <CppGit/CommitsLogManager.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/IndexManager.hpp>
 #include <CppGit/RebaseTodoCommand.hpp>
+#include <CppGit/Rebaser.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 
@@ -16,27 +16,27 @@ class RebaseInteractiveBasicTests : public RebaseFixture
 
 TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
-    index.add("file1.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file2.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto todoCommands = rebase.getDefaultTodoCommands("main");
+    const auto todoCommands = rebaser.getDefaultTodoCommands("main");
 
     ASSERT_EQ(todoCommands.size(), 2);
     const auto& firstCommand = todoCommands[0];
@@ -51,23 +51,23 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList_anotherOnto)
 
 TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
 {
-    const auto commits = repository->Commits();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
-    index.add("file1.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file2.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
+    const auto todoCommands = rebaser.getDefaultTodoCommands(secondCommitHash);
 
     ASSERT_EQ(todoCommands.size(), 2);
     const auto& firstCommand = todoCommands[0];
@@ -83,39 +83,39 @@ TEST_F(RebaseInteractiveBasicTests, getTodoCommandsList)
 
 TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
-    index.add("file1.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
+    indexManager.add("file2.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto todoCommands = rebase.getDefaultTodoCommands("main");
+    const auto todoCommands = rebaser.getDefaultTodoCommands("main");
 
-    const auto rebaseResult = rebase.interactiveRebase("main", todoCommands);
+    const auto rebaseResult = rebaser.interactiveRebase("main", todoCommands);
 
     ASSERT_TRUE(rebaseResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
-    EXPECT_EQ(branches.getCurrentBranchName(), "refs/heads/second_branch");
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branchesManager.getCurrentBranchName(), "refs/heads/second_branch");
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 4);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -136,36 +136,36 @@ TEST_F(RebaseInteractiveBasicTests, ontoAnotherBranch)
 
 TEST_F(RebaseInteractiveBasicTests, sameBranch)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
-    index.add("file1.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
-    const auto fourthCommitHash = commits.createCommit("Fourth commit", thirdCommitHash);
+    indexManager.add("file2.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
+    const auto fourthCommitHash = commitsManager.createCommit("Fourth commit", thirdCommitHash);
 
-    const auto todoCommands = rebase.getDefaultTodoCommands(secondCommitHash);
+    const auto todoCommands = rebaser.getDefaultTodoCommands(secondCommitHash);
 
-    const auto rebaseResult = rebase.interactiveRebase(secondCommitHash, todoCommands);
+    const auto rebaseResult = rebaser.interactiveRebase(secondCommitHash, todoCommands);
 
 
     ASSERT_TRUE(rebaseResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/main");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 4);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);

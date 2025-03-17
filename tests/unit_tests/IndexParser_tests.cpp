@@ -1,4 +1,3 @@
-#include <CppGit/Index.hpp>
 #include <CppGit/_details/Parser/IndexParser.hpp>
 #include <gtest/gtest.h>
 
@@ -30,11 +29,11 @@ TEST(IndexParserTests, parseStageDetailedList)
     EXPECT_EQ(indexEntries[1].path, "file.exe");
 }
 
-TEST(IndexParserTests, parseStagedListCache)
+TEST(IndexParserTests, parseStagedCacheListOnlyFilenames)
 {
     constexpr auto* indexContent = "file.txt\n"
                                    "file.exe";
-    const auto indexEntries = CppGit::IndexParser::parseStageSimpleCacheList(indexContent);
+    const auto indexEntries = CppGit::IndexParser::parseCacheFilenameList(indexContent);
 
     EXPECT_EQ(indexEntries.size(), 2);
     EXPECT_EQ(indexEntries[0], "file.txt");
@@ -49,10 +48,10 @@ TEST(IndexParserTests, parseStageDetailedList_Empty)
     EXPECT_EQ(indexEntries.size(), 0);
 }
 
-TEST(IndexParserTests, parseStagedListCache_Empty)
+TEST(IndexParserTests, parseStagedCacheListOnlyFilenames_Empty)
 {
     constexpr auto* indexContent = "";
-    const auto indexEntries = CppGit::IndexParser::parseStageSimpleCacheList(indexContent);
+    const auto indexEntries = CppGit::IndexParser::parseCacheFilenameList(indexContent);
 
     EXPECT_EQ(indexEntries.size(), 0);
 }
@@ -129,20 +128,20 @@ TEST(IndexParserTests, parseDiffIndexWithStatusEntry_Unknown)
     EXPECT_EQ(diffIndexEntry.status, CppGit::DiffIndexStatus::UNKNOWN);
 }
 
-TEST(IndexParserTests, parseDiffIndexWithStatus_Empty)
+TEST(IndexParserTests, parseDiffIndexWithStatusList_Empty)
 {
     constexpr auto* diffIndexContent = "";
-    const auto diffIndexEntries = CppGit::IndexParser::parseDiffIndexWithStatus(diffIndexContent);
+    const auto diffIndexEntries = CppGit::IndexParser::parseDiffIndexWithStatusList(diffIndexContent);
 
     EXPECT_EQ(diffIndexEntries.size(), 0);
 }
 
-TEST(IndexParserTests, parseDiffIndexWithStatus)
+TEST(IndexParserTests, parseDiffIndexWithStatusList)
 {
     constexpr auto* diffIndexContent = "A file.txt\n"
                                        "D file.exe\n"
                                        "M file.cpp";
-    const auto diffIndexEntries = CppGit::IndexParser::parseDiffIndexWithStatus(diffIndexContent);
+    const auto diffIndexEntries = CppGit::IndexParser::parseDiffIndexWithStatusList(diffIndexContent);
 
     EXPECT_EQ(diffIndexEntries.size(), 3);
     EXPECT_EQ(diffIndexEntries[0].path, "file.txt");

@@ -1,7 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 
-#include <CppGit/Commits.hpp>
-#include <CppGit/Index.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/IndexManager.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 #include <vector>
@@ -15,173 +15,173 @@ TEST_F(IndexTests, addRegularFile)
     // For staged we need at least one commit
     // TODO: getStagedFileList should do ls-files if no commit
 
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexList();
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, addRegularFileInDir)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexList();
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir/file.txt");
+    indexManager.add("dir/file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "dir/file.txt");
 }
 
 TEST_F(IndexTests, addRegularFileInDir_providedDirAsPattern)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexList();
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir");
+    indexManager.add("dir");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "dir/file.txt");
 }
 
 TEST_F(IndexTests, addExecutableFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.sh", "echo Hello, World!");
     std::filesystem::permissions(repositoryPath / "file.sh", std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexListWithDetails();
+    auto indexFiles = indexManager.getFilesInIndexDetailedList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file.sh");
+    indexManager.add("file.sh");
 
 
-    indexFiles = index.getFilesInIndexListWithDetails();
+    indexFiles = indexManager.getFilesInIndexDetailedList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, 100'755);
     EXPECT_EQ(indexFiles[0].path, "file.sh");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.sh");
 }
 
 TEST_F(IndexTests, addSymlink)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     std::filesystem::create_symlink(repositoryPath / "file.txt", repositoryPath / "file-symlink.txt");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexListWithDetails();
+    auto indexFiles = indexManager.getFilesInIndexDetailedList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("file-symlink.txt");
+    indexManager.add("file-symlink.txt");
 
 
-    indexFiles = index.getFilesInIndexListWithDetails();
+    indexFiles = indexManager.getFilesInIndexDetailedList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0].fileMode, 120'000);
     EXPECT_EQ(indexFiles[0].path, "file-symlink.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file-symlink.txt");
 }
 
 TEST_F(IndexTests, addOnDeletedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
     std::filesystem::remove(repositoryPath / "file.txt");
 
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
-    const auto stagedFiles = index.getStagedFilesList();
+    const auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, addFilesWithAsteriskPattern)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexList();
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("*.txt");
+    indexManager.add("*.txt");
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "file1.txt");
     EXPECT_EQ(indexFiles[1], "file2.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 2);
     EXPECT_EQ(stagedFiles[0], "file1.txt");
     EXPECT_EQ(stagedFiles[1], "file2.txt");
@@ -189,28 +189,28 @@ TEST_F(IndexTests, addFilesWithAsteriskPattern)
 
 TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir1");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir1" / "file.txt", "Hello, World!");
     std::filesystem::create_directory(repositoryPath / "dir2");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir2" / "file.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
-    auto indexFiles = index.getFilesInIndexList();
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 
-    index.add("dir*/*.txt");
+    indexManager.add("dir*/*.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 2);
     EXPECT_EQ(indexFiles[0], "dir1/file.txt");
     EXPECT_EQ(indexFiles[1], "dir2/file.txt");
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 2);
     EXPECT_EQ(stagedFiles[0], "dir1/file.txt");
     EXPECT_EQ(stagedFiles[1], "dir2/file.txt");
@@ -218,487 +218,487 @@ TEST_F(IndexTests, addFilesWithAsteriskPatternInDirectories)
 
 TEST_F(IndexTests, removeRegularFile_fileNotDeletedFromWorkinDirectory)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    index.remove("file.txt");
+    indexManager.remove("file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
 
 TEST_F(IndexTests, removeRegularFile_fileDeletedFromWorkinDirectory)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
     std::filesystem::remove(repositoryPath / "file.txt");
 
-    index.remove("file.txt");
+    indexManager.remove("file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
 
 TEST_F(IndexTests, removeRegularFile_force)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "file.txt");
 
-    index.remove("file.txt", true);
+    indexManager.remove("file.txt", true);
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
 
 TEST_F(IndexTests, removeRegularFileInDir)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("dir/file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir/file.txt");
+    indexManager.remove("dir/file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
 
 TEST_F(IndexTests, removeRegularFileInDir_providedDirAsPattern)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("dir/file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir");
+    indexManager.remove("dir");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1); // file still exist in the working directory
 }
 
 TEST_F(IndexTests, removeRegularFileInDir_force)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("dir/file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
 
-    index.remove("dir", true);
+    indexManager.remove("dir", true);
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
 
 TEST_F(IndexTests, removeRegularFileInDir_removedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
-    auto indexFiles = index.getFilesInIndexList();
+    indexManager.add("dir/file.txt");
+    auto indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 1);
     EXPECT_EQ(indexFiles[0], "dir/file.txt");
     std::filesystem::remove(repositoryPath / "dir" / "file.txt");
 
-    index.remove("dir/file.txt");
+    indexManager.remove("dir/file.txt");
 
 
-    indexFiles = index.getFilesInIndexList();
+    indexFiles = indexManager.getFilesInIndexList();
     ASSERT_EQ(indexFiles.size(), 0);
 }
 
 
 TEST_F(IndexTests, restoreAllStaged_noChanges)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
-    auto stagedFiles = index.getStagedFilesList();
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_notStagedChanges)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 0);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_stagedNewFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    auto stagedFiles = index.getStagedFilesList();
+    indexManager.add("file.txt");
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_stagedChanges)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    index.add("file.txt");
-    auto stagedFiles = index.getStagedFilesList();
+    indexManager.add("file.txt");
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_stagedChangesInDir)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
-    auto stagedFiles = index.getStagedFilesList();
+    indexManager.add("dir/file.txt");
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_multipleFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! 1");
-    index.add("file1.txt");
+    indexManager.add("file1.txt");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! 2");
-    index.add("file2.txt");
-    auto stagedFiles = index.getStagedFilesList();
+    indexManager.add("file2.txt");
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 2);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, restoreAllStaged_multipleFile_notAllStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
-    index.add("file1.txt");
+    indexManager.add("file1.txt");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-    auto stagedFiles = index.getStagedFilesList();
+    auto stagedFiles = indexManager.getStagedFilesList();
     ASSERT_EQ(stagedFiles.size(), 1);
 
-    index.restoreAllStaged();
+    indexManager.restoreAllStaged();
 
 
-    stagedFiles = index.getStagedFilesList();
+    stagedFiles = indexManager.getStagedFilesList();
     EXPECT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, notDirty)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
 
-    EXPECT_FALSE(index.isDirty());
+    EXPECT_FALSE(indexManager.isDirty());
 }
 
 
 TEST_F(IndexTests, dirty_changesInCachedNotAdded)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
-    EXPECT_TRUE(index.isDirty());
+    EXPECT_TRUE(indexManager.isDirty());
 }
 
 TEST_F(IndexTests, dirty_changesInCachedAdded)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_TRUE(index.isDirty());
+    EXPECT_TRUE(indexManager.isDirty());
 }
 
 TEST_F(IndexTests, notdirty_untrackedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
 
 
-    EXPECT_FALSE(index.isDirty());
+    EXPECT_FALSE(indexManager.isDirty());
 }
 
 TEST_F(IndexTests, dirty_untrackedFileAdded)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-    index.add("file2.txt");
+    indexManager.add("file2.txt");
 
 
-    EXPECT_TRUE(index.isDirty());
+    EXPECT_TRUE(indexManager.isDirty());
 }
 
 TEST_F(IndexTests, getUntrackedFileList_emptyRepo)
 {
-    const auto index = repository->Index();
+    const auto indexManager = repository->IndexManager();
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_notStagedFile)
 {
-    const auto index = repository->Index();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 1);
     ASSERT_EQ(untrackedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getUntrackedFileList_stagedFile)
 {
-    const auto index = repository->Index();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDir)
 {
-    const auto index = repository->Index();
+    const auto indexManager = repository->IndexManager();
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 1);
     ASSERT_EQ(untrackedFiles[0], "dir/file.txt");
 }
 
 TEST_F(IndexTests, getUntrackedFileList_untrackedFileInDirStaged)
 {
-    const auto index = repository->Index();
+    const auto indexManager = repository->IndexManager();
 
 
     std::filesystem::create_directory(repositoryPath / "dir");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "dir" / "file.txt", "Hello, World!");
-    index.add("dir/file.txt");
+    indexManager.add("dir/file.txt");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_trackedModified)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getUntrackedFileList_trackedDeleted)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    const auto untrackedFiles = index.getUntrackedFilesList();
+    const auto untrackedFiles = indexManager.getUntrackedFilesList();
     ASSERT_EQ(untrackedFiles.size(), 0);
 }
 
 
 TEST_F(IndexTests, getStagedFilesList_commitedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
 
-    const auto stagedFiles = index.getStagedFilesListWithStatus();
+    const auto stagedFiles = indexManager.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    const auto stagedFiles = index.getStagedFilesListWithStatus();
+    const auto stagedFiles = indexManager.getStagedFilesListWithStatus();
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0].path, "file.txt");
     EXPECT_EQ(stagedFiles[0].status, CppGit::DiffIndexStatus::ADDED);
@@ -706,401 +706,401 @@ TEST_F(IndexTests, getStagedFilesList_stagedFile)
 
 TEST_F(IndexTests, getStagedFilesList_stagedFile_pattern)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "another_file.txt", "");
-    index.add("file.txt");
-    index.add("another_file.txt");
+    indexManager.add("file.txt");
+    indexManager.add("another_file.txt");
 
 
-    const auto stagedFiles = index.getStagedFilesList("file*");
+    const auto stagedFiles = indexManager.getStagedFilesList("file*");
     ASSERT_EQ(stagedFiles.size(), 1);
     EXPECT_EQ(stagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, isFileStaged_fileNotStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
-    EXPECT_FALSE(index.isFileStaged("file.txt"));
+    EXPECT_FALSE(indexManager.isFileStaged("file.txt"));
 }
 
 TEST_F(IndexTests, isFileStaged_fileStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_TRUE(index.isFileStaged("file.txt"));
+    EXPECT_TRUE(indexManager.isFileStaged("file.txt"));
 }
 
 TEST_F(IndexTests, isFileStaged_FileNotExist)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_FALSE(index.isFileStaged("file2.txt"));
+    EXPECT_FALSE(indexManager.isFileStaged("file2.txt"));
 }
 
 TEST_F(IndexTests, getNotStagedFiles_noFiles)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_untrackedNotStagedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getNotStagedFiles_untrackedStagedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedNotModified)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedModifiedNotStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, getNotStagedFiles_trackedModifiedStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 0);
 }
 
 
 TEST_F(IndexTests, getNotStagedFiles_trackedDeletedNotStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    const auto notStagedFiles = index.getNotStagedFilesList();
+    const auto notStagedFiles = indexManager.getNotStagedFilesList();
     ASSERT_EQ(notStagedFiles.size(), 1);
     EXPECT_EQ(notStagedFiles[0], "file.txt");
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_justFirstCommit)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_notTrackedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
 
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_stagedNotTrackedBefore)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedNotChanged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedNotStagged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
 
 
-    EXPECT_TRUE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_TRUE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedChangedStagged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedNotStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    EXPECT_TRUE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_TRUE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyNotStagedTrackedFiles_trackedDeletedStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     std::filesystem::remove(repositoryPath / "file.txt");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_FALSE(index.areAnyNotStagedTrackedFiles());
+    EXPECT_FALSE(indexManager.areAnyNotStagedTrackedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_justFirstCommit)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_FALSE(index.areAnyStagedFiles());
+    EXPECT_FALSE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_notTrackedFile)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
 
 
-    EXPECT_FALSE(index.areAnyStagedFiles());
+    EXPECT_FALSE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_stagedNotTrackedBefore)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_TRUE(index.areAnyStagedFiles());
+    EXPECT_TRUE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedNotChanged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    EXPECT_FALSE(index.areAnyStagedFiles());
+    EXPECT_FALSE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedChangedNotStagged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
 
 
-    EXPECT_FALSE(index.areAnyStagedFiles());
+    EXPECT_FALSE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedChangedStagged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Modified");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_TRUE(index.areAnyStagedFiles());
+    EXPECT_TRUE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedNotStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     std::filesystem::remove(repositoryPath / "file.txt");
 
 
-    EXPECT_FALSE(index.areAnyStagedFiles());
+    EXPECT_FALSE(indexManager.areAnyStagedFiles());
 }
 
 TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedStaged)
 {
-    const auto index = repository->Index();
-    const auto commits = repository->Commits();
+    const auto indexManager = repository->IndexManager();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
     std::filesystem::remove(repositoryPath / "file.txt");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
 
-    EXPECT_TRUE(index.areAnyStagedFiles());
+    EXPECT_TRUE(indexManager.areAnyStagedFiles());
 }

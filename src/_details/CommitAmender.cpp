@@ -1,6 +1,7 @@
+#include "CppGit/_details/CommitAmender.hpp"
+
 #include "CppGit/Commit.hpp"
 #include "CppGit/Repository.hpp"
-#include "CppGit/_details/CommitAmender.hpp"
 #include "CppGit/_details/CommitCreator.hpp"
 
 #include <string>

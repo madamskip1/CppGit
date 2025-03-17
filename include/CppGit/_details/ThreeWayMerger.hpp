@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Index.hpp"
+#include "../IndexManager.hpp"
 #include "../Repository.hpp"
 
 #include <string>
@@ -11,7 +11,7 @@
 namespace CppGit::_details {
 
 /// @brief Provides internal functionality to perform a three-way merge
-class ThreeWayMerge
+class ThreeWayMerger
 {
     /// @brief Contains the three blobs of an unmerged file
     struct UnmergedFileBlobs
@@ -24,8 +24,8 @@ class ThreeWayMerge
 
 public:
     /// @param repo The repository to work with
-    explicit ThreeWayMerge(const Repository& repo);
-    ThreeWayMerge() = delete;
+    explicit ThreeWayMerger(const Repository& repository);
+    ThreeWayMerger() = delete;
 
     /// @brief Perform a three-way merge on conflicted files
     /// @param unmergedFilesEntries The entries of the unmerged files
@@ -46,7 +46,7 @@ public:
     [[nodiscard]] auto getMergeMsg() const -> std::string;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     auto unpackFile(const std::string_view fileBlob) const -> std::string;
     static auto createUnmergedFileMap(const std::vector<IndexEntry>& unmergedFilesEntries) -> std::unordered_map<std::string, UnmergedFileBlobs>;

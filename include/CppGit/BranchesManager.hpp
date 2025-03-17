@@ -2,7 +2,7 @@
 
 #include "Branch.hpp"
 #include "Repository.hpp"
-#include "_details/Refs.hpp"
+#include "_details/ReferencesManager.hpp"
 
 #include <string>
 #include <string_view>
@@ -11,12 +11,12 @@
 namespace CppGit {
 
 /// @brief Provides functionality to work with branches
-class Branches
+class BranchesManager
 {
 public:
     /// @param repo The repository to work with
-    explicit Branches(const Repository& repo);
-    Branches() = delete;
+    explicit BranchesManager(const Repository& repository);
+    BranchesManager() = delete;
 
     /// @brief Get all branches (both local and remote) in the repository
     /// @return A vector of all branches in the repository
@@ -46,11 +46,11 @@ public:
 
     /// @brief Change the current branch
     /// @param branchName The name of the branch to change to
-    auto changeCurrentBranch(const std::string_view branchName) const -> void;
+    auto changeBranch(const std::string_view branchName) const -> void;
 
     /// @brief Change the current branch
     /// @param branch The branch to change to
-    auto changeCurrentBranch(const Branch& branch) const -> void;
+    auto changeBranch(const Branch& branch) const -> void;
 
     /// @brief Detach the HEAD
     ///   Efective it do a checkout to the commit hash
@@ -102,9 +102,9 @@ private:
 
     auto changeHEAD(const std::string_view target) const -> void;
 
-    const Repository* repo;
+    const Repository* repository;
 
-    _details::Refs refs;
+    _details::ReferencesManager referencesManager;
 };
 
 } // namespace CppGit

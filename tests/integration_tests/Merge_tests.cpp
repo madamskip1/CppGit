@@ -1,8 +1,8 @@
 #include "BaseRepositoryFixture.hpp"
 
-#include <CppGit/Branches.hpp>
-#include <CppGit/Commits.hpp>
-#include <CppGit/Merge.hpp>
+#include <CppGit/BranchesManager.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/Merger.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 
@@ -12,259 +12,259 @@ class MergeTests : public BaseRepositoryFixture
 
 TEST_F(MergeTests, canFastForward_sameBranch)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_TRUE(merge.canFastForward("main"));
+    EXPECT_TRUE(merger.canFastForward("main"));
 }
 
 TEST_F(MergeTests, canFastForward_head)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_TRUE(merge.canFastForward("HEAD"));
+    EXPECT_TRUE(merger.canFastForward("HEAD"));
 }
 
 TEST_F(MergeTests, canFastForward_bothBranchesSameCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
 
 
-    EXPECT_TRUE(merge.canFastForward("second_branch"));
+    EXPECT_TRUE(merger.canFastForward("second_branch"));
 }
 
 TEST_F(MergeTests, canFastForward_linearBehind)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
 
 
-    EXPECT_TRUE(merge.canFastForward("main"));
+    EXPECT_TRUE(merger.canFastForward("main"));
 }
 
 TEST_F(MergeTests, canFastForward_linearAhead)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
 
 
-    EXPECT_FALSE(merge.canFastForward("second_branch"));
+    EXPECT_FALSE(merger.canFastForward("second_branch"));
 }
 
 TEST_F(MergeTests, canFastForward_changesInBothBranches)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
-    commits.createCommit("Third commit");
+    branchesManager.changeBranch("second_branch");
+    commitsManager.createCommit("Third commit");
 
 
-    EXPECT_FALSE(merge.canFastForward("main"));
+    EXPECT_FALSE(merger.canFastForward("main"));
 }
 
 TEST_F(MergeTests, anythingToMerge_sameBranch)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_FALSE(merge.isAnythingToMerge("main"));
+    EXPECT_FALSE(merger.isAnythingToMerge("main"));
 }
 
 TEST_F(MergeTests, anythingToMerge_head)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
-    EXPECT_FALSE(merge.isAnythingToMerge("HEAD"));
+    EXPECT_FALSE(merger.isAnythingToMerge("HEAD"));
 }
 
 TEST_F(MergeTests, anythingToMerge_bothBranchesSameCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
 
 
-    EXPECT_FALSE(merge.isAnythingToMerge("second_branch"));
+    EXPECT_FALSE(merger.isAnythingToMerge("second_branch"));
 }
 
 TEST_F(MergeTests, anythingToMerge_linearBehind)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
 
 
-    EXPECT_TRUE(merge.isAnythingToMerge("main"));
+    EXPECT_TRUE(merger.isAnythingToMerge("main"));
 }
 
 TEST_F(MergeTests, anythingToMerge_linearAhead)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
 
 
-    EXPECT_FALSE(merge.isAnythingToMerge("second_branch"));
+    EXPECT_FALSE(merger.isAnythingToMerge("second_branch"));
 }
 
 TEST_F(MergeTests, anythingToMerge_changesInBothBranches)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
-    commits.createCommit("Third commit");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
+    commitsManager.createCommit("Third commit");
 
 
-    EXPECT_TRUE(merge.isAnythingToMerge("main"));
+    EXPECT_TRUE(merger.isAnythingToMerge("main"));
 }
 
 TEST_F(MergeTests, mergeFastForward_sameBranch)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    const auto mergeCommitHash = merge.mergeFastForward("main");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    const auto mergeCommitHash = merger.mergeFastForward("main");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), initialCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), initialCommitHash);
 }
 
 TEST_F(MergeTests, mergeFastForward_bothBranchesSameCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    const auto mergeCommitHash = merge.mergeFastForward("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    const auto mergeCommitHash = merger.mergeFastForward("second_branch");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), initialCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), initialCommitHash);
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), initialCommitHash);
 }
 
 TEST_F(MergeTests, mergeFastForward_linearBehind)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
-    const auto index = repository->Index();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "initial");
-    index.add("file.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    indexManager.add("file.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "second");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
 
-    const auto mergeCommitHash = merge.mergeFastForward("main");
+    const auto mergeCommitHash = merger.mergeFastForward("main");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), secondCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "second");
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), initialCommitHash);
 }
 
 TEST_F(MergeTests, mergeFastForward_linearAhead)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    const auto secondCommitHash = commits.createCommit("Second commit");
-    const auto mergeCommitHash = merge.mergeFastForward("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
+    const auto mergeCommitHash = merger.mergeFastForward("second_branch");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash, secondCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), secondCommitHash);
 }
 
 TEST_F(MergeTests, mergeFastForward_changesInBothBranches)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
-    commits.createCommit("Third commit");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
+    commitsManager.createCommit("Third commit");
 
-    const auto mergeFFResult = merge.mergeFastForward("main");
+    const auto mergeFFResult = merger.mergeFastForward("main");
 
 
     ASSERT_FALSE(mergeFFResult.has_value());
@@ -273,33 +273,33 @@ TEST_F(MergeTests, mergeFastForward_changesInBothBranches)
 
 TEST_F(MergeTests, mergeFastForward_untrackedFile)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    const auto secondCommitHash = commits.createCommit("Second commit");
-    branches.changeCurrentBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    const auto mergeCommitHash = merge.mergeFastForward("main");
+    const auto mergeCommitHash = merger.mergeFastForward("main");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
     EXPECT_EQ(mergeCommitHash.value(), secondCommitHash);
-    EXPECT_EQ(commits.getHeadCommitHash(), secondCommitHash);
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), secondCommitHash);
 }
 
 TEST_F(MergeTests, mergeNoFastForward_sameBranch)
 {
-    const auto commits = repository->Commits();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "merge commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
@@ -308,15 +308,15 @@ TEST_F(MergeTests, mergeNoFastForward_sameBranch)
 
 TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("second_branch", "merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("second_branch", "merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
@@ -325,27 +325,27 @@ TEST_F(MergeTests, mergeNoFastForward_bothBranchesSameCommit)
 
 TEST_F(MergeTests, mergeNoFastForward_linearBehind)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto index = repository->Index();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
-    const auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeCommitHash = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
-    EXPECT_EQ(mergeCommitHash.value(), commits.getHeadCommitHash());
-    const auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash.value());
+    EXPECT_EQ(mergeCommitHash.value(), commitsManager.getHeadCommitHash());
+    const auto mergeCommitInfo = commitsManager.getCommitInfo(mergeCommitHash.value());
     EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
     ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
     EXPECT_EQ(mergeCommitInfo.getParents()[0], initialCommitHash);
@@ -356,21 +356,21 @@ TEST_F(MergeTests, mergeNoFastForward_linearBehind)
 
 TEST_F(MergeTests, mergeNoFastForward_linearAhead)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto index = repository->Index();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
-    branches.changeCurrentBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
@@ -379,29 +379,29 @@ TEST_F(MergeTests, mergeNoFastForward_linearAhead)
 
 TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto index = repository->Index();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file2.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto mergeCommitHash = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeCommitHash = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
-    EXPECT_EQ(mergeCommitHash.value(), commits.getHeadCommitHash());
-    const auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash.value());
+    EXPECT_EQ(mergeCommitHash.value(), commitsManager.getHeadCommitHash());
+    const auto mergeCommitInfo = commitsManager.getCommitInfo(mergeCommitHash.value());
     EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
     ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
     EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommitHash);
@@ -413,35 +413,35 @@ TEST_F(MergeTests, mergeNoFastForward_changesInBothBranches_noConflict)
 
 TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
     EXPECT_EQ(mergeNoFFResult.error(), CppGit::MergeResult::NO_FF_CONFLICT);
-    EXPECT_TRUE(merge.isMergeInProgress());
-    EXPECT_TRUE(merge.isThereAnyConflict());
+    EXPECT_TRUE(merger.isMergeInProgress());
+    EXPECT_TRUE(merger.isThereAnyConflict());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
@@ -451,37 +451,37 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_changesInSameFile)
 
 TEST_F(MergeTests, mergeNoFastForward_conflict_bothConflictAndNotFiles)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
-    index.add("file.txt");
-    index.add("file2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    indexManager.add("file2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2!");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
     EXPECT_EQ(mergeNoFFResult.error(), CppGit::MergeResult::NO_FF_CONFLICT);
-    EXPECT_TRUE(merge.isMergeInProgress());
-    EXPECT_TRUE(merge.isThereAnyConflict());
+    EXPECT_TRUE(merger.isMergeInProgress());
+    EXPECT_TRUE(merger.isThereAnyConflict());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
@@ -492,41 +492,41 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_bothConflictAndNotFiles)
 
 TEST_F(MergeTests, mergeNoFastForward_conflictTwoFiles)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!.");
-    index.add("file.txt");
-    index.add("file2.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    indexManager.add("file2.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 1!");
-    index.add("file.txt");
-    index.add("file2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    indexManager.add("file2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 2!");
-    index.add("file.txt");
-    index.add("file2.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    indexManager.add("file2.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
     EXPECT_EQ(mergeNoFFResult.error(), CppGit::MergeResult::NO_FF_CONFLICT);
-    EXPECT_TRUE(merge.isMergeInProgress());
-    EXPECT_TRUE(merge.isThereAnyConflict());
+    EXPECT_TRUE(merger.isMergeInProgress());
+    EXPECT_TRUE(merger.isThereAnyConflict());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
@@ -537,40 +537,40 @@ TEST_F(MergeTests, mergeNoFastForward_conflictTwoFiles)
 
 TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
-    merge.mergeNoFastForward("main", "Merge commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
+    merger.mergeNoFastForward("main", "Merge commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Merge resolved.");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
-    const auto mergeCommitHash = merge.continueMerge();
+    const auto mergeCommitHash = merger.continueMerge();
 
 
     ASSERT_TRUE(mergeCommitHash.has_value());
-    EXPECT_FALSE(merge.isMergeInProgress());
-    EXPECT_FALSE(merge.isThereAnyConflict());
-    EXPECT_EQ(mergeCommitHash.value(), commits.getHeadCommitHash());
-    const auto mergeCommitInfo = commits.getCommitInfo(mergeCommitHash.value());
+    EXPECT_FALSE(merger.isMergeInProgress());
+    EXPECT_FALSE(merger.isThereAnyConflict());
+    EXPECT_EQ(mergeCommitHash.value(), commitsManager.getHeadCommitHash());
+    const auto mergeCommitInfo = commitsManager.getCommitInfo(mergeCommitHash.value());
     EXPECT_EQ(mergeCommitInfo.getMessage(), "Merge commit");
     ASSERT_EQ(mergeCommitInfo.getParents().size(), 2);
     EXPECT_EQ(mergeCommitInfo.getParents()[0], thirdCommitHash);
@@ -582,35 +582,35 @@ TEST_F(MergeTests, mergeNoFastForward_resolveConflict)
 
 TEST_F(MergeTests, mergeNoFastForward_abort)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    merge.mergeNoFastForward("main", "Merge commit");
+    merger.mergeNoFastForward("main", "Merge commit");
 
-    merge.abortMerge();
+    merger.abortMerge();
 
 
-    EXPECT_FALSE(merge.isMergeInProgress());
-    EXPECT_FALSE(index.isDirty());
+    EXPECT_FALSE(merger.isMergeInProgress());
+    EXPECT_FALSE(indexManager.isDirty());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_HEAD"));
     EXPECT_FALSE(std::filesystem::exists(repositoryPath / ".git" / "MERGE_MSG"));
@@ -620,31 +620,31 @@ TEST_F(MergeTests, mergeNoFastForward_abort)
 
 TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
-    commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto mergeNoFFResult = merge.mergeNoFastForward("main", "Merge commit");
+    const auto mergeNoFFResult = merger.mergeNoFastForward("main", "Merge commit");
 
 
     ASSERT_FALSE(mergeNoFFResult.has_value());
     EXPECT_EQ(mergeNoFFResult.error(), CppGit::MergeResult::NO_FF_CONFLICT);
-    EXPECT_TRUE(merge.isThereAnyConflict());
-    EXPECT_TRUE(merge.isMergeInProgress());
+    EXPECT_TRUE(merger.isThereAnyConflict());
+    EXPECT_TRUE(merger.isMergeInProgress());
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "ORIG_HEAD"), thirdCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_HEAD"), secondCommitHash);
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / ".git" / "MERGE_MSG"), "Merge commit");
@@ -654,31 +654,31 @@ TEST_F(MergeTests, mergeNoFastForward_conflict_fileNotExistsInAncestor)
 
 TEST_F(MergeTests, mergeNoFastForward_continue_conflict)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto branches = repository->Branches();
-    const auto merge = repository->Merge();
+    const auto merger = repository->Merger();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto branchesManager = repository->BranchesManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 1.");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified 2.");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    merge.mergeNoFastForward("main", "Merge commit");
+    merger.mergeNoFastForward("main", "Merge commit");
 
-    const auto continueResult = merge.continueMerge();
+    const auto continueResult = merger.continueMerge();
 
     ASSERT_FALSE(continueResult.has_value());
     EXPECT_EQ(continueResult.error(), CppGit::MergeResult::NO_FF_CONFLICT);

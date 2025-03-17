@@ -1,8 +1,8 @@
 #include "BaseRepositoryFixture.hpp"
 
-#include <CppGit/Commits.hpp>
-#include <CppGit/Diff.hpp>
-#include <CppGit/Index.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/DiffGenerator.hpp>
+#include <CppGit/IndexManager.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -12,49 +12,49 @@ class DiffTests : public BaseRepositoryFixture
 
 TEST_F(DiffTests, singleEmptyCommit)
 {
-    const auto commits = repository->Commits();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
 
 
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
 
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
 TEST_F(DiffTests, singleCommit)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
-    index.add("test.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Initial commit");
 
 
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 0); // cant compare as we dont have any previous commit, so no diff
 }
 
 TEST_F(DiffTests, twoCommitsAddedFileWithContent)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
-    commits.createCommit("Initial commit");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "Hello, World!");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -79,21 +79,21 @@ TEST_F(DiffTests, twoCommitsAddedFileWithContent)
 
 TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
-    index.add("test.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -107,21 +107,21 @@ TEST_F(DiffTests, twoCommitsAddedFileWithoutContent)
 
 TEST_F(DiffTests, fileModdified)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World!");
-    index.add("test.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
-    index.add("test.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    auto diffFiles = diff.getDiff();
+    auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -151,23 +151,23 @@ TEST_F(DiffTests, fileModdified)
 
 TEST_F(DiffTests, multipleFile)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test1.txt");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test1.txt");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -216,23 +216,23 @@ TEST_F(DiffTests, multipleFile)
 
 TEST_F(DiffTests, getGivenFileDiff)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test1.txt");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test1.txt");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    const auto diffFiles = diff.getDiffFile("test2.txt");
+    const auto diffFiles = diffGenerator.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -247,45 +247,45 @@ TEST_F(DiffTests, getGivenFileDiff)
 
 TEST_F(DiffTests, getGivenFileDiffNoFile)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "");
-    index.add("test.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test.txt", "Hello, World! Modified");
-    index.add("test.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test.txt");
+    commitsManager.createCommit("Second commit");
 
 
-    const auto diffFiles = diff.getDiffFile("test2.txt");
+    const auto diffFiles = diffGenerator.getDiffFile("test2.txt");
     ASSERT_EQ(diffFiles.size(), 0);
 }
 
 TEST_F(DiffTests, givenCommitDiff)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
-    index.add("test3.txt");
-    commits.createCommit("Third commit");
+    indexManager.add("test3.txt");
+    commitsManager.createCommit("Third commit");
 
 
-    const auto diffFiles = diff.getDiff(secondCommitHash);
+    const auto diffFiles = diffGenerator.getDiff(secondCommitHash);
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -297,25 +297,25 @@ TEST_F(DiffTests, givenCommitDiff)
 
 TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
-    index.add("test3.txt");
-    commits.createCommit("Third commit");
+    indexManager.add("test3.txt");
+    commitsManager.createCommit("Third commit");
 
 
-    const auto diffFiles = diff.getDiff("HEAD~1");
+    const auto diffFiles = diffGenerator.getDiff("HEAD~1");
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -327,25 +327,25 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithTilde)
 
 TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test3.txt", "");
-    index.add("test3.txt");
-    commits.createCommit("Third commit");
+    indexManager.add("test3.txt");
+    commitsManager.createCommit("Third commit");
 
 
-    const auto diffFiles = diff.getDiff("HEAD^");
+    const auto diffFiles = diffGenerator.getDiff("HEAD^");
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -357,25 +357,25 @@ TEST_F(DiffTests, givenCommitDiffRelativeWithCaret)
 
 TEST_F(DiffTests, diffBetweenTwoCommits)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
-    index.add("test1.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("test1.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
 
-    const auto diffFiles = diff.getDiff(initialCommitHash, thirdCommitHash);
+    const auto diffFiles = diffGenerator.getDiff(initialCommitHash, thirdCommitHash);
     ASSERT_EQ(diffFiles.size(), 2);
 
     const CppGit::DiffFile* test1DiffFile = nullptr;
@@ -424,25 +424,25 @@ TEST_F(DiffTests, diffBetweenTwoCommits)
 
 TEST_F(DiffTests, diffBetweenTwoCommitsGivenFile)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
+    const auto diffGenerator = repository->DiffGenerator();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "");
-    index.add("test1.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("test1.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test2.txt", "");
-    index.add("test2.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("test2.txt");
+    commitsManager.createCommit("Second commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "test1.txt", "Hello, World!");
-    index.add("test1.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("test1.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
 
-    const auto diffFiles = diff.getDiffFile(initialCommitHash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
+    const auto diffFiles = diffGenerator.getDiffFile(initialCommitHash, thirdCommitHash, std::filesystem::path{ "test2.txt" });
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);

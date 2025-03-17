@@ -14,7 +14,7 @@ class RebaseFilesHelper
 {
 public:
     /// @param repo The repository to work with
-    explicit RebaseFilesHelper(const Repository& repo);
+    explicit RebaseFilesHelper(const Repository& repository);
 
     /// @brief Create rebase directory
     ///     .git/rebase-merge
@@ -139,7 +139,7 @@ public:
     [[nodiscard]] auto getLastDoneCommand() const -> std::optional<RebaseTodoCommand>;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     static auto parseTodoCommandLine(const std::string_view line) -> std::optional<RebaseTodoCommand>;
 };

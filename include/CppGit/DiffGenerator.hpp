@@ -11,11 +11,11 @@
 namespace CppGit {
 
 /// @brief Provides functionality to get the diff of given commits or files
-class Diff
+class DiffGenerator
 {
 public:
     /// @param repo The repository to work with
-    explicit Diff(const Repository& repo);
+    explicit DiffGenerator(const Repository& repository);
 
     /// @brief Get the diff of last commit
     /// @return A vector of DiffFile
@@ -52,7 +52,7 @@ public:
     [[nodiscard]] auto getDiffFile(const std::string_view commitHashA, const std::string_view commitHashB, const std::filesystem::path& path) const -> std::vector<DiffFile>;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     static auto getDiffFilesFromOutput(const GitCommandOutput& output) -> std::vector<DiffFile>;
 };

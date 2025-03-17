@@ -9,24 +9,24 @@
 namespace CppGit::_details {
 
 GitFilesHelper::GitFilesHelper(const Repository& repo)
-    : repo{ &repo }
+    : repository{ &repo }
 { }
 
 auto GitFilesHelper::setOrigHeadFile(const std::string_view commitHash) const -> void
 {
-    FileUtility::createOrOverwriteFile(repo->getGitDirectoryPath() / "ORIG_HEAD", commitHash);
+    FileUtility::createOrOverwriteFile(repository->getGitDirectoryPath() / "ORIG_HEAD", commitHash);
 }
 
 
 auto GitFilesHelper::setHeadFile(const std::string_view refName) const -> void
 {
-    FileUtility::createOrOverwriteFile(repo->getGitDirectoryPath() / "HEAD", refName);
+    FileUtility::createOrOverwriteFile(repository->getGitDirectoryPath() / "HEAD", refName);
 }
 
 
 auto GitFilesHelper::getHeadFile() const -> std::string
 {
-    auto headFileContent = FileUtility::readFile(repo->getGitDirectoryPath() / "HEAD");
+    auto headFileContent = FileUtility::readFile(repository->getGitDirectoryPath() / "HEAD");
     if (headFileContent.ends_with('\n')) // Even we set it without \n some git commands may add it
     {
         headFileContent.pop_back();

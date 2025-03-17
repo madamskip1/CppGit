@@ -8,7 +8,7 @@ namespace CppGit::_details {
 class GitFilesHelper
 {
 public:
-    explicit GitFilesHelper(const Repository& repo);
+    explicit GitFilesHelper(const Repository& repository);
 
     auto setOrigHeadFile(const std::string_view commitHash) const -> void;
 
@@ -16,7 +16,7 @@ public:
     auto getHeadFile() const -> std::string;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 };
 
 } // namespace CppGit::_details

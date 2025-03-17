@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../Index.hpp"
+#include "../../IndexManager.hpp"
 #include "Parser.hpp"
 
 #include <string_view>
@@ -25,7 +25,7 @@ public:
     /// @brief Parse index cache list
     /// @param indexContent Index cache content
     /// @return List of index cache entries
-    [[nodiscard]] static auto parseStageSimpleCacheList(const std::string_view indexContent) -> std::vector<std::string>;
+    [[nodiscard]] static auto parseCacheFilenameList(const std::string_view indexContent) -> std::vector<std::string>;
 
     /// @brief Parse diff index entry
     /// @param diffIndexLine Single diff index line
@@ -35,7 +35,7 @@ public:
     /// @brief Parse diff index
     /// @param diffIndexContent Diff index content
     /// @return List of diff index entries
-    [[nodiscard]] static auto parseDiffIndexWithStatus(const std::string_view diffIndexContent) -> std::vector<DiffIndexEntry>;
+    [[nodiscard]] static auto parseDiffIndexWithStatusList(const std::string_view diffIndexContent) -> std::vector<DiffIndexEntry>;
 
     /// @brief Parse ls-files entry
     /// @param lsFilesLine Single ls-files line

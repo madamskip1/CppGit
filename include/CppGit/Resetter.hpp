@@ -2,17 +2,17 @@
 
 #include "Repository.hpp"
 #include "_details/GitFilesHelper.hpp"
-#include "_details/Refs.hpp"
+#include "_details/ReferencesManager.hpp"
 
 namespace CppGit {
 
 /// @brief Provides functionality to reset the repository to a specific commit
-class Reset
+class Resetter
 {
 
 public:
     /// @param repo The repository to work with
-    explicit Reset(const Repository& repo);
+    explicit Resetter(const Repository& repository);
 
     /// @brief Reset the repository to the given commit hash and keep the changes
     /// @param commitHash Hash of the commit to reset to
@@ -23,10 +23,10 @@ public:
     auto resetHard(const std::string_view commitHash) const -> void;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     _details::GitFilesHelper gitFilesHelper;
-    _details::Refs refs;
+    _details::ReferencesManager referencesManager;
 };
 
 } // namespace CppGit

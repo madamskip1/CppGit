@@ -11,7 +11,7 @@
 namespace CppGit {
 
 /// @brief Provides functionality to get the commits log
-class CommitsLog
+class CommitsLogManager
 {
 public:
     /// @brief Options for including merge commits in log strategy
@@ -33,7 +33,7 @@ public:
     };
 
     /// @param repo The repository to work with
-    explicit CommitsLog(const Repository& repo);
+    explicit CommitsLogManager(const Repository& repository);
 
 
     /// @brief Get the commit hashes of the commits in the log
@@ -63,77 +63,77 @@ public:
     /// @brief Set whether to include all branches in the log
     /// @param allBranches True to include all branches, false otherwise
     /// @return Reference to this object
-    auto setAllBranches(const bool allBranches) -> CommitsLog&;
+    auto setAllBranches(const bool allBranches) -> CommitsLogManager&;
 
     /// @brief Reset whether to include all branches in the log to default (include only the current branch)
     /// @return Reference to this object
-    auto resetAllBranches() -> CommitsLog&;
+    auto resetAllBranches() -> CommitsLogManager&;
 
     /// @brief Set the maximum number of commits to include in the log
     /// @param maxCount Maximum number of commits
     /// @return Reference to this object
-    auto setMaxCount(int maxCount) -> CommitsLog&;
+    auto setMaxCount(int maxCount) -> CommitsLogManager&;
 
     /// @brief Reset the maximum number of commits to include in the log to default (include all commits)
     /// @return Reference to this object
-    auto resetMaxCount() -> CommitsLog&;
+    auto resetMaxCount() -> CommitsLogManager&;
 
     /// @brief Set the number of commits to skip
     /// @param skip Number of commits to skip
     /// @return Reference to this object
-    auto setSkip(int skip) -> CommitsLog&;
+    auto setSkip(int skip) -> CommitsLogManager&;
 
     /// @brief Reset the number of commits to skip to default (skip no commits)
     /// @return Reference to this object
-    auto resetSkip() -> CommitsLog&;
+    auto resetSkip() -> CommitsLogManager&;
 
     /// @brief Set whether to include merges in the log
     /// @param logMerges Log merges strategy
     /// @return Reference to this object
-    auto setLogMerges(LOG_MERGES logMerges) -> CommitsLog&;
+    auto setLogMerges(LOG_MERGES logMerges) -> CommitsLogManager&;
 
     /// @brief Reset whether to include merges in the log to default (include all commits)
     /// @return Reference to this object
-    auto resetLogMerges() -> CommitsLog&;
+    auto resetLogMerges() -> CommitsLogManager&;
 
     /// @brief Set the order of the commits in the log
     /// @param order Order of the commits
     /// @return Reference to this object
-    auto setOrder(Order order) -> CommitsLog&;
+    auto setOrder(Order order) -> CommitsLogManager&;
 
     /// @brief Reset the order of the commits in the log to default (chronological)
     /// @return Reference to this object
-    auto resetOrder() -> CommitsLog&;
+    auto resetOrder() -> CommitsLogManager&;
 
     /// @brief Set the author pattern to filter the commits
     /// @param authorPattern Author pattern
     /// @return Reference to this object
-    auto setAuthorPattern(const std::string_view authorPattern) -> CommitsLog&;
+    auto setAuthorPattern(const std::string_view authorPattern) -> CommitsLogManager&;
 
     /// @brief Reset the author pattern to default (no filter)
     /// @return Reference to this object
-    auto resetAuthorPattern() -> CommitsLog&;
+    auto resetAuthorPattern() -> CommitsLogManager&;
 
     /// @brief Set the committer pattern to filter the commits
     /// @param committerPattern Committer pattern
     /// @return Reference to this object
-    auto setCommitterPattern(const std::string_view committerPattern) -> CommitsLog&;
+    auto setCommitterPattern(const std::string_view committerPattern) -> CommitsLogManager&;
 
     /// @brief Reset the committer pattern to default (no filter)
     /// @return Reference to this object
-    auto resetCommitterPattern() -> CommitsLog&;
+    auto resetCommitterPattern() -> CommitsLogManager&;
 
     /// @brief Set the message pattern to filter the commits
     /// @param messagePattern Message pattern
     /// @return Reference to this object
-    auto setMessagePattern(const std::string_view messagePattern) -> CommitsLog&;
+    auto setMessagePattern(const std::string_view messagePattern) -> CommitsLogManager&;
 
     /// @brief Reset the message pattern to default (no filter)
     /// @return Reference to this object
-    auto resetMessagePattern() -> CommitsLog&;
+    auto resetMessagePattern() -> CommitsLogManager&;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     bool allBranches_{ false };
     int maxCount_{ -1 };

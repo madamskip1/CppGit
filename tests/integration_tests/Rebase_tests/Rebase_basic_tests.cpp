@@ -1,11 +1,11 @@
 
 #include "RebaseFixture.hpp"
 
-#include <CppGit/Branches.hpp>
-#include <CppGit/Commits.hpp>
-#include <CppGit/CommitsLog.hpp>
-#include <CppGit/Index.hpp>
-#include <CppGit/Rebase.hpp>
+#include <CppGit/BranchesManager.hpp>
+#include <CppGit/CommitsLogManager.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/IndexManager.hpp>
+#include <CppGit/Rebaser.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <gtest/gtest.h>
 
@@ -15,37 +15,37 @@ class RebaseBasicTests : public RebaseFixture
 
 TEST_F(RebaseBasicTests, simpleRebase)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "");
-    index.add("file1.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "");
-    index.add("file2.txt");
+    indexManager.add("file2.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_TRUE(rebaseResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 4);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -66,35 +66,35 @@ TEST_F(RebaseBasicTests, simpleRebase)
 
 TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Main");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
-    index.add("file.txt");
+    indexManager.add("file.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second2");
-    index.add("file.txt");
-    const auto fourthCommitHash = commits.createCommit("Fourth commit");
+    indexManager.add("file.txt");
+    const auto fourthCommitHash = commitsManager.createCommit("Fourth commit");
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -102,7 +102,7 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + thirdCommitHash + "\n");
 
     constexpr auto* expectedMessage = "Third commit\n\nThird commit description";
-    EXPECT_EQ(rebase.getStoppedMessage(), expectedMessage);
+    EXPECT_EQ(rebaser.getStoppedMessage(), expectedMessage);
 
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -122,33 +122,33 @@ TEST_F(RebaseBasicTests, conflictOnFirstCommit_stop)
 
 TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Main");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
-    index.add("file.txt");
+    indexManager.add("file.txt");
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -159,7 +159,7 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "<<<<<<< HEAD\nMain\n=======\nSecond\n>>>>>>> " + fourthCommitHash + "\n");
 
     constexpr auto* expectedMessage = "Fourth commit";
-    EXPECT_EQ(rebase.getStoppedMessage(), expectedMessage);
+    EXPECT_EQ(rebaser.getStoppedMessage(), expectedMessage);
 
     const auto doneFileExpected = "pick " + thirdCommitHash + " Third commit\n"
                                 + "pick " + fourthCommitHash + " Fourth commit\n";
@@ -181,36 +181,36 @@ TEST_F(RebaseBasicTests, conflictOnNotFirstCommit_stop)
 
 TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
-    index.add("file1.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    indexManager.add("file1.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 1!");
-    index.add("file1.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 2!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
-    index.add("file1.txt");
-    index.add("file2.txt");
+    indexManager.add("file1.txt");
+    indexManager.add("file2.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -219,7 +219,7 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World 2!");
 
     constexpr auto* expectedMessage = "Third commit";
-    EXPECT_EQ(rebase.getStoppedMessage(), expectedMessage);
+    EXPECT_EQ(rebaser.getStoppedMessage(), expectedMessage);
 
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -239,40 +239,40 @@ TEST_F(RebaseBasicTests, conflict_bothConflictedAndNotFiles_stop)
 
 TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2!");
-    index.add("file1.txt");
-    index.add("file2.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    indexManager.add("file1.txt");
+    indexManager.add("file2.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 1!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 1!");
-    index.add("file1.txt");
-    index.add("file2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file1.txt");
+    indexManager.add("file2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file1.txt", "Hello, World! Modified 2!");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World 2! Modified 2!");
-    index.add("file1.txt");
-    index.add("file2.txt");
+    indexManager.add("file1.txt");
+    indexManager.add("file2.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", initialCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -281,7 +281,7 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "<<<<<<< HEAD\nHello, World 2! Modified 1!\n=======\nHello, World 2! Modified 2!\n>>>>>>> " + thirdCommitHash + "\n");
 
     constexpr auto* expectedMessage = "Third commit";
-    EXPECT_EQ(rebase.getStoppedMessage(), expectedMessage);
+    EXPECT_EQ(rebaser.getStoppedMessage(), expectedMessage);
 
     ASSERT_TRUE(std::filesystem::exists(rebaseDirPath));
     EXPECT_FALSE(std::filesystem::exists(rebaseDirPath / "amend"));
@@ -301,34 +301,34 @@ TEST_F(RebaseBasicTests, conflict_conflictedTwoFiles_stop)
 
 TEST_F(RebaseBasicTests, conflict_abort)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
 
 
     createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Main");
-    index.add("file.txt");
-    commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
-    rebase.abortRebase();
+    rebaser.abortRebase();
 
 
-    EXPECT_EQ(commits.getHeadCommitHash(), thirdCommitHash);
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), thirdCommitHash);
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), thirdCommitHash);
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), thirdCommitHash);
 
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Second");
 
@@ -339,42 +339,42 @@ TEST_F(RebaseBasicTests, conflict_abort)
 
 TEST_F(RebaseBasicTests, conflict_continue)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    branches.createBranch("second_branch");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    branchesManager.createBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Main");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Second");
-    index.add("file.txt");
+    indexManager.add("file.txt");
     const auto thirdCommitHash = createCommitWithTestAuthorCommiter("Third commit", "Third commit description", initialCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
     ASSERT_FALSE(rebaseResult.has_value());
     EXPECT_EQ(rebaseResult.error(), CppGit::RebaseResult::CONFLICT);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Resolved");
-    index.add("file.txt");
-    const auto rebaseContinueResult = rebase.continueRebase();
+    indexManager.add("file.txt");
+    const auto rebaseContinueResult = rebaser.continueRebase();
 
 
     ASSERT_TRUE(rebaseContinueResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseContinueResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseContinueResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseContinueResult.value());
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseContinueResult.value());
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -392,44 +392,44 @@ TEST_F(RebaseBasicTests, conflict_continue)
 
 TEST_F(RebaseBasicTests, skipPreviouslyAppliedCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Line 1");
-    index.add("file.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
-
-    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Line changed");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
-
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Line changed");
-    index.add("file.txt");
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
+
+    branchesManager.changeBranch("second_branch");
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Line changed");
+    indexManager.add("file.txt");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Line changed again");
-    index.add("file.txt");
+    indexManager.add("file.txt");
     const auto fourthCommitHash = createCommitWithTestAuthorCommiter("Fourth commit", thirdCommitHash);
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_TRUE(rebaseResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);
@@ -446,42 +446,42 @@ TEST_F(RebaseBasicTests, skipPreviouslyAppliedCommit)
 
 TEST_F(RebaseBasicTests, dontSkipEmptyCommit)
 {
-    const auto commits = repository->Commits();
-    const auto branches = repository->Branches();
-    const auto rebase = repository->Rebase();
-    const auto index = repository->Index();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto rebaser = repository->Rebaser();
+    const auto commitsManager = repository->CommitsManager();
+    const auto branchesManager = repository->BranchesManager();
+    const auto indexManager = repository->IndexManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World!");
-    index.add("file.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
-    branches.createBranch("second_branch");
+    branchesManager.createBranch("second_branch");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello World 2!");
-    index.add("file2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    branches.changeCurrentBranch("second_branch");
+    branchesManager.changeBranch("second_branch");
 
-    const auto thirdCommitHash = commits.createCommit("Third commit");
+    const auto thirdCommitHash = commitsManager.createCommit("Third commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello World 3!");
-    index.add("file.txt");
-    const auto fourthCommitHash = commits.createCommit("Fourth commit");
+    indexManager.add("file.txt");
+    const auto fourthCommitHash = commitsManager.createCommit("Fourth commit");
 
-    const auto rebaseResult = rebase.rebase("main");
+    const auto rebaseResult = rebaser.rebase("main");
 
 
     ASSERT_TRUE(rebaseResult.has_value());
 
-    EXPECT_EQ(commits.getHeadCommitHash(), rebaseResult.value());
-    const auto currentBranchName = branches.getCurrentBranchName();
+    EXPECT_EQ(commitsManager.getHeadCommitHash(), rebaseResult.value());
+    const auto currentBranchName = branchesManager.getCurrentBranchName();
     EXPECT_EQ(currentBranchName, "refs/heads/second_branch");
-    EXPECT_EQ(branches.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
+    EXPECT_EQ(branchesManager.getHashBranchRefersTo(currentBranchName), rebaseResult.value());
 
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 4);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[1].getHash(), secondCommitHash);

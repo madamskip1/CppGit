@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Index.hpp"
+#include "IndexManager.hpp"
 #include "Repository.hpp"
 #include "_details/GitFilesHelper.hpp"
-#include "_details/IndexWorktree.hpp"
-#include "_details/ThreeWayMerge.hpp"
+#include "_details/IndexWorktreeManager.hpp"
+#include "_details/ThreeWayMerger.hpp"
 
 #include <cstdint>
 #include <expected>
@@ -22,11 +22,11 @@ enum class MergeResult : uint8_t
 };
 
 /// @brief Provides functionality to merge branches
-class Merge
+class Merger
 {
 public:
     /// @param repo The repository to work with
-    explicit Merge(const Repository& repo);
+    explicit Merger(const Repository& repository);
 
     /// @brief Merge source branch onto current branch using fast-forward merge
     ///    Will fail if merge fast-forward is not possible
@@ -86,10 +86,10 @@ public:
     auto continueMerge() const -> std::expected<std::string, MergeResult>;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
-    _details::ThreeWayMerge threeWayMerge;
-    _details::IndexWorktree indexWorktree;
+    _details::ThreeWayMerger threeWayMerger;
+    _details::IndexWorktreeManager indexWorktreeManager;
     _details::GitFilesHelper gitFilesHelper;
 
     auto getAncestor(const std::string_view sourceBranch, const std::string_view targetBranch) const -> std::string;

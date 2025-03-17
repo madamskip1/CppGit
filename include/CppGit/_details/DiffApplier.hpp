@@ -19,19 +19,19 @@ enum class ApplyDiffResult : uint8_t
 };
 
 /// @brief Provides internal functionality to apply diff
-class ApplyDiff
+class DiffApplier
 {
 public:
     /// @param repo The repository to work with
-    explicit ApplyDiff(const Repository& repo);
+    explicit DiffApplier(const Repository& repository);
 
     /// @brief Apply commit's diff to the working directory
     /// @param commitHash Commit hash to apply diff from
     /// @return Result of applying diff
-    auto apply(const std::string_view commitHash) const -> ApplyDiffResult;
+    auto applyDiff(const std::string_view commitHash) const -> ApplyDiffResult;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     auto getDiff(const std::string_view commitHash) const -> std::string;
     auto createMissingFilesThatOccurInPatch(const std::string_view diff) const -> void;

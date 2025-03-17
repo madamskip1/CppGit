@@ -1,10 +1,10 @@
 #include "BaseRepositoryFixture.hpp"
 
 #include <CppGit/Commit.hpp>
-#include <CppGit/Commits.hpp>
-#include <CppGit/CommitsLog.hpp>
-#include <CppGit/Diff.hpp>
-#include <CppGit/Index.hpp>
+#include <CppGit/CommitsLogManager.hpp>
+#include <CppGit/CommitsManager.hpp>
+#include <CppGit/DiffGenerator.hpp>
+#include <CppGit/IndexManager.hpp>
 #include <CppGit/_details/FileUtility.hpp>
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -15,20 +15,20 @@ class CommitsTests : public BaseRepositoryFixture
 
 TEST_F(CommitsTests, emptyRepo_checkIfThereAreAnyCommits)
 {
-    const auto commits = repository->Commits();
+    const auto commitsManager = repository->CommitsManager();
 
-    ASSERT_FALSE(commits.hasAnyCommits());
+    ASSERT_FALSE(commitsManager.hasAnyCommits());
 }
 
 TEST_F(CommitsTests, createCommit_empty)
 {
-    const auto commits = repository->Commits();
+    const auto commitsManager = repository->CommitsManager();
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
-    auto commitInfo = commits.getCommitInfo(initialCommitHash);
-    ASSERT_TRUE(commits.hasAnyCommits());
-    EXPECT_EQ(initialCommitHash, commits.getHeadCommitHash());
+    auto commitInfo = commitsManager.getCommitInfo(initialCommitHash);
+    ASSERT_TRUE(commitsManager.hasAnyCommits());
+    EXPECT_EQ(initialCommitHash, commitsManager.getHeadCommitHash());
     EXPECT_EQ(commitInfo.getMessage(), "Initial commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Initial commit");
@@ -36,13 +36,13 @@ TEST_F(CommitsTests, createCommit_empty)
 
 TEST_F(CommitsTests, createCommit_empty_withParent)
 {
-    const auto commits = repository->Commits();
+    const auto commitsManager = repository->CommitsManager();
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
-    const auto commitInfo = commits.getCommitInfo(secondCommitHash);
-    EXPECT_EQ(secondCommitHash, commits.getHeadCommitHash());
+    const auto commitInfo = commitsManager.getCommitInfo(secondCommitHash);
+    EXPECT_EQ(secondCommitHash, commitsManager.getHeadCommitHash());
     EXPECT_NE(secondCommitHash, initialCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Second commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
@@ -54,13 +54,13 @@ TEST_F(CommitsTests, createCommit_empty_withParent)
 
 TEST_F(CommitsTests, createCommit_empty_withDescription)
 {
-    const auto commits = repository->Commits();
+    const auto commitsManager = repository->CommitsManager();
 
-    const auto initialCommitHash = commits.createCommit("Initial commit", "Initial commit description");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit", "Initial commit description");
 
-    const auto commitInfo = commits.getCommitInfo(initialCommitHash);
-    ASSERT_TRUE(commits.hasAnyCommits());
-    EXPECT_EQ(initialCommitHash, commits.getHeadCommitHash());
+    const auto commitInfo = commitsManager.getCommitInfo(initialCommitHash);
+    ASSERT_TRUE(commitsManager.hasAnyCommits());
+    EXPECT_EQ(initialCommitHash, commitsManager.getHeadCommitHash());
     EXPECT_EQ(commitInfo.getMessage(), "Initial commit");
     EXPECT_EQ(commitInfo.getDescription(), "Initial commit description");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Initial commit\n\nInitial commit description");
@@ -68,21 +68,21 @@ TEST_F(CommitsTests, createCommit_empty_withDescription)
 
 TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
-    index.add("file2.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file2.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
 
-    const auto commit = commits.getCommitInfo(secondCommitHash);
+    const auto commit = commitsManager.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file.txt"), "Hello, World! Modified");
@@ -91,21 +91,21 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedTrackedFiles)
 
 TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
 
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
-    index.add("file.txt");
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    indexManager.add("file.txt");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World! Modified");
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World! file2");
-    index.add("file.txt");
-    const auto secondCommitHash = commits.createCommit("Second commit");
+    indexManager.add("file.txt");
+    const auto secondCommitHash = commitsManager.createCommit("Second commit");
 
 
-    const auto commit = commits.getCommitInfo(secondCommitHash);
+    const auto commit = commitsManager.getCommitInfo(secondCommitHash);
     EXPECT_EQ(commit.getMessage(), "Second commit");
     ASSERT_TRUE(std::filesystem::exists(repositoryPath / "file2.txt"));
     EXPECT_EQ(CppGit::_details::FileUtility::readFile(repositoryPath / "file2.txt"), "Hello, World! file2");
@@ -114,24 +114,24 @@ TEST_F(CommitsTests, createCommit_shouldPreserveChangesInNotAddedUntrackedFiles)
 
 TEST_F(CommitsTests, amendCommit_noChanges)
 {
-    const auto commits = repository->Commits();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    const auto amendedCommitHash = commits.amendCommit();
+    const auto amendedCommitHash = commitsManager.amendCommit();
 
 
     // even we do amend commit without changes and same message, it should create new commit (for eg. because of different committer/committer date)
     EXPECT_NE(amendedCommitHash, initialCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 1);
     EXPECT_EQ(log[0].getMessage(), "Initial commit");
     EXPECT_EQ(log[0].getHash(), amendedCommitHash);
     EXPECT_EQ(log[0].getDescription(), "");
     EXPECT_EQ(log[0].getMessageAndDescription(), "Initial commit");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Initial commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Initial commit");
@@ -143,23 +143,23 @@ TEST_F(CommitsTests, amendCommit_noChanges)
 
 TEST_F(CommitsTests, amendCommit_changeMsg)
 {
-    const auto commits = repository->Commits();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    const auto amendedCommitHash = commits.amendCommit("Amended commit");
+    const auto amendedCommitHash = commitsManager.amendCommit("Amended commit");
 
 
     EXPECT_NE(amendedCommitHash, initialCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 1);
     EXPECT_EQ(log[0].getHash(), amendedCommitHash);
     EXPECT_EQ(log[0].getMessage(), "Amended commit");
     EXPECT_EQ(log[0].getDescription(), "");
     EXPECT_EQ(log[0].getMessageAndDescription(), "Amended commit");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Amended commit");
@@ -171,23 +171,23 @@ TEST_F(CommitsTests, amendCommit_changeMsg)
 
 TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
 {
-    const auto commits = repository->Commits();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     const auto initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit", "Initial description");
-    const auto amendedCommitHash = commits.amendCommit("Amended commit");
+    const auto amendedCommitHash = commitsManager.amendCommit("Amended commit");
 
 
     EXPECT_NE(amendedCommitHash, initialCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 1);
     EXPECT_EQ(log[0].getHash(), amendedCommitHash);
     EXPECT_EQ(log[0].getMessage(), "Amended commit");
     EXPECT_EQ(log[0].getDescription(), "");
     EXPECT_EQ(log[0].getMessageAndDescription(), "Amended commit");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
@@ -198,23 +198,23 @@ TEST_F(CommitsTests, amendCommit_changeMsgWithDescription)
 
 TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
 {
-    const auto commits = repository->Commits();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
 
     const auto& initialCommitHash = createCommitWithTestAuthorCommiterWithoutParent("Initial commit");
-    const auto amendedCommitHash = commits.amendCommit("Amended commit", "Amended description");
+    const auto amendedCommitHash = commitsManager.amendCommit("Amended commit", "Amended description");
 
 
     EXPECT_NE(amendedCommitHash, initialCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 1);
     EXPECT_EQ(log[0].getHash(), amendedCommitHash);
     EXPECT_EQ(log[0].getMessage(), "Amended commit");
     EXPECT_EQ(log[0].getDescription(), "Amended description");
     EXPECT_EQ(log[0].getMessageAndDescription(), "Amended commit\n\nAmended description");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Amended commit");
     EXPECT_EQ(commitInfo.getDescription(), "Amended description");
     EXPECT_EQ(commitInfo.getParents().size(), 0);
@@ -225,23 +225,23 @@ TEST_F(CommitsTests, amendCommit_changeMsgAndDescription)
 
 TEST_F(CommitsTests, amendCommit_addFile)
 {
-    const auto commits = repository->Commits();
-    const auto index = repository->Index();
-    const auto diff = repository->Diff();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    const auto indexManager = repository->IndexManager();
+    const auto diffGenerator = repository->DiffGenerator();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
     const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
     CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "");
-    index.add("file.txt");
+    indexManager.add("file.txt");
 
-    const auto amendedCommitHash = commits.amendCommit();
+    const auto amendedCommitHash = commitsManager.amendCommit();
 
 
     EXPECT_NE(amendedCommitHash, secondCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[0].getMessage(), "Initial commit");
@@ -251,7 +251,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     EXPECT_EQ(log[1].getMessage(), "Second commit");
     EXPECT_EQ(log[1].getDescription(), "");
     EXPECT_EQ(log[1].getMessageAndDescription(), "Second commit");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Second commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Second commit");
@@ -259,7 +259,7 @@ TEST_F(CommitsTests, amendCommit_addFile)
     EXPECT_EQ(commitInfo.getParents()[0], initialCommitHash);
     checkCommitAuthorEqualTest(commitInfo);
     checkCommitCommiterNotEqualTest(commitInfo);
-    const auto diffFiles = diff.getDiff();
+    const auto diffFiles = diffGenerator.getDiff();
     ASSERT_EQ(diffFiles.size(), 1);
     const auto& diffFile = diffFiles[0];
     EXPECT_EQ(diffFile.isCombined, false);
@@ -272,19 +272,19 @@ TEST_F(CommitsTests, amendCommit_addFile)
 
 TEST_F(CommitsTests, amendCommit_withOneParent)
 {
-    const auto commits = repository->Commits();
-    auto commitsLog = repository->CommitsLog();
-    commitsLog.setOrder(CppGit::CommitsLog::Order::REVERSE);
+    const auto commitsManager = repository->CommitsManager();
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CppGit::CommitsLogManager::Order::REVERSE);
 
-    const auto initialCommitHash = commits.createCommit("Initial commit");
+    const auto initialCommitHash = commitsManager.createCommit("Initial commit");
     const auto secondCommitHash = createCommitWithTestAuthorCommiter("Second commit", initialCommitHash);
 
-    const auto amendedCommitHash = commits.amendCommit();
+    const auto amendedCommitHash = commitsManager.amendCommit();
 
 
     EXPECT_NE(amendedCommitHash, initialCommitHash);
     EXPECT_NE(amendedCommitHash, secondCommitHash);
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0].getHash(), initialCommitHash);
     EXPECT_EQ(log[0].getMessage(), "Initial commit");
@@ -294,7 +294,7 @@ TEST_F(CommitsTests, amendCommit_withOneParent)
     EXPECT_EQ(log[1].getMessage(), "Second commit");
     EXPECT_EQ(log[1].getDescription(), "");
     EXPECT_EQ(log[1].getMessageAndDescription(), "Second commit");
-    const auto commitInfo = commits.getCommitInfo(amendedCommitHash);
+    const auto commitInfo = commitsManager.getCommitInfo(amendedCommitHash);
     EXPECT_EQ(commitInfo.getMessage(), "Second commit");
     EXPECT_EQ(commitInfo.getDescription(), "");
     EXPECT_EQ(commitInfo.getMessageAndDescription(), "Second commit");

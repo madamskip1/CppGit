@@ -1,14 +1,14 @@
 #include "CppGit/Repository.hpp"
 
-#include "CppGit/Branches.hpp"
-#include "CppGit/CherryPick.hpp"
-#include "CppGit/Commits.hpp"
-#include "CppGit/CommitsLog.hpp"
-#include "CppGit/Diff.hpp"
-#include "CppGit/Index.hpp"
-#include "CppGit/Merge.hpp"
-#include "CppGit/Rebase.hpp"
-#include "CppGit/Reset.hpp"
+#include "CppGit/BranchesManager.hpp"
+#include "CppGit/CherryPicker.hpp"
+#include "CppGit/CommitsLogManager.hpp"
+#include "CppGit/CommitsManager.hpp"
+#include "CppGit/DiffGenerator.hpp"
+#include "CppGit/IndexManager.hpp"
+#include "CppGit/Merger.hpp"
+#include "CppGit/Rebaser.hpp"
+#include "CppGit/Resetter.hpp"
 #include "CppGit/_details/FileUtility.hpp"
 
 #include <algorithm>
@@ -25,49 +25,49 @@ Repository::Repository(std::filesystem::path path)
     : path(std::move(path))
 { }
 
-auto Repository::Branches() const -> CppGit::Branches
+auto Repository::BranchesManager() const -> CppGit::BranchesManager
 {
-    return CppGit::Branches(*this);
+    return CppGit::BranchesManager(*this);
 }
 
-auto Repository::Index() const -> CppGit::Index
+auto Repository::IndexManager() const -> CppGit::IndexManager
 {
-    return CppGit::Index(*this);
+    return CppGit::IndexManager(*this);
 }
 
-auto Repository::Commits() const -> CppGit::Commits
+auto Repository::CommitsManager() const -> CppGit::CommitsManager
 {
-    return CppGit::Commits(*this);
+    return CppGit::CommitsManager(*this);
 }
 
-auto Repository::CommitsLog() const -> CppGit::CommitsLog
+auto Repository::CommitsLogManager() const -> CppGit::CommitsLogManager
 {
-    return CppGit::CommitsLog(*this);
+    return CppGit::CommitsLogManager(*this);
 }
 
-auto Repository::Diff() const -> CppGit::Diff
+auto Repository::DiffGenerator() const -> CppGit::DiffGenerator
 {
-    return CppGit::Diff(*this);
+    return CppGit::DiffGenerator(*this);
 }
 
-auto Repository::Merge() const -> CppGit::Merge
+auto Repository::Merger() const -> CppGit::Merger
 {
-    return CppGit::Merge(*this);
+    return CppGit::Merger(*this);
 }
 
-auto Repository::CherryPick() const -> CppGit::CherryPick
+auto Repository::CherryPicker() const -> CppGit::CherryPicker
 {
-    return CppGit::CherryPick(*this);
+    return CppGit::CherryPicker(*this);
 }
 
-auto Repository::Rebase() const -> CppGit::Rebase
+auto Repository::Rebaser() const -> CppGit::Rebaser
 {
-    return CppGit::Rebase(*this);
+    return CppGit::Rebaser(*this);
 }
 
-auto Repository::Reset() const -> CppGit::Reset
+auto Repository::Resetter() const -> CppGit::Resetter
 {
-    return CppGit::Reset(*this);
+    return CppGit::Resetter(*this);
 }
 
 auto Repository::getPathAsString() const -> std::string

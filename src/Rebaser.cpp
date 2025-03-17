@@ -1,15 +1,15 @@
-#include "CppGit/Rebase.hpp"
+#include "CppGit/Rebaser.hpp"
 
-#include "CppGit/Branches.hpp"
+#include "CppGit/BranchesManager.hpp"
 #include "CppGit/Commit.hpp"
-#include "CppGit/Commits.hpp"
-#include "CppGit/CommitsLog.hpp"
-#include "CppGit/Index.hpp"
+#include "CppGit/CommitsLogManager.hpp"
+#include "CppGit/CommitsManager.hpp"
+#include "CppGit/IndexManager.hpp"
 #include "CppGit/RebaseTodoCommand.hpp"
 #include "CppGit/Repository.hpp"
-#include "CppGit/_details/AmendCommit.hpp"
-#include "CppGit/_details/ApplyDiff.hpp"
-#include "CppGit/_details/CreateCommit.hpp"
+#include "CppGit/_details/CommitAmender.hpp"
+#include "CppGit/_details/CommitCreator.hpp"
+#include "CppGit/_details/DiffApplier.hpp"
 #include "CppGit/_details/GitFilesHelper.hpp"
 
 #include <algorithm>
@@ -22,45 +22,45 @@
 #include <vector>
 
 namespace CppGit {
-Rebase::Rebase(const Repository& repo)
-    : repo{ &repo },
-      commits{ repo },
-      branches{ repo },
-      refs{ repo },
-      indexWorktree{ repo },
-      rebaseFilesHelper{ repo },
-      applyDiff{ repo },
-      amendCommit{ repo },
-      createCommit{ repo }
+Rebaser::Rebaser(const Repository& repository)
+    : repository{ &repository },
+      commitsManager{ repository },
+      branchesManager{ repository },
+      referencesManager{ repository },
+      indexWorktreeManager{ repository },
+      rebaseFilesHelper{ repository },
+      diffApplier{ repository },
+      commitAmender{ repository },
+      commitCreator{ repository }
 {
 }
 
-auto Rebase::rebase(const std::string_view upstream) const -> std::expected<std::string, RebaseResult>
+auto Rebaser::rebase(const std::string_view upstream) const -> std::expected<std::string, RebaseResult>
 {
     auto rebaseComamnds = getDefaultTodoCommands(upstream);
     return rebaseImpl(upstream, rebaseComamnds);
 }
 
-auto Rebase::interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
+auto Rebaser::interactiveRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
 {
     return rebaseImpl(upstream, rebaseCommands);
 }
 
-auto Rebase::abortRebase() const -> void
+auto Rebaser::abortRebase() const -> void
 {
-    indexWorktree.resetIndexToTree(rebaseFilesHelper.getOrigHead());
-    indexWorktree.copyForceIndexToWorktree();
-    refs.updateSymbolicRef("HEAD", rebaseFilesHelper.getHeadName());
+    indexWorktreeManager.resetIndexToTree(rebaseFilesHelper.getOrigHead());
+    indexWorktreeManager.copyForceIndexToWorktree();
+    referencesManager.updateSymbolicRef("HEAD", rebaseFilesHelper.getHeadName());
 
     rebaseFilesHelper.deleteAllRebaseFiles();
 }
 
-auto Rebase::continueRebase() const -> std::expected<std::string, RebaseResult>
+auto Rebaser::continueRebase() const -> std::expected<std::string, RebaseResult>
 {
     return continueRebase("", "");
 }
 
-auto Rebase::continueRebase(const std::string_view message, const std::string_view description) const -> std::expected<std::string, RebaseResult>
+auto Rebaser::continueRebase(const std::string_view message, const std::string_view description) const -> std::expected<std::string, RebaseResult>
 {
     if (auto lastCommand = rebaseFilesHelper.getLastDoneCommand(); lastCommand->type != RebaseTodoCommandType::BREAK)
     {
@@ -83,13 +83,13 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
 
         if (auto amend = rebaseFilesHelper.getAmendFile(); !amend.empty())
         {
-            hashAfter = commits.getHeadCommitHash();
+            hashAfter = commitsManager.getHeadCommitHash();
 
-            if (lastCommand->type != RebaseTodoCommandType::EDIT || repo->Index().areAnyStagedFiles())
+            if (lastCommand->type != RebaseTodoCommandType::EDIT || repository->IndexManager().areAnyStagedFiles())
             {
-                const auto headCommitInfo = commits.getCommitInfo(hashAfter);
-                hashAfter = amendCommit.amend(headCommitInfo, messageAndDesc);
-                refs.updateRefHash("HEAD", hashAfter);
+                const auto headCommitInfo = commitsManager.getCommitInfo(hashAfter);
+                hashAfter = commitAmender.amendCommit(headCommitInfo, messageAndDesc);
+                referencesManager.updateRefHash("HEAD", hashAfter);
             }
 
             rebaseFilesHelper.removeAmendFile();
@@ -97,10 +97,10 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
         else
         {
             const auto authorScript = rebaseFilesHelper.getAuthorScriptFile(); // authorScript has struct like envp
-            const auto parent = commits.getHeadCommitHash();
+            const auto parent = commitsManager.getHeadCommitHash();
 
-            hashAfter = createCommit.createCommit(messageAndDesc, { parent }, authorScript);
-            refs.updateRefHash("HEAD", hashAfter);
+            hashAfter = commitCreator.createCommit(messageAndDesc, { parent }, authorScript);
+            referencesManager.updateRefHash("HEAD", hashAfter);
             rebaseFilesHelper.removeAuthorScriptFile();
         }
 
@@ -130,18 +130,18 @@ auto Rebase::continueRebase(const std::string_view message, const std::string_vi
     return endRebase();
 }
 
-auto Rebase::isRebaseInProgress() const -> bool
+auto Rebaser::isRebaseInProgress() const -> bool
 {
-    return std::filesystem::exists(repo->getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo");
+    return std::filesystem::exists(repository->getGitDirectoryPath() / "rebase-merge" / "git-rebase-todo");
 }
 
-auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
+auto Rebaser::getDefaultTodoCommands(const std::string_view upstream) const -> std::vector<RebaseTodoCommand>
 {
-    auto rebaseBase = repo->executeGitCommand("merge-base", "HEAD", upstream);
+    auto rebaseBase = repository->executeGitCommand("merge-base", "HEAD", upstream);
 
-    auto commitsLog = repo->CommitsLog();
-    commitsLog.setOrder(CommitsLog::Order::REVERSE);
-    auto commitsToRebase = commitsLog.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
+    auto commitsLogManager = repository->CommitsLogManager();
+    commitsLogManager.setOrder(CommitsLogManager::Order::REVERSE);
+    auto commitsToRebase = commitsLogManager.getCommitsLogDetailed(std::move(rebaseBase.stdout), "HEAD");
 
     auto rebaseCommands = std::vector<RebaseTodoCommand>{};
 
@@ -154,12 +154,12 @@ auto Rebase::getDefaultTodoCommands(const std::string_view upstream) const -> st
     return rebaseCommands;
 }
 
-auto Rebase::getStoppedMessage() const -> std::string
+auto Rebaser::getStoppedMessage() const -> std::string
 {
     return rebaseFilesHelper.getMessageFile();
 }
 
-auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
+auto Rebaser::rebaseImpl(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> std::expected<std::string, RebaseResult>
 {
     startRebase(upstream, rebaseCommands);
 
@@ -171,34 +171,34 @@ auto Rebase::rebaseImpl(const std::string_view upstream, const std::vector<Rebas
     return endRebase();
 }
 
-auto Rebase::startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
+auto Rebaser::startRebase(const std::string_view upstream, const std::vector<RebaseTodoCommand>& rebaseCommands) const -> void
 {
-    const auto upstreamHash = refs.getRefHash(upstream);
-    const auto headRef = refs.getRefHash("HEAD");
+    const auto upstreamHash = referencesManager.getRefHash(upstream);
+    const auto headRef = referencesManager.getRefHash("HEAD");
 
     rebaseFilesHelper.createRebaseDir();
-    rebaseFilesHelper.createHeadNameFile(branches.getCurrentBranchName());
+    rebaseFilesHelper.createHeadNameFile(branchesManager.getCurrentBranchName());
     rebaseFilesHelper.createOntoFile(upstreamHash);
     rebaseFilesHelper.createRebaseOrigHeadFile(headRef);
-    _details::GitFilesHelper{ *repo }.setOrigHeadFile(headRef);
+    _details::GitFilesHelper{ *repository }.setOrigHeadFile(headRef);
     rebaseFilesHelper.generateTodoFile(rebaseCommands);
 
-    branches.detachHead(upstreamHash);
+    branchesManager.detachHead(upstreamHash);
 }
 
-auto Rebase::endRebase() const -> std::string
+auto Rebaser::endRebase() const -> std::string
 {
-    const auto currentHash = refs.getRefHash("HEAD");
+    const auto currentHash = referencesManager.getRefHash("HEAD");
     const auto headName = rebaseFilesHelper.getHeadName();
-    refs.updateRefHash(headName, currentHash);
-    refs.updateSymbolicRef("HEAD", headName);
+    referencesManager.updateRefHash(headName, currentHash);
+    referencesManager.updateSymbolicRef("HEAD", headName);
 
     rebaseFilesHelper.deleteAllRebaseFiles();
 
     return currentHash;
 }
 
-auto Rebase::processTodoList() const -> RebaseResult
+auto Rebaser::processTodoList() const -> RebaseResult
 {
     auto todoCommand = rebaseFilesHelper.peakAndPopTodoFile();
 
@@ -227,7 +227,7 @@ auto Rebase::processTodoList() const -> RebaseResult
     return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
     if (rebaseTodoCommand.type == RebaseTodoCommandType::PICK)
     {
@@ -267,9 +267,9 @@ auto Rebase::processTodoCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     return RebaseResult::UNKNOWN_COMMAND;
 }
 
-auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
-    const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    const auto commitInfo = commitsManager.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
 
     if (!pickResult.has_value())
@@ -299,14 +299,14 @@ auto Rebase::processPickCommand(const RebaseTodoCommand& rebaseTodoCommand) cons
     return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processBreakCommand(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
+auto Rebaser::processBreakCommand(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
 {
     return RebaseResult::BREAK;
 }
 
-auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
-    const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    const auto commitInfo = commitsManager.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
@@ -322,9 +322,9 @@ auto Rebase::processReword(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     return RebaseResult::REWORD;
 }
 
-auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
-    const auto commitInfo = commits.getCommitInfo(rebaseTodoCommand.hash);
+    const auto commitInfo = commitsManager.getCommitInfo(rebaseTodoCommand.hash);
     const auto pickResult = pickCommit(commitInfo);
 
     rebaseFilesHelper.createMessageFile(commitInfo.getMessageAndDescription());
@@ -340,17 +340,17 @@ auto Rebase::processEdit(const RebaseTodoCommand& rebaseTodoCommand) const -> Re
     return RebaseResult::EDIT;
 }
 
-auto Rebase::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
+auto Rebaser::processDrop(const RebaseTodoCommand& /*rebaseTodoCommand*/) -> RebaseResult
 {
     return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
-    const auto headCommitHash = commits.getHeadCommitHash();
-    const auto headCommitInfo = commits.getCommitInfo(headCommitHash);
+    const auto headCommitHash = commitsManager.getHeadCommitHash();
+    const auto headCommitInfo = commitsManager.getCommitInfo(headCommitHash);
 
-    if (auto applyResult = applyDiff.apply(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
+    if (auto applyResult = diffApplier.applyDiff(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
     {
         rebaseFilesHelper.createAmendFile(headCommitHash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
@@ -364,8 +364,8 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> R
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
         rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
 
-        const auto newCommitHash = amendCommit.amend(headCommitInfo);
-        refs.updateRefHash("HEAD", newCommitHash);
+        const auto newCommitHash = commitAmender.amendCommit(headCommitInfo);
+        referencesManager.updateRefHash("HEAD", newCommitHash);
 
         return RebaseResult::COMMAND_PROCESSED;
     }
@@ -379,8 +379,8 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> R
         return RebaseResult::SQUASH;
     }
 
-    const auto newCommitHash = amendCommit.amend(headCommitInfo);
-    refs.updateRefHash("HEAD", newCommitHash);
+    const auto newCommitHash = commitAmender.amendCommit(headCommitInfo);
+    referencesManager.updateRefHash("HEAD", newCommitHash);
 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     rebaseFilesHelper.appendRewrittenListWithRewrittenPending(newCommitHash);
@@ -389,13 +389,13 @@ auto Rebase::processFixup(const RebaseTodoCommand& rebaseTodoCommand) const -> R
     return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
+auto Rebaser::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> RebaseResult
 {
-    const auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commits.getHeadCommitHash(), rebaseTodoCommand.hash);
+    const auto messageSquash = getConcatenatedMessagePreviousAndCurrentCommit(commitsManager.getHeadCommitHash(), rebaseTodoCommand.hash);
 
-    if (const auto applyResult = applyDiff.apply(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
+    if (const auto applyResult = diffApplier.applyDiff(rebaseTodoCommand.hash); applyResult == _details::ApplyDiffResult::CONFLICT)
     {
-        rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
+        rebaseFilesHelper.createAmendFile(commitsManager.getHeadCommitHash());
         rebaseFilesHelper.createMessageFile(messageSquash);
         rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
@@ -404,7 +404,7 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
 
     if (!isNextCommandFixupOrSquash())
     {
-        rebaseFilesHelper.createAmendFile(commits.getHeadCommitHash());
+        rebaseFilesHelper.createAmendFile(commitsManager.getHeadCommitHash());
         rebaseFilesHelper.createMessageFile(messageSquash);
 
         return RebaseResult::SQUASH;
@@ -413,28 +413,28 @@ auto Rebase::processSquash(const RebaseTodoCommand& rebaseTodoCommand) const -> 
     rebaseFilesHelper.appendRewrittenPendingFile(rebaseTodoCommand.hash);
     rebaseFilesHelper.appendCurrentFixupFile(rebaseTodoCommand);
 
-    const auto headCommitHash = commits.getHeadCommitHash();
-    const auto headCommitInfo = commits.getCommitInfo(headCommitHash);
-    const auto newCommitHash = amendCommit.amend(headCommitInfo, messageSquash);
-    refs.updateRefHash("HEAD", newCommitHash);
+    const auto headCommitHash = commitsManager.getHeadCommitHash();
+    const auto headCommitInfo = commitsManager.getCommitInfo(headCommitHash);
+    const auto newCommitHash = commitAmender.amendCommit(headCommitInfo, messageSquash);
+    referencesManager.updateRefHash("HEAD", newCommitHash);
 
     return RebaseResult::COMMAND_PROCESSED;
 }
 
-auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::string, RebaseResult>
+auto Rebaser::pickCommit(const Commit& commitInfo) const -> std::expected<std::string, RebaseResult>
 {
     const auto& pickedParent = commitInfo.getParents()[0];
-    const auto headCommitHash = commits.getHeadCommitHash();
+    const auto headCommitHash = commitsManager.getHeadCommitHash();
 
     if (headCommitHash == pickedParent)
     {
         // can FastForward
-        branches.detachHead(commitInfo.getHash());
+        branchesManager.detachHead(commitInfo.getHash());
 
         return commitInfo.getHash();
     }
 
-    const auto applyDiffResult = applyDiff.apply(commitInfo.getHash());
+    const auto applyDiffResult = diffApplier.applyDiff(commitInfo.getHash());
 
     if (applyDiffResult == _details::ApplyDiffResult::NO_CHANGES)
     {
@@ -452,23 +452,23 @@ auto Rebase::pickCommit(const Commit& commitInfo) const -> std::expected<std::st
         "GIT_AUTHOR_DATE=" + commitInfo.getAuthorDate()
     };
 
-    auto newCommitHash = createCommit.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
-    refs.updateRefHash("HEAD", newCommitHash);
+    auto newCommitHash = commitCreator.createCommit(commitInfo.getMessage(), commitInfo.getDescription(), { headCommitHash }, envp);
+    referencesManager.updateRefHash("HEAD", newCommitHash);
 
     return newCommitHash;
 }
 
-auto Rebase::isNextCommandFixupOrSquash() const -> bool
+auto Rebaser::isNextCommandFixupOrSquash() const -> bool
 {
     const auto peakCommand = rebaseFilesHelper.peekTodoFile();
 
     return peakCommand && (peakCommand->type == RebaseTodoCommandType::FIXUP || peakCommand->type == RebaseTodoCommandType::SQUASH);
 }
 
-auto Rebase::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string
+auto Rebaser::getConcatenatedMessagePreviousAndCurrentCommit(const std::string_view previousCommitHash, const std::string_view currentCommitHash) const -> std::string
 {
-    const auto previousCommitInfo = commits.getCommitInfo(previousCommitHash);
-    const auto currentCommitInfo = commits.getCommitInfo(currentCommitHash);
+    const auto previousCommitInfo = commitsManager.getCommitInfo(previousCommitHash);
+    const auto currentCommitInfo = commitsManager.getCommitInfo(currentCommitHash);
 
     return previousCommitInfo.getMessageAndDescription() + "\n\n" + currentCommitInfo.getMessageAndDescription();
 }

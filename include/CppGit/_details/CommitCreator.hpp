@@ -8,12 +8,12 @@
 namespace CppGit::_details {
 
 /// @brief Provides internal functionality to create a commit
-class CreateCommit
+class CommitCreator
 {
 public:
     /// @param repo The repository to work with
-    explicit CreateCommit(const Repository& repo);
-    CreateCommit() = delete;
+    explicit CommitCreator(const Repository& repository);
+    CommitCreator() = delete;
 
     /// @brief Create commit
     /// @param message Commit message
@@ -32,7 +32,7 @@ public:
 
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     auto writeTree() const -> std::string;
 

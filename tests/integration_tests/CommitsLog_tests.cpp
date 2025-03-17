@@ -1,7 +1,7 @@
 #include "BaseRepositoryFixture.hpp"
 
-#include <CppGit/Commits.hpp>
-#include <CppGit/CommitsLog.hpp>
+#include <CppGit/CommitsLogManager.hpp>
+#include <CppGit/CommitsManager.hpp>
 #include <gtest/gtest.h>
 
 class CommitsLogTests : public BaseRepositoryFixture
@@ -10,12 +10,12 @@ public:
     void SetUp() override
     {
         BaseRepositoryFixture::SetUp();
-        auto commits = repository->Commits();
-        auto commit1Hash = commits.createCommit("Commit1");
-        auto commit2Hash = commits.createCommit("Commit2");
-        auto commit3Hash = commits.createCommit("Commit3");
-        auto commit41Hash = commits.createCommit("Commit41", "Description41");
-        auto commit42Hash = commits.createCommit("Commit42", "Description42");
+        auto commitsManager = repository->CommitsManager();
+        auto commit1Hash = commitsManager.createCommit("Commit1");
+        auto commit2Hash = commitsManager.createCommit("Commit2");
+        auto commit3Hash = commitsManager.createCommit("Commit3");
+        auto commit41Hash = commitsManager.createCommit("Commit41", "Description41");
+        auto commit42Hash = commitsManager.createCommit("Commit42", "Description42");
 
         commitsHashes = { std::move(commit1Hash), std::move(commit2Hash), std::move(commit3Hash), std::move(commit41Hash), std::move(commit42Hash) };
     }
@@ -26,8 +26,8 @@ protected:
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_NoFilters)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 5);
     EXPECT_EQ(log[0], commitsHashes[4]);
@@ -39,8 +39,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_NoFilters)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_MaxCount)
 {
-    const auto commitsLog = repository->CommitsLog().setMaxCount(3);
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setMaxCount(3);
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0], commitsHashes[4]);
@@ -50,8 +50,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_MaxCount)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_Skip)
 {
-    const auto commitsLog = repository->CommitsLog().setSkip(2);
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setSkip(2);
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0], commitsHashes[2]);
@@ -61,8 +61,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_Skip)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_MaxCountSkip)
 {
-    const auto commitsLog = repository->CommitsLog().setMaxCount(2).setSkip(1);
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setMaxCount(2).setSkip(1);
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0], commitsHashes[3]);
@@ -71,8 +71,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_MaxCountSkip)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_ReverseOrder)
 {
-    const auto commitsLog = repository->CommitsLog().setOrder(CppGit::CommitsLog::Order::REVERSE);
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setOrder(CppGit::CommitsLogManager::Order::REVERSE);
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 5);
     EXPECT_EQ(log[0], commitsHashes[0]);
@@ -84,8 +84,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_ReverseOrder)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_DateOrder)
 {
-    const auto commitsLog = repository->CommitsLog().setOrder(CppGit::CommitsLog::Order::DATE);
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setOrder(CppGit::CommitsLogManager::Order::DATE);
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 5);
     EXPECT_EQ(log[0], commitsHashes[4]);
@@ -97,8 +97,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_DateOrder)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_messagePattern)
 {
-    const auto commitsLog = repository->CommitsLog().setMessagePattern("Commit4");
-    const auto log = commitsLog.getCommitsLogHashesOnly();
+    const auto commitsLogManager = repository->CommitsLogManager().setMessagePattern("Commit4");
+    const auto log = commitsLogManager.getCommitsLogHashesOnly();
 
     ASSERT_EQ(log.size(), 2);
     EXPECT_EQ(log[0], commitsHashes[4]);
@@ -107,8 +107,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_messagePattern)
 
 TEST_F(CommitsLogTests, getlog_NoFilters)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogDetailed();
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogDetailed();
 
     ASSERT_EQ(log.size(), 5);
 
@@ -140,8 +140,8 @@ TEST_F(CommitsLogTests, getlog_NoFilters)
 
 TEST_F(CommitsLogTests, getlog_ToRef)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogDetailed(commitsHashes[2]);
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogDetailed(commitsHashes[2]);
 
     ASSERT_EQ(log.size(), 3);
 
@@ -163,8 +163,8 @@ TEST_F(CommitsLogTests, getlog_ToRef)
 
 TEST_F(CommitsLogTests, getlog_FromRefToRef)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogDetailed(commitsHashes[1], commitsHashes[2]);
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogDetailed(commitsHashes[1], commitsHashes[2]);
 
     ASSERT_EQ(log.size(), 1);
 
@@ -176,8 +176,8 @@ TEST_F(CommitsLogTests, getlog_FromRefToRef)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_ToRef)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogHashesOnly(commitsHashes[2]);
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogHashesOnly(commitsHashes[2]);
 
     ASSERT_EQ(log.size(), 3);
     EXPECT_EQ(log[0], commitsHashes[2]);
@@ -187,8 +187,8 @@ TEST_F(CommitsLogTests, getCommitsLogHashesOnly_ToRef)
 
 TEST_F(CommitsLogTests, getCommitsLogHashesOnly_FromRefToRef)
 {
-    const auto commitsLog = repository->CommitsLog();
-    const auto log = commitsLog.getCommitsLogHashesOnly(commitsHashes[1], commitsHashes[2]);
+    const auto commitsLogManager = repository->CommitsLogManager();
+    const auto log = commitsLogManager.getCommitsLogHashesOnly(commitsHashes[1], commitsHashes[2]);
 
     ASSERT_EQ(log.size(), 1);
     EXPECT_EQ(log[0], commitsHashes[2]);

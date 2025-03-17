@@ -12,15 +12,15 @@
 
 namespace CppGit {
 
-class Branches;   // forward-declaration
-class Index;      // forward-declaration
-class Commits;    // forward-declaration
-class CommitsLog; // forward-declaration
-class Diff;       // forward-declaration
-class Merge;      // forward-declaration
-class CherryPick; // forward-declaration
-class Rebase;     // forward-declaration
-class Reset;      // forward-declaration
+class BranchesManager;   // forward-declaration
+class IndexManager;      // forward-declaration
+class CommitsManager;    // forward-declaration
+class CommitsLogManager; // forward-declaration
+class DiffGenerator;     // forward-declaration
+class Merger;            // forward-declaration
+class CherryPicker;      // forward-declaration
+class Rebaser;           // forward-declaration
+class Resetter;          // forward-declaration
 
 using GitConfigEntry = std::pair<std::string, std::string>;
 
@@ -56,41 +56,41 @@ public:
         return executeGitCommand(std::vector<std::string>{}, cmd, std::forward<Args>(args)...);
     }
 
-    /// @brief Return branches object with current repository
-    /// @return Branches object
-    [[nodiscard]] auto Branches() const -> CppGit::Branches;
+    /// @brief Return branches manager object with current repository
+    /// @return BranchesManager object
+    [[nodiscard]] auto BranchesManager() const -> CppGit::BranchesManager;
 
-    /// @brief Return index object with current repository
-    /// @return Index object
-    [[nodiscard]] auto Index() const -> CppGit::Index;
+    /// @brief Return index manager object with current repository
+    /// @return IndexManager object
+    [[nodiscard]] auto IndexManager() const -> CppGit::IndexManager;
 
-    /// @brief Return commits object with current repository
-    /// @return Commits object
-    [[nodiscard]] auto Commits() const -> CppGit::Commits;
+    /// @brief Return commits manager object with current repository
+    /// @return CommitsManager object
+    [[nodiscard]] auto CommitsManager() const -> CppGit::CommitsManager;
 
-    /// @brief Return commits log object with current repository
-    /// @return CommitsLog object
-    [[nodiscard]] auto CommitsLog() const -> CppGit::CommitsLog;
+    /// @brief Return commits log manager object with current repository
+    /// @return CommitsLogManager object
+    [[nodiscard]] auto CommitsLogManager() const -> CppGit::CommitsLogManager;
 
-    /// @brief Return diff object with current repository
-    /// @return Diff object
-    [[nodiscard]] auto Diff() const -> CppGit::Diff;
+    /// @brief Return diff generator object with current repository
+    /// @return DiffGenerator object
+    [[nodiscard]] auto DiffGenerator() const -> CppGit::DiffGenerator;
 
-    /// @brief Return merge object with current repository
-    /// @return Merge object
-    [[nodiscard]] auto Merge() const -> CppGit::Merge;
+    /// @brief Return merger object with current repository
+    /// @return Merger object
+    [[nodiscard]] auto Merger() const -> CppGit::Merger;
 
-    /// @brief Return cherry-pick object with current repository
-    /// @return CherryPick object
-    [[nodiscard]] auto CherryPick() const -> CppGit::CherryPick;
+    /// @brief Return cherry-picker object with current repository
+    /// @return CherryPicker object
+    [[nodiscard]] auto CherryPicker() const -> CppGit::CherryPicker;
 
-    /// @brief Return rebase object with current repository
-    /// @return Rebase object
-    [[nodiscard]] auto Rebase() const -> CppGit::Rebase;
+    /// @brief Return rebaser object with current repository
+    /// @return Rebaser object
+    [[nodiscard]] auto Rebaser() const -> CppGit::Rebaser;
 
-    /// @brief Return reset object with current repository
-    /// @return Reset object
-    [[nodiscard]] auto Reset() const -> CppGit::Reset;
+    /// @brief Return reseter object with current repository
+    /// @return Reseter object
+    [[nodiscard]] auto Resetter() const -> CppGit::Resetter;
 
     /// @brief Get repository path as string
     /// @return Repository path as string

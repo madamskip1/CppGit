@@ -3,7 +3,7 @@
 #include "Commit.hpp"
 #include "Repository.hpp"
 #include "_details/GitFilesHelper.hpp"
-#include "_details/Refs.hpp"
+#include "_details/ReferencesManager.hpp"
 
 #include <string>
 #include <string_view>
@@ -11,11 +11,11 @@
 namespace CppGit {
 
 /// @brief Provides functionality to work with commits
-class Commits
+class CommitsManager
 {
 public:
     /// @param repo The repository to work with
-    explicit Commits(const Repository& repo);
+    explicit CommitsManager(const Repository& repository);
 
     /// @brief Create a new commit with the given message and description (optional)
     /// @param message Commit message
@@ -43,9 +43,9 @@ public:
     [[nodiscard]] auto getCommitInfo(const std::string_view commitHash) const -> Commit;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
-    _details::Refs refs;
+    _details::ReferencesManager referencesManager;
     _details::GitFilesHelper gitFilesHelper;
 };
 

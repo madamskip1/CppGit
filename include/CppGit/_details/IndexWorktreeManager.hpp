@@ -5,11 +5,11 @@
 namespace CppGit::_details {
 
 /// @brief Provides internal functionality to work with the index and worktree
-class IndexWorktree
+class IndexWorktreeManager
 {
 public:
     /// @param repo The repository to work with
-    explicit IndexWorktree(const Repository& repo);
+    explicit IndexWorktreeManager(const Repository& repository);
 
     /// @brief Copy files from index to worktree
     auto copyIndexToWorktree() const -> void;
@@ -22,7 +22,7 @@ public:
     auto resetIndexToTree(const std::string_view treeHash) const -> void;
 
 private:
-    const Repository* repo;
+    const Repository* repository;
 
     auto copyIndexToWorktreeImpl(const bool force) const -> void;
 };
