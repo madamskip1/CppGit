@@ -112,14 +112,6 @@ public:
     /// @return Git directory path as string
     [[nodiscard]] auto getGitDirectoryPath() const -> std::filesystem::path;
 
-    /// @brief Transform relative path to absolute path
-    /// @param relativePath Relative path
-    [[nodiscard]] auto getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const -> std::filesystem::path;
-
-    /// @brief Transform absolute path to relative path
-    /// @param absolutePath Absolute path
-    [[nodiscard]] auto getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const -> std::filesystem::path;
-
     /// @brief Check whether the path is in the git directory
     /// @param path Path to check
     /// @return True if the path is in the git directory, false otherwise
@@ -148,6 +140,14 @@ public:
 
 private:
     std::filesystem::path path;
+
+    /// @brief Transform relative path to absolute path
+    /// @param relativePath Relative path
+    [[nodiscard]] auto getAbsoluteFromRelativePath(const std::filesystem::path& relativePath) const -> std::filesystem::path;
+
+    /// @brief Transform absolute path to relative path
+    /// @param absolutePath Absolute path
+    [[nodiscard]] auto getRelativeFromAbsolutePath(const std::filesystem::path& absolutePath) const -> std::filesystem::path;
 };
 
 using Repo = Repository;
