@@ -60,8 +60,6 @@ auto Merger::mergeFastForward(const std::string_view sourceBranch, const std::st
 
 auto Merger::mergeNoFastForward(const std::string_view sourceBranch, const std::string_view message, const std::string_view description) const -> std::expected<std::string, MergeResult>
 {
-    const auto indexManager = repository->IndexManager();
-
     auto mergeBaseOutput = repository->executeGitCommand("merge-base", "HEAD", sourceBranch);
 
     auto& mergeBase = mergeBaseOutput.stdout;
@@ -81,7 +79,7 @@ auto Merger::mergeNoFastForward(const std::string_view sourceBranch, const std::
     indexWorktreeManager.copyIndexToWorktree();
 
 
-    if (auto unmergedFilesEntries = indexManager.getUnmergedFilesDetailedList(); !unmergedFilesEntries.empty())
+    if (auto unmergedFilesEntries = repository->IndexManager().getUnmergedFilesDetailedList(); !unmergedFilesEntries.empty())
     {
         startMergeConflict(unmergedFilesEntries, std::move(sourceBranchRef), sourceBranch, "HEAD", message, description);
 
@@ -100,9 +98,7 @@ auto Merger::canFastForward(const std::string_view sourceBranch) const -> bool
 auto Merger::canFastForward(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool
 {
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
-    const auto commitsManager = repository->CommitsManager();
-
-    return ancestor == commitsManager.getHeadCommitHash();
+    return ancestor == repository->CommitsManager().getHeadCommitHash();
 }
 
 auto Merger::isAnythingToMerge(const std::string_view sourceBranch) const -> bool
@@ -113,8 +109,7 @@ auto Merger::isAnythingToMerge(const std::string_view sourceBranch) const -> boo
 auto Merger::isAnythingToMerge(const std::string_view sourceBranch, const std::string_view targetBranch) const -> bool
 {
     const auto ancestor = getAncestor(sourceBranch, targetBranch);
-    const auto branchesManager = repository->BranchesManager();
-    const auto sourceBranchRef = branchesManager.getHashBranchRefersTo(sourceBranch);
+    const auto sourceBranchRef = repository->BranchesManager().getHashBranchRefersTo(sourceBranch);
 
     return ancestor != sourceBranchRef;
 }

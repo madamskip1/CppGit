@@ -50,8 +50,7 @@ auto DiffApplier::applyDiff(const std::string_view commitHash) const -> ApplyDif
             const auto unmergedFilesEntries = repository->IndexManager().getUnmergedFilesDetailedList();
             if (!unmergedFilesEntries.empty())
             {
-                const auto threeWayMerger = ThreeWayMerger{ *repository };
-                threeWayMerger.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
+                ThreeWayMerger{ *repository }.mergeConflictedFiles(unmergedFilesEntries, commitHash, "HEAD");
                 return ApplyDiffResult::CONFLICT;
             }
         }

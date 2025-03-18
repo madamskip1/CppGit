@@ -69,9 +69,8 @@ auto ReferencesManager::appendPrefixToRefIfNeeded(const std::string_view refName
         return std::string{ "HEAD" };
     }
 
-    const auto* prefix = remote ? REMOTE_BRANCH_PREFIX : LOCAL_BRANCH_PREFIX;
 
-    if (!refName.contains(prefix))
+    if (const auto* prefix = remote ? REMOTE_BRANCH_PREFIX : LOCAL_BRANCH_PREFIX; !refName.contains(prefix))
     {
         return prefix + std::string{ refName };
     }

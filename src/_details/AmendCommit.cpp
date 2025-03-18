@@ -25,13 +25,12 @@ auto CommitAmender::amendCommit(const Commit& commit, const std::string_view new
     envp.emplace_back("GIT_AUTHOR_EMAIL=" + commit.getAuthor().email);
     envp.emplace_back("GIT_AUTHOR_DATE=" + commit.getAuthorDate());
 
-    const auto commitCreator = CommitCreator{ *repository };
     if (!newMessage.empty())
     {
-        return commitCreator.createCommit(newMessage, newDescription, commit.getParents(), envp);
+        return CommitCreator{ *repository }.createCommit(newMessage, newDescription, commit.getParents(), envp);
     }
 
-    return commitCreator.createCommit(commit.getMessage(), commit.getDescription(), commit.getParents(), envp);
+    return CommitCreator{ *repository }.createCommit(commit.getMessage(), commit.getDescription(), commit.getParents(), envp);
 }
 
 } // namespace CppGit::_details
