@@ -1104,3 +1104,49 @@ TEST_F(IndexTests, areAnyStagedFiles_trackedDeletedStaged)
 
     EXPECT_TRUE(indexManager.areAnyStagedFiles());
 }
+
+TEST_F(IndexTests, getStagedFiles_noCommits)
+{
+    const auto indexManager = repository->IndexManager();
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    auto stagedFiles = indexManager.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = indexManager.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    indexManager.add("file.txt");
+
+
+    indexFiles = indexManager.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 1);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+    stagedFiles = indexManager.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file.txt");
+}
+
+TEST_F(IndexTests, getStagedFiles_noCommits_pattern)
+{
+    const auto indexManager = repository->IndexManager();
+
+
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file.txt", "Hello, World!");
+    CppGit::_details::FileUtility::createOrOverwriteFile(repositoryPath / "file2.txt", "Hello, World!");
+    auto stagedFiles = indexManager.getStagedFilesList();
+    ASSERT_EQ(stagedFiles.size(), 0);
+    auto indexFiles = indexManager.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 0);
+
+    indexManager.add("file.txt");
+    indexManager.add("file2.txt");
+
+
+    indexFiles = indexManager.getFilesInIndexList();
+    ASSERT_EQ(indexFiles.size(), 2);
+    EXPECT_EQ(indexFiles[0], "file.txt");
+    stagedFiles = indexManager.getStagedFilesList("file2*");
+    ASSERT_EQ(stagedFiles.size(), 1);
+    EXPECT_EQ(stagedFiles[0], "file2.txt");
+}

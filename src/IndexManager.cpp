@@ -256,8 +256,14 @@ auto IndexManager::getUntrackedAndIndexFilesList(const std::string_view pattern)
 
 auto IndexManager::getStagedFilesListOutput(const std::string_view filePattern) const -> std::string
 {
-    const auto output = repository->executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
-    return output.stdout;
+    if (!repository->CommitsManager().hasAnyCommits())
+    {
+        auto output = repository->executeGitCommand("ls-files", "--cached", "--", filePattern);
+        return std::move(output.stdout);
+    }
+
+    auto output = repository->executeGitCommand("diff-index", "--cached", "--name-only", "HEAD", "--", filePattern);
+    return std::move(output.stdout);
 }
 
 } // namespace CppGit
