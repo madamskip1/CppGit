@@ -1,0 +1,7 @@
+set(CppGit_VERSION "@CppGit_VERSION@")
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/CppGitTargets.cmake")
+
+check_required_components(CppGit)
