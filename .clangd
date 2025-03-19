@@ -1,0 +1,21 @@
+CompileFlags:
+  Add: 
+    - -Wall
+    - -Wextra
+    - -pedantic
+    - -Wshadow
+    - -Wconversion
+    - -Wsign-conversion
+    - -Wuninitialized
+    - -Wundef
+    - -Wswitch-enum
+    - -Wfloat-equal
+    - -Wdeprecated-declarations
+    - -Warray-bounds
+    - -Wlogical-op
+    - -Wnull-dereference
+    - -Wold-style-cast
+    - -Wuseless-cast
+    - -Wduplicated-cond
+    - -Wduplicated-branches
+    - -std=c++23

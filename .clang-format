@@ -1,0 +1,68 @@
+BasedOnStyle: WebKit
+
+AlignAfterOpenBracket: Align  
+AlignArrayOfStructures: Right
+AlignOperands: AlignAfterOperator
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+BreakAdjacentStringLiterals: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeConceptDeclarations: Allowed
+BreakConstructorInitializers: BeforeColon
+# AlwaysBreakTemplateDeclarations: Yes # not available in clang-format 18.1.8 (hooks version)
+AlwaysBreakTemplateDeclarations: Yes # before clang-format 19
+CompactNamespaces: true
+Cpp11BracedListStyle: false
+EmptyLineBeforeAccessModifier: LogicalBlock
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+InsertNewlineAtEOF: true
+LambdaBodyIndentation: Signature
+MaxEmptyLinesToKeep: 2
+PackConstructorInitializers: Never
+ReferenceAlignment: Left
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeRangeBasedForLoopColon: true
+
+
+QualifierAlignment: Custom
+QualifierOrder: [inline, static, volatile, friend, constexpr, const, type]
+
+
+
+
+IntegerLiteralSeparator:
+  Binary: 4
+  Decimal: 3
+  DecimalMinDigits: 5
+  Hex: 2
+  HexMinDigits: 6
+
+
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 2
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeWhile: false
+  AfterClass: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
