@@ -38,6 +38,6 @@ build/
 .cache
 
 .codechecker
-.reports
+.reports-codechecker
 
 docs/
