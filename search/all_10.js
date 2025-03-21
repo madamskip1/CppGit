@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['setallbranches_0',['setAllBranches',['../dd/d71/classCppGit_1_1CommitsLogManager.html#ac277f0e07af5792e0bd46954111e1bf6',1,'CppGit::CommitsLogManager']]],
+  ['setauthorpattern_1',['setAuthorPattern',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a24a63eb3563edbab90aa622ef6a999ee',1,'CppGit::CommitsLogManager']]],
+  ['setcommitterpattern_2',['setCommitterPattern',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a8d32bf476f78f70655609e45245d1371',1,'CppGit::CommitsLogManager']]],
+  ['setheadfile_3',['setHeadFile',['../d6/d1d/classCppGit_1_1__details_1_1GitFilesHelper.html#ad3f7dbd3cbc6e1f8d6bc36ec1ed73f8e',1,'CppGit::_details::GitFilesHelper']]],
+  ['setlogmerges_4',['setLogMerges',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a1768ab6d9f660ae05c8431e6db5ecd6a',1,'CppGit::CommitsLogManager']]],
+  ['setmaxcount_5',['setMaxCount',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a3f8ccee7f29667c3e9dfb83ca506a0a9',1,'CppGit::CommitsLogManager']]],
+  ['setmessagepattern_6',['setMessagePattern',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a537f161c7f42e91cb9a018b4812961f7',1,'CppGit::CommitsLogManager']]],
+  ['setorder_7',['setOrder',['../dd/d71/classCppGit_1_1CommitsLogManager.html#a18cc74bc022eda2cebfaea17a60393f7',1,'CppGit::CommitsLogManager']]],
+  ['setorigheadfile_8',['setOrigHeadFile',['../d6/d1d/classCppGit_1_1__details_1_1GitFilesHelper.html#ac630a6ffee5782ef76eadcd5d43bcc9c',1,'CppGit::_details::GitFilesHelper']]],
+  ['setskip_9',['setSkip',['../dd/d71/classCppGit_1_1CommitsLogManager.html#ab5272c6ef4dd126bfee26faf83a4307c',1,'CppGit::CommitsLogManager']]],
+  ['signature_10',['Signature',['../d4/d23/structCppGit_1_1Signature.html',1,'CppGit::Signature'],['../d4/d23/structCppGit_1_1Signature.html#a707a46dfc3b0ccfc0428f4a4367ef30e',1,'CppGit::Signature::Signature()']]],
+  ['signature_2ehpp_11',['Signature.hpp',['../db/db2/Signature_8hpp.html',1,'']]],
+  ['similarityindex_12',['similarityIndex',['../de/d6a/structCppGit_1_1DiffFile.html#a4d23352895deded5b1d513855509c4ff',1,'CppGit::DiffFile']]],
+  ['splittostringsvector_13',['splitToStringsVector',['../de/deb/classCppGit_1_1Parser.html#aa129cfb76bf19da978994306ce87a2a1',1,'CppGit::Parser']]],
+  ['splittostringviewsvector_14',['splitToStringViewsVector',['../de/deb/classCppGit_1_1Parser.html#a4e48514bdf03d1cd8eb014c76edc9247',1,'CppGit::Parser']]],
+  ['squash_15',['SQUASH',['../dd/dac/namespaceCppGit.html#ab473fd4e44cfb71307dbdb0bebccb417a953b3c19d7ac8dff242b1294e00563bc',1,'CppGit::SQUASH'],['../dd/dac/namespaceCppGit.html#a653348d556cdb936d2ae60e551d9ff03a953b3c19d7ac8dff242b1294e00563bc',1,'CppGit::SQUASH']]],
+  ['stagenumber_16',['stageNumber',['../d3/ded/structCppGit_1_1IndexEntry.html#a6809e1bae7311f889984647476725490',1,'CppGit::IndexEntry']]],
+  ['status_17',['status',['../dd/d9c/structCppGit_1_1DiffIndexEntry.html#a14f397b16bdd01c74286c59b76288d96',1,'CppGit::DiffIndexEntry::status'],['../d4/d94/structCppGit_1_1LsFilesEntry.html#a1a0909e5876f8d13a7a56c5683d59332',1,'CppGit::LsFilesEntry::status']]],
+  ['stderr_18',['stderr',['../d3/d24/structCppGit_1_1GitCommandOutput.html#aa31ead588b47fde2107d9010df796d54',1,'CppGit::GitCommandOutput']]],
+  ['stdout_19',['stdout',['../d3/d24/structCppGit_1_1GitCommandOutput.html#aefdeddd56e6d086fc274bfba236a154c',1,'CppGit::GitCommandOutput']]],
+  ['stop_20',['STOP',['../dd/dac/namespaceCppGit.html#a913e404c6e75c33edda21189cad0c634a615a46af313786fc4e349f34118be111',1,'CppGit']]],
+  ['string_5fviewiteratortostring_5fview_21',['string_viewIteratorToString_view',['../de/deb/classCppGit_1_1Parser.html#a662a2e2730fb5a6f5372db3eee020d8a',1,'CppGit::Parser']]]
+];

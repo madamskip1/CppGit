@@ -1,0 +1,5 @@
+<map id="CppGit::RebaseTodoCommand" name="CppGit::RebaseTodoCommand">
+<area shape="rect" id="Node000001" title="Represents a single command in a rebase todo list." alt="" coords="5,109,205,135"/>
+<area shape="rect" id="Node000002" href="$d5/d4f/classCppGit_1_1RebaseTodoCommandTypeWrapper.html" title="Wrapper for RebaseTodoCommandType to allow implicit conversion to and from std::string." alt="" coords="5,5,205,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,61,108,109,102,109,102,61"/>
+</map>

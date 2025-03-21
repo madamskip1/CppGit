@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$de/deb/classCppGit_1_1Parser.html" title="Provides internal helper methods to parse strings." alt="" coords="5,80,111,106"/>
+<area shape="rect" id="Node000001" href="$d2/d84/classCppGit_1_1BranchesParser.html" title="Provides internal functionality to parse branches." alt="" coords="159,5,319,31"/>
+<area shape="poly" id="edge2_Node000000_Node000001" title=" " alt="" coords="95,70,158,40,188,29,190,34,160,45,97,75"/>
+<area shape="rect" id="Node000002" href="$d6/dce/classCppGit_1_1CommitParser.html" title="Provides internal functionality to parse commit logs." alt="" coords="164,55,314,80"/>
+<area shape="poly" id="edge3_Node000000_Node000002" title=" " alt="" coords="126,81,163,75,164,81,126,86"/>
+<area shape="rect" id="Node000003" href="$d9/d0a/classCppGit_1_1DiffParser.html" title="Provides internal functionality to parse diff content." alt="" coords="177,104,301,130"/>
+<area shape="poly" id="edge4_Node000000_Node000003" title=" " alt="" coords="126,99,177,106,176,111,125,104"/>
+<area shape="rect" id="Node000004" href="$d5/d4b/classCppGit_1_1IndexParser.html" title="Provides internal functionality to parse index content." alt="" coords="171,153,307,179"/>
+<area shape="poly" id="edge5_Node000000_Node000004" title=" " alt="" coords="98,111,160,140,190,150,188,155,158,145,95,116"/>
+</map>

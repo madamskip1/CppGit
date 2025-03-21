@@ -1,0 +1,5 @@
+<map id="CppGit::GitCommandExecutorUnix" name="CppGit::GitCommandExecutorUnix">
+<area shape="rect" id="Node000001" title="Provides functionality to execute git commands on Unix systems." alt="" coords="5,79,225,105"/>
+<area shape="rect" id="Node000002" href="$de/d75/classCppGit_1_1GitCommandExecutor.html" title="Base class for executing git commands." alt="" coords="18,5,212,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,46,118,79,112,79,112,46"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="CppGit::Parser" name="CppGit::Parser">
+<area shape="rect" id="Node000001" title="Provides internal helper methods to parse strings." alt="" coords="293,5,398,31"/>
+<area shape="rect" id="Node000002" href="$d2/d84/classCppGit_1_1BranchesParser.html" title="Provides internal functionality to parse branches." alt="" coords="5,79,166,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="287,38,131,81,129,76,286,33"/>
+<area shape="rect" id="Node000003" href="$d6/dce/classCppGit_1_1CommitParser.html" title="Provides internal functionality to parse commit logs." alt="" coords="190,79,341,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="322,43,281,81,277,77,319,39"/>
+<area shape="rect" id="Node000004" href="$d9/d0a/classCppGit_1_1DiffParser.html" title="Provides internal functionality to parse diff content." alt="" coords="365,79,489,105"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="372,39,415,77,411,81,369,43"/>
+<area shape="rect" id="Node000005" href="$d5/d4b/classCppGit_1_1IndexParser.html" title="Provides internal functionality to parse index content." alt="" coords="513,79,650,105"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="401,33,542,76,541,81,399,38"/>
+</map>

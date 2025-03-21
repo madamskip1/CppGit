@@ -1,0 +1,16 @@
+<map id="include/CppGit/Signature.hpp" name="include/CppGit/Signature.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="347,5,536,31"/>
+<area shape="rect" id="Node000002" href="$d3/d2b/Commit_8hpp.html" title=" " alt="" coords="352,79,531,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="444,46,444,79,439,79,439,46"/>
+<area shape="rect" id="Node000003" href="$d6/d23/CommitsLogManager_8hpp.html" title=" " alt="" coords="5,153,190,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="374,111,184,155,183,149,373,106"/>
+<area shape="rect" id="Node000004" href="$df/db9/CommitsManager_8hpp.html" title=" " alt="" coords="214,160,450,186"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="414,116,350,162,347,157,411,112"/>
+<area shape="rect" id="Node000006" href="$d8/d0d/CommitAmender_8hpp.html" title=" " alt="" coords="474,153,630,193"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="472,112,526,150,523,154,469,116"/>
+<area shape="rect" id="Node000007" href="$dd/d03/CommitParser_8hpp.html" title=" " alt="" coords="654,153,829,193"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="503,107,667,149,666,155,502,112"/>
+<area shape="rect" id="Node000005" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="350,241,533,267"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="363,193,426,239,423,243,360,197"/>
+<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="514,205,460,243,457,239,511,200"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="include/CppGit/_details/GitCommandExecutor/GitCommandExecutorUnix.hpp" name="include/CppGit/_details/GitCommandExecutor/GitCommandExecutorUnix.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="280,5,512,61"/>
+<area shape="rect" id="Node000002" href="$d5/d99/GitCommandExecutor_8hpp.html" title=" " alt="" coords="188,109,359,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="359,64,304,102,301,98,356,59"/>
+<area shape="rect" id="Node000003" href="$de/d5b/GitCommandOutput_8hpp.html" title=" " alt="" coords="5,183,166,208"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="287,64,231,84,178,111,138,141,107,173,103,169,135,137,175,107,229,80,285,59"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="346,183,433,208"/>
+<area shape="poly" id="edge10_Node000001_Node000005" title=" " alt="" coords="398,62,393,167,388,167,392,61"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="457,183,514,208"/>
+<area shape="poly" id="edge11_Node000001_Node000007" title=" " alt="" coords="414,60,474,168,469,171,409,63"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="485,109,534,135"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="433,59,483,97,480,101,430,63"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="243,138,133,179,131,174,241,133"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="118,256,171,282"/>
+<area shape="poly" id="edge4_Node000002_Node000004" title=" " alt="" coords="265,137,167,247,163,243,261,133"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="295,133,359,172,356,177,292,137"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="241,183,322,208"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="277,135,281,167,276,168,272,135"/>
+<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="310,133,443,177,441,182,309,138"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="97,207,127,243,123,246,93,210"/>
+</map>

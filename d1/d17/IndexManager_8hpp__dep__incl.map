@@ -1,0 +1,10 @@
+<map id="include/CppGit/IndexManager.hpp" name="include/CppGit/IndexManager.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,221,31"/>
+<area shape="rect" id="Node000002" href="$d8/d58/Merger_8hpp.html" title=" " alt="" coords="58,168,232,193"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="67,40,42,57,23,80,17,100,23,118,36,134,53,147,91,165,89,170,50,152,33,138,19,121,11,100,19,78,39,53,64,36"/>
+<area shape="rect" id="Node000003" href="$d3/d13/IndexParser_8hpp.html" title=" " alt="" coords="33,79,193,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="116,46,116,79,110,79,110,46"/>
+<area shape="rect" id="Node000004" href="$dd/d84/ThreeWayMerger_8hpp.html" title=" " alt="" coords="217,79,372,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="156,35,250,76,248,81,154,40"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="245,130,169,169,167,165,242,125"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="include/CppGit/_details/Parser/Parser.hpp" name="include/CppGit/_details/Parser/Parser.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="318,5,474,46"/>
+<area shape="rect" id="Node000002" href="$d6/d10/BranchesParser_8hpp.html" title=" " alt="" coords="5,94,190,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="314,53,166,96,165,91,313,48"/>
+<area shape="rect" id="Node000003" href="$dd/d03/CommitParser_8hpp.html" title=" " alt="" coords="214,94,389,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="365,59,325,96,321,92,362,55"/>
+<area shape="rect" id="Node000004" href="$d1/d66/DiffParser_8hpp.html" title=" " alt="" coords="413,94,568,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="431,55,471,92,468,96,427,59"/>
+<area shape="rect" id="Node000005" href="$d3/d13/IndexParser_8hpp.html" title=" " alt="" coords="592,94,752,135"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="474,48,610,91,609,96,473,54"/>
+</map>
