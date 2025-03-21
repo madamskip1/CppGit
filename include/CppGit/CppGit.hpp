@@ -1,0 +1,17 @@
+#pragma once
+
+#include "Branch.hpp"
+#include "BranchesManager.hpp"
+#include "CherryPicker.hpp"
+#include "Commit.hpp"
+#include "CommitsLogManager.hpp"
+#include "CommitsManager.hpp"
+#include "DiffFile.hpp"
+#include "DiffGenerator.hpp"
+#include "IndexManager.hpp"
+#include "Merger.hpp"
+#include "RebaseTodoCommand.hpp"
+#include "Rebaser.hpp"
+#include "Repository.hpp"
+#include "Resetter.hpp"
+#include "Signature.hpp"
