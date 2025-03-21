@@ -31,7 +31,7 @@ endif()
 set(CppGit_VERSION "0.1.0")
 
 string(REPLACE "." ";" version_splitted ${CppGit_VERSION})
-list(GET version_list 0 CppGit_SOVERSION)
+list(GET version_splitted 0 CppGit_SOVERSION)
 
 project(CppGit
     VERSION ${CppGit_VERSION}
