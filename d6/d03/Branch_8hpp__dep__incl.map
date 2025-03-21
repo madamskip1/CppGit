@@ -1,9 +1,13 @@
 <map id="include/CppGit/Branch.hpp" name="include/CppGit/Branch.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="155,5,330,31"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="195,5,370,31"/>
 <area shape="rect" id="Node000002" href="$dd/d27/BranchesManager_8hpp.html" title=" " alt="" coords="5,86,245,112"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,42,144,88,142,84,210,38"/>
-<area shape="rect" id="Node000004" href="$d6/d10/BranchesParser_8hpp.html" title=" " alt="" coords="269,79,453,120"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="275,38,333,76,330,81,272,42"/>
-<area shape="rect" id="Node000003" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="34,168,216,193"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="128,128,128,167,122,167,122,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="246,41,150,88,148,84,243,36"/>
+<area shape="rect" id="Node000003" href="$d6/d15/CppGit_8hpp.html" title=" " alt="" coords="67,241,242,267"/>
+<area shape="poly" id="edge5_Node000001_Node000003" title=" " alt="" coords="288,46,289,78,286,117,277,157,259,195,245,211,228,224,193,243,190,238,225,220,242,207,255,192,272,156,281,116,283,78,283,46"/>
+<area shape="rect" id="Node000005" href="$d6/d10/BranchesParser_8hpp.html" title=" " alt="" coords="320,79,504,120"/>
+<area shape="poly" id="edge6_Node000001_Node000005" title=" " alt="" coords="316,37,381,76,378,81,313,41"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="92,123,73,138,58,155,50,173,54,192,66,207,81,220,116,238,113,243,78,225,62,211,49,194,45,173,53,152,70,134,89,119"/>
+<area shape="rect" id="Node000004" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="63,168,246,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="137,126,152,166,147,168,132,128"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="157,209,157,241,152,241,152,209"/>
 </map>

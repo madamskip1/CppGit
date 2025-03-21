@@ -1,16 +1,22 @@
 <map id="include/CppGit/Signature.hpp" name="include/CppGit/Signature.hpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="347,5,536,31"/>
-<area shape="rect" id="Node000002" href="$d3/d2b/Commit_8hpp.html" title=" " alt="" coords="352,79,531,105"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="444,46,444,79,439,79,439,46"/>
-<area shape="rect" id="Node000003" href="$d6/d23/CommitsLogManager_8hpp.html" title=" " alt="" coords="5,153,190,193"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="374,111,184,155,183,149,373,106"/>
-<area shape="rect" id="Node000004" href="$df/db9/CommitsManager_8hpp.html" title=" " alt="" coords="214,160,450,186"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="414,116,350,162,347,157,411,112"/>
-<area shape="rect" id="Node000006" href="$d8/d0d/CommitAmender_8hpp.html" title=" " alt="" coords="474,153,630,193"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="472,112,526,150,523,154,469,116"/>
-<area shape="rect" id="Node000007" href="$dd/d03/CommitParser_8hpp.html" title=" " alt="" coords="654,153,829,193"/>
-<area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="503,107,667,149,666,155,502,112"/>
-<area shape="rect" id="Node000005" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="350,241,533,267"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="363,193,426,239,423,243,360,197"/>
-<area shape="poly" id="edge6_Node000006_Node000005" title=" " alt="" coords="514,205,460,243,457,239,511,200"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="555,5,744,31"/>
+<area shape="rect" id="Node000002" href="$d3/d2b/Commit_8hpp.html" title=" " alt="" coords="404,79,583,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="610,40,521,81,519,76,608,35"/>
+<area shape="rect" id="Node000004" href="$d6/d15/CppGit_8hpp.html" title=" " alt="" coords="242,330,417,356"/>
+<area shape="poly" id="edge12_Node000001_Node000004" title=" " alt="" coords="713,33,786,58,824,75,858,94,885,116,902,140,906,167,893,195,861,222,814,246,754,268,686,286,544,315,417,334,416,329,543,310,685,281,752,262,812,241,858,218,889,192,901,166,897,142,881,119,855,99,822,80,785,63,711,38"/>
+<area shape="rect" id="Node000003" href="$d6/d23/CommitsLogManager_8hpp.html" title=" " alt="" coords="5,241,190,282"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="389,103,299,121,253,136,209,155,180,174,153,198,114,243,110,239,150,194,177,170,207,150,251,131,297,116,388,98"/>
+<area shape="poly" id="edge8_Node000002_Node000004" title=" " alt="" coords="389,109,306,127,274,140,254,154,243,176,241,200,247,225,258,250,289,295,319,328,315,332,285,299,253,252,242,227,236,200,238,175,250,151,272,135,305,122,388,103"/>
+<area shape="rect" id="Node000005" href="$df/db9/CommitsManager_8hpp.html" title=" " alt="" coords="265,160,501,186"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="466,116,401,162,398,157,463,112"/>
+<area shape="rect" id="Node000007" href="$d8/d0d/CommitAmender_8hpp.html" title=" " alt="" coords="525,153,680,193"/>
+<area shape="poly" id="edge9_Node000002_Node000007" title=" " alt="" coords="524,112,577,150,574,154,521,116"/>
+<area shape="rect" id="Node000008" href="$dd/d03/CommitParser_8hpp.html" title=" " alt="" coords="705,153,879,193"/>
+<area shape="poly" id="edge11_Node000002_Node000008" title=" " alt="" coords="555,107,718,149,717,155,553,112"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="170,285,294,327,293,332,169,290"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="373,201,357,242,334,330,329,329,352,241,368,199"/>
+<area shape="rect" id="Node000006" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="366,249,549,274"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="405,196,449,247,445,250,401,199"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="426,285,351,332,348,327,424,281"/>
+<area shape="poly" id="edge10_Node000007_Node000006" title=" " alt="" coords="558,204,479,251,476,246,556,199"/>
 </map>

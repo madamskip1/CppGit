@@ -6,5 +6,6 @@ var searchData=
   ['commitcreator_2ehpp_3',['CommitCreator.hpp',['../d2/d65/CommitCreator_8hpp.html',1,'']]],
   ['commitparser_2ehpp_4',['CommitParser.hpp',['../dd/d03/CommitParser_8hpp.html',1,'']]],
   ['commitslogmanager_2ehpp_5',['CommitsLogManager.hpp',['../d6/d23/CommitsLogManager_8hpp.html',1,'']]],
-  ['commitsmanager_2ehpp_6',['CommitsManager.hpp',['../df/db9/CommitsManager_8hpp.html',1,'']]]
+  ['commitsmanager_2ehpp_6',['CommitsManager.hpp',['../df/db9/CommitsManager_8hpp.html',1,'']]],
+  ['cppgit_2ehpp_7',['CppGit.hpp',['../d6/d15/CppGit_8hpp.html',1,'']]]
 ];

@@ -1,5 +1,8 @@
 <map id="include/CppGit/CommitsManager.hpp" name="include/CppGit/CommitsManager.hpp">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,5,242,31"/>
-<area shape="rect" id="Node000002" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="32,79,215,105"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,46,126,79,121,79,121,46"/>
+<area shape="rect" id="Node000002" href="$d6/d15/CppGit_8hpp.html" title=" " alt="" coords="36,153,211,178"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,45,87,80,86,99,93,119,114,151,110,154,88,121,81,100,82,78,101,42"/>
+<area shape="rect" id="Node000003" href="$d0/d22/Rebaser_8hpp.html" title=" " alt="" coords="96,79,279,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,40,179,77,175,80,142,44"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="169,118,136,154,132,150,165,114"/>
 </map>
